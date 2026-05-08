@@ -1,0 +1,89 @@
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-logo"><div class="auth-logo-box">🏠</div>QuickMaid</div>
+    <div class="auth-tagline">India ka <em>Sabse Trusted</em> Maid Platform</div>
+    <div class="auth-sub">Instant booking, verified maids, aur powerful admin tools — sab ek jagah.</div>
+    <div class="auth-nums">
+      <div class="auth-num-box"><div class="auth-num-val">500+</div><div class="auth-num-lbl">Active Maids</div></div>
+      <div class="auth-num-box"><div class="auth-num-val">12K+</div><div class="auth-num-lbl">Bookings Done</div></div>
+      <div class="auth-num-box"><div class="auth-num-val">4.8★</div><div class="auth-num-lbl">Avg Rating</div></div>
+    </div>
+  </div>
+  <div class="auth-right" style="display:flex;flex-direction:column;justify-content:center;">
+    <div class="auth-form-inner">
+      <div class="auth-tabs">
+        <button class="auth-tab" [class.active]="tab()==='login'" (click)="switchTab('login')">Login</button>
+        <button class="auth-tab" [class.active]="tab()==='signup'" (click)="switchTab('signup')">Sign Up</button>
+      </div>
+
+      @if (tab() === 'login') {
+        <div>
+          <div class="form-title">Wapas Aao! 👋</div>
+          <div class="form-sub">Admin portal mein login karein</div>
+          <div class="fg">
+            <label class="fl">Email Address</label>
+            <input class="fi" type="email" placeholder="admin@quickmaid.in">
+          </div>
+          <div class="fg">
+            <label class="fl">Password</label>
+            <div class="pw-wrap">
+              <input class="fi" [type]="loginPwType()" placeholder="••••••••" style="padding-right:44px">
+              <button class="pw-toggle" (click)="togglePw('login')">{{ loginPwType()==='password' ? '👁' : '🙈' }}</button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;">
+              <input type="checkbox" style="accent-color:var(--or)"> Remember me
+            </label>
+            <a href="#" style="font-size:12px;color:var(--or);text-decoration:none;font-weight:700;">Bhool gaye?</a>
+          </div>
+          <button class="btn-auth" (click)="doLogin()">Login Karein →</button>
+          <div class="divider"><div class="divider-line"></div><div class="divider-text">ya</div><div class="divider-line"></div></div>
+          <button class="btn-google" (click)="doLogin()"><span>🔍</span> Google se Continue Karo</button>
+          <div class="auth-hint" style="margin-top:16px;"><strong>Demo:</strong> koi bhi email + password dalke login karo</div>
+        </div>
+      } @else {
+        <div>
+          <div class="form-title">Account Banao 🚀</div>
+          <div class="form-sub">QuickMaid admin portal join karein</div>
+          <div class="fg">
+            <label class="fl">Aap kaun hain?</label>
+            <div class="role-grid">
+              <div class="role-card" [class.sel]="selectedRole()==='admin'" (click)="selectRole('admin')">
+                <div class="role-ico">🖥️</div><div class="role-nm">Admin</div>
+              </div>
+              <div class="role-card" [class.sel]="selectedRole()==='manager'" (click)="selectRole('manager')">
+                <div class="role-ico">👷</div><div class="role-nm">Manager</div>
+              </div>
+              <div class="role-card" [class.sel]="selectedRole()==='analyst'" (click)="selectRole('analyst')">
+                <div class="role-ico">📊</div><div class="role-nm">Analyst</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label class="fl">Pehla Naam</label><input class="fi" type="text" placeholder="Rahul"></div>
+            <div class="fg"><label class="fl">Aakhri Naam</label><input class="fi" type="text" placeholder="Sharma"></div>
+          </div>
+          <div class="fg"><label class="fl">Email</label><input class="fi" type="email" placeholder="rahul@quickmaid.in"></div>
+          <div class="fg">
+            <label class="fl">City</label>
+            <select class="fs"><option>Raipur</option><option>Bhilai</option><option>Nagpur</option><option>Indore</option></select>
+          </div>
+          <div class="fg">
+            <label class="fl">Password</label>
+            <div class="pw-wrap">
+              <input class="fi" [type]="signupPwType()" placeholder="••••••••" [ngModel]="signupPw()" (ngModelChange)="signupPw.set($event)" style="padding-right:44px">
+              <button class="pw-toggle" (click)="togglePw('signup')">{{ signupPwType()==='password' ? '👁' : '🙈' }}</button>
+            </div>
+            <div class="str-bar"><div class="str-fill" [style.width]="strengthWidth()" [style.background]="strengthColor()"></div></div>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="terms">
+            <label for="terms">Main <a href="#" style="color:var(--or)">Terms</a> aur <a href="#" style="color:var(--or)">Privacy Policy</a> se agree karta hun</label>
+          </div>
+          <button class="btn-auth" (click)="doLogin()">Account Banao →</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

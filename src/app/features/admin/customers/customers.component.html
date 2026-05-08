@@ -1,0 +1,66 @@
+<div class="page-header"><div class="page-title">Customers 👥</div><div class="page-sub">Active, churned aur new customers</div></div>
+
+<div class="mini-stats">
+  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">892</div><div class="ms-lbl">Total Customers</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:#1D4ED8">312</div><div class="ms-lbl">On Monthly Plan</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">48</div><div class="ms-lbl">Churned This Month</div></div>
+</div>
+
+<div class="table-card">
+  <div class="table-hdr">
+    <div class="table-title">Customer List</div>
+    <div class="table-actions">
+      <select class="filter-select"><option>All Plans</option><option>Instant</option><option>Monthly</option><option>Annual</option></select>
+      <input class="search-inp" placeholder="🔍 Search...">
+    </div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>Customer</th><th>Phone</th><th>Zone</th><th>Plan</th><th>Bookings</th><th>Total Spent</th><th>Last Booking</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av or">N</div><div><div class="av-name">Neha Agarwal</div><div class="av-sub">neha&#64;gmail.com</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-11111</td>
+          <td>Tatibandh</td>
+          <td><span class="badge badge-or">Monthly</span></td>
+          <td style="font-weight:700">34</td>
+          <td style="color:var(--g);font-weight:700">₹9,520</td>
+          <td style="color:var(--muted)">Today</td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Profile viewed','👁')">👁</div><div class="act-btn" (click)="toast.show('Message sent','💬')">💬</div></div></td>
+        </tr>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av bl">R</div><div><div class="av-name">Rahul Gupta</div><div class="av-sub">rahul&#64;gmail.com</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-22222</td>
+          <td>Civil Lines</td>
+          <td><span class="badge badge-green">Annual</span></td>
+          <td style="font-weight:700">142</td>
+          <td style="color:var(--g);font-weight:700">₹28,000</td>
+          <td style="color:var(--muted)">Yesterday</td>
+          <td><div class="act-btns"><div class="act-btn">👁</div></div></td>
+        </tr>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av pu">A</div><div><div class="av-name">Anjali Tiwari</div><div class="av-sub">anjali&#64;gmail.com</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-33333</td>
+          <td>Shankar Nagar</td>
+          <td><span class="badge badge-or">Monthly</span></td>
+          <td style="font-weight:700">28</td>
+          <td style="color:var(--g);font-weight:700">₹7,840</td>
+          <td style="color:var(--muted)">2 days ago</td>
+          <td><div class="act-btns"><div class="act-btn">👁</div><div class="act-btn" (click)="toast.show('Offer sent!','🎁')">🎁</div></div></td>
+        </tr>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av gr">V</div><div><div class="av-name">Vijay Sharma</div><div class="av-sub">vijay&#64;gmail.com</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-44444</td>
+          <td>Pandri</td>
+          <td><span class="badge badge-gray">Instant</span></td>
+          <td style="font-weight:700">3</td>
+          <td style="color:var(--muted);font-weight:700">₹447</td>
+          <td style="color:#EF4444">18 days ago</td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Win-back sent!','🎁')">🎁</div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="chart-card"><div class="chart-hdr"><div class="chart-title">Customer Acquisition & Churn</div></div><div style="position:relative;height:200px;"><canvas #custChart></canvas></div></div>

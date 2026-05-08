@@ -1,0 +1,20 @@
+<div class="page-header"><div class="page-title">Zone Management 🗺️</div><div class="page-sub">Demand vs supply across Raipur zones</div></div>
+
+<div class="chart-card" style="margin-bottom:20px"><div class="chart-hdr"><div class="chart-title">Zone Performance Overview</div></div><div style="position:relative;height:260px;"><canvas #zoneChart></canvas></div></div>
+
+<div class="table-card">
+  <div class="table-hdr">
+    <div class="table-title">All Zones</div>
+    <div class="table-actions"><button class="btn-sm primary" (click)="toast.show('New zone created!','🗺️')">+ Add Zone</button></div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Zone</th><th>Demand</th><th>Supply</th><th>Coverage %</th><th>Avg ETA</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td style="font-weight:700">Tatibandh</td><td>88</td><td>34</td><td><span style="color:var(--g);font-weight:700">97%</span></td><td>12 min</td><td><span class="badge badge-green">Optimal</span></td></tr>
+      <tr><td style="font-weight:700">Civil Lines</td><td>65</td><td>28</td><td><span style="color:var(--g);font-weight:700">91%</span></td><td>18 min</td><td><span class="badge badge-green">Good</span></td></tr>
+      <tr><td style="font-weight:700">Shankar Nagar</td><td>54</td><td>21</td><td><span style="color:#B45309;font-weight:700">78%</span></td><td>24 min</td><td><span class="badge badge-amber">Needs Maids</span></td></tr>
+      <tr><td style="font-weight:700">Pandri</td><td>32</td><td>12</td><td><span style="color:#EF4444;font-weight:700">58%</span></td><td>35 min</td><td><span class="badge badge-red">Under-served</span></td></tr>
+      <tr><td style="font-weight:700">Telibandha</td><td>28</td><td>9</td><td><span style="color:#EF4444;font-weight:700">51%</span></td><td>41 min</td><td><span class="badge badge-red">Critical</span></td></tr>
+    </tbody>
+  </table>
+</div>

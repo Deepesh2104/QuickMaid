@@ -1,0 +1,476 @@
+<div class="support-host">
+  <!-- ANALYTICS OVERLAY -->
+  <div class="sp-analytics-wrap" [class.open]="analyticsOpen()">
+    <div class="sp-analytics-hdr">
+      <div class="sp-analytics-hdr-title">📊 Support Analytics — April 2026</div>
+      <button class="close-analytics-btn" (click)="toggleAnalytics()">✕ Close</button>
+    </div>
+    <div class="sp-an-grid">
+      <div class="sup-stat"><div class="sup-stat-val" style="color:#EF4444">1h 48m</div><div class="sup-stat-lbl">Avg First Response</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:var(--g)">94.2%</div><div class="sup-stat-lbl">CSAT Score</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:var(--or)">18.3m</div><div class="sup-stat-lbl">Avg Resolution Time</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:#1D4ED8">87%</div><div class="sup-stat-lbl">First Contact Resolve</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:#9333EA">142</div><div class="sup-stat-lbl">Total Resolved</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:#B45309">22%</div><div class="sup-stat-lbl">Escalation Rate</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:var(--g)">4.8★</div><div class="sup-stat-lbl">Avg CSAT Rating</div></div>
+      <div class="sup-stat"><div class="sup-stat-val" style="color:#EF4444">3</div><div class="sup-stat-lbl">SLA Breaches</div></div>
+    </div>
+    <div class="sp-an-charts">
+      <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Tickets by Category</div></div><div style="position:relative;height:200px;"><canvas #anTicketChart></canvas></div></div>
+      <div class="chart-card"><div class="chart-hdr"><div class="chart-title">CSAT Trend (7 days)</div></div><div style="position:relative;height:200px;"><canvas #anCsatChart></canvas></div></div>
+      <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Volume by Hour</div></div><div style="position:relative;height:200px;"><canvas #anHourChart></canvas></div></div>
+      <div class="chart-card">
+        <div class="chart-hdr"><div class="chart-title">Agent Performance</div></div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:700;">Priya (Lead)</span><span style="color:var(--g);font-weight:700;">62 resolved · 4.9★</span></div><div class="earn-bar-bg"><div class="earn-bar-f" style="width:90%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:700;">Rahul (Senior)</span><span style="color:var(--g);font-weight:700;">48 resolved · 4.7★</span></div><div class="earn-bar-bg"><div class="earn-bar-f" style="width:70%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:700;">Anita (Agent)</span><span style="color:#B45309;font-weight:700;">32 resolved · 4.5★</span></div><div class="earn-bar-bg"><div class="earn-bar-f" style="width:50%;background:#B45309"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK MESSAGE MODAL -->
+  <div class="bulk-modal" [class.open]="bulkOpen()">
+    <div class="bulk-modal-inner">
+      <div class="bulk-modal-hdr"><div class="bulk-modal-title">📢 Bulk Message — Segment Select</div><button class="bulk-modal-close" (click)="closeBulkModal()">✕</button></div>
+      <div class="bulk-modal-body">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Segment chuno:</div>
+        <div class="bulk-seg-grid">
+          @for (seg of [{n:'All Monthly Customers',c:'312 contacts'},{n:'No-Show Last 7 Days',c:'47 contacts'},{n:'Inactive (14+ days)',c:'83 contacts'},{n:'Annual Plan Up for Renewal',c:'28 contacts'}]; track $index; let i = $index) {
+            <div class="bulk-seg-card" [class.sel]="bulkSegmentIdx()===i" (click)="selectBulkSegment(i)">
+              <div class="bulk-seg-name">{{ seg.n }}</div>
+              <div class="bulk-seg-count">{{ seg.c }}</div>
+            </div>
+          }
+        </div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;margin-top:4px;">Message:</div>
+        <textarea class="fta" style="margin-bottom:16px;min-height:80px;" placeholder="Namaskar! QuickMaid ki taraf se..." [ngModel]="bulkMsg()" (ngModelChange)="bulkMsg.set($event)"></textarea>
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;"><input type="radio" name="bulk-channel" checked style="accent-color:var(--or)"> 💬 WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;"><input type="radio" name="bulk-channel" style="accent-color:var(--or)"> 📱 In-App</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;"><input type="radio" name="bulk-channel" style="accent-color:var(--or)"> 📧 Email</label>
+        </div>
+        <button class="bulk-send-btn" (click)="sendBulk()">📢 Send to 312 Contacts</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANNED RESPONSES MODAL -->
+  <div class="canned-modal" [class.open]="cannedOpen()">
+    <div class="canned-modal-inner">
+      <div class="bulk-modal-hdr"><div class="bulk-modal-title">📝 Canned Responses</div><button class="bulk-modal-close" (click)="closeCannedModal()">✕</button></div>
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border2);"><input class="sp-search" style="width:100%;padding-left:12px;" placeholder="🔍 Search responses..." [ngModel]="cannedQuery()" (ngModelChange)="filterCanned($event)"></div>
+      <div class="canned-list">
+        @for (c of filteredCanned(); track c.shortcut; let i = $index) {
+          <div class="canned-item">
+            <span class="canned-shortcut">{{ c.shortcut }}</span>
+            <span class="canned-text">{{ c.text }}</span>
+            <button class="canned-use" (click)="useCanned(i)">Use ↗</button>
+          </div>
+        }
+        @if (filteredCanned().length === 0) {
+          <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Koi response nahi mila</div>
+        }
+      </div>
+      <div style="padding:16px;border-top:1px solid var(--border2);display:flex;gap:10px;">
+        <input class="sp-search" style="flex:1;padding-left:12px;" placeholder="New response text..." [ngModel]="newCannedText()" (ngModelChange)="newCannedText.set($event)">
+        <button style="background:var(--or-g);color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;" (click)="addCanned()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MERGE MODAL -->
+  <div class="merge-modal" [class.open]="mergeOpen()">
+    <div class="merge-box">
+      <div class="merge-title">🔀 Tickets Merge Karo</div>
+      <div class="merge-sub">Duplicate ticket select karo — dono ek mein combine ho jaayenge</div>
+      <div>
+        @for (t of mergeCandidates(); track t.id) {
+          <div class="merge-ticket-row" [class.sel]="mergeSelectedId()===t.id" (click)="selectMergeTicket(t.id)">
+            <div>
+              <div class="merge-ticket-id">{{ t.id }}</div>
+              <div class="merge-ticket-name">{{ t.name }}</div>
+              <div class="merge-ticket-issue">{{ t.issue.substring(0, 55) }}...</div>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="merge-actions">
+        <button class="merge-btn-p" (click)="doMerge()">Merge Karo →</button>
+        <button class="merge-btn-s" (click)="closeMergeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div class="page-title">Support Center 🎧</div>
+        <div class="page-sub">Enterprise-grade real-time customer & maid support</div>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+        <div class="live-queue" style="padding:7px 12px;">
+          <div class="lq-dot"></div>
+          <div class="lq-text" style="font-size:11px;">Waiting</div>
+          <div class="lq-num" style="font-size:16px;">{{ queueCount() }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);">
+          🔔
+          <div class="toggle-switch" [class.on]="soundOn()" (click)="toggleSound()" style="flex-shrink:0;"><div class="toggle-knob"></div></div>
+        </div>
+        <button class="export-chat-btn" (click)="toast.show('Chat log exported! 📥 quickmaid_support_log.csv','📥')">📥 Export</button>
+        <button class="export-chat-btn" (click)="openBulkModal()" style="color:#9333EA;border-color:rgba(147,51,234,.3);">📢 Bulk Msg</button>
+        <button class="export-chat-btn" (click)="toggleAnalytics()" style="color:#1D4ED8;border-color:rgba(29,78,216,.3);">📊 Analytics</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="support-stats">
+    <div class="sup-stat"><div class="sup-stat-val" style="color:#EF4444">5</div><div class="sup-stat-lbl">Open</div></div>
+    <div class="sup-stat"><div class="sup-stat-val" style="color:#B45309">3</div><div class="sup-stat-lbl">In Progress</div></div>
+    <div class="sup-stat"><div class="sup-stat-val" style="color:var(--g)">142</div><div class="sup-stat-lbl">Resolved</div></div>
+    <div class="sup-stat"><div class="sup-stat-val" style="color:#1D4ED8">4.2 min</div><div class="sup-stat-lbl">Avg Response</div></div>
+    <div class="sup-stat"><div class="sup-stat-val" style="color:#9333EA">94%</div><div class="sup-stat-lbl">CSAT Score</div></div>
+    <div class="sup-stat"><div class="sup-stat-val" style="color:var(--or)">18 min</div><div class="sup-stat-lbl">Avg Resolution</div></div>
+  </div>
+
+  <!-- Agent Status Bar -->
+  <div class="agent-status-bar">
+    <button class="exit-support-btn" (click)="exitSupport()" title="Back to Admin Dashboard">
+      <span class="exit-arrow">←</span>
+      <span class="exit-label">Back to Admin</span>
+    </button>
+    <div class="agent-divider"></div>
+    <div class="agent-av">A</div>
+    <div class="agent-name">Admin (You)</div>
+    <div class="agent-status-sel" (click)="cycleAgentStatus()" [style.color]="AGENT_STATUSES[agentStatusIdx()].color" [style.borderColor]="AGENT_STATUSES[agentStatusIdx()].color + '44'">
+      <span class="agent-status-dot" [style.background]="AGENT_STATUSES[agentStatusIdx()].color"></span>
+      <span>{{ AGENT_STATUSES[agentStatusIdx()].label }}</span> ▾
+    </div>
+    <div class="agent-divider"></div>
+    <div class="agent-handling">📋 Handling <strong style="margin:0 3px;">{{ handlingCount() }}</strong> ticket</div>
+    <div class="agent-bar-right">
+      <div class="avg-resp-pill">⚡ <span>{{ avgRespTime() }}</span> avg response</div>
+      <app-theme-picker></app-theme-picker>
+      <button class="canned-resp-btn" (click)="openCannedModal()">📝 Canned Responses</button>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="support-layout">
+    <!-- LEFT: Ticket List -->
+    <div class="sp-tickets">
+      <div class="sp-tickets-hdr">
+        <div class="sp-tickets-hdr-top">
+          <span class="sp-tickets-title">Tickets <span style="background:rgba(239,68,68,.1);color:#EF4444;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;margin-left:4px;">{{ ticketCountBadge() }}</span></span>
+          <div style="display:flex;gap:5px;">
+            <button class="merge-btn" (click)="openMergeModal()">🔗 Merge</button>
+            <button class="sp-new-btn" (click)="createNewTicket()">+ New</button>
+          </div>
+        </div>
+        <div class="sp-search-wrap" style="margin-bottom:0;">
+          <span class="sp-search-ico">🔍</span>
+          <input class="sp-search" placeholder="Search tickets..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+        </div>
+      </div>
+
+      <div class="inbox-tabs">
+        <button class="inbox-tab" [class.active]="inboxFilter()==='all'" (click)="setInboxFilter('all')">All <span style="background:rgba(239,68,68,.15);color:#EF4444;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:800;">{{ ts.tickets().length }}</span></button>
+        <button class="inbox-tab" [class.active]="inboxFilter()==='open'" (click)="setInboxFilter('open')">Open</button>
+        <button class="inbox-tab" [class.active]="inboxFilter()==='progress'" (click)="setInboxFilter('progress')">Active</button>
+        <button class="inbox-tab" [class.active]="inboxFilter()==='resolved'" (click)="setInboxFilter('resolved')">Done</button>
+        <button class="inbox-tab" [class.active]="inboxFilter()==='bot'" (click)="setInboxFilter('bot')">🤖</button>
+      </div>
+      <div class="ticket-sort-bar">
+        <span class="sort-lbl">Sort by:</span>
+        <select class="sort-sel" (change)="toast.show('Sorted by '+$any($event.target).value,'↕️')">
+          <option>Priority</option><option>Newest</option><option>Oldest</option><option>SLA Breach</option>
+        </select>
+      </div>
+
+      <div class="sp-ticket-list">
+        @for (t of visibleTickets(); track t.id) {
+          <div class="sp-ticket"
+               [class.unread]="t.unread"
+               [class.active]="ts.activeTicket()?.id === t.id"
+               (click)="openTicket(t)">
+            <div class="sp-t-top">
+              <div class="sp-t-av tbl-av" [class.or]="t.color==='or'" [class.bl]="t.color==='bl'" [class.gr]="t.color==='gr'" [class.pu]="t.color==='pu'" [class.re]="t.color==='re'">{{ t.init }}</div>
+              <div class="sp-t-name">{{ t.name }}</div>
+              <div class="sp-t-time">{{ t.time }}</div>
+            </div>
+            <div class="sp-t-issue">{{ t.issue }}</div>
+            <div class="sp-t-tags">
+              <span class="sp-tag" [class.high]="t.priority==='high'" [class.med]="t.priority==='med'" [class.low]="t.priority==='low'">
+                {{ t.priority==='high' ? '🔴 High' : t.priority==='med' ? '🟡 Med' : '🟢 Low' }}
+              </span>
+              <span class="sp-tag type">{{ t.tag }}</span>
+              <span class="sp-tag type">{{ t.type }}</span>
+              @if (t.status === 'resolved') { <span class="sp-tag low">✅ Done</span> }
+              @else if (t.status === 'progress') { <span class="sp-tag med">⚡ Active</span> }
+            </div>
+            <div class="sla-timer" [class.urgent]="t.sla==='urgent'" [class.warn]="t.sla==='warn'" [class.ok]="t.sla==='ok'">
+              ⏱ {{ t.sla === 'urgent' ? 'SLA Breach!' : t.sla === 'warn' ? '4h left' : 'On track' }}
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- CENTER: Chat -->
+    <div class="sp-chat">
+      @if (!ts.activeTicket()) {
+        <div class="chat-empty">
+          <div class="chat-empty-ico">💬</div>
+          <div class="chat-empty-txt">Ticket Select Karo</div>
+          <div class="chat-empty-sub">Left side se koi bhi ticket open karo</div>
+        </div>
+      } @else {
+        <div>
+          <div class="sp-chat-hdr">
+            <div class="sp-chat-hdr-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+            <div class="sp-chat-hdr-info">
+              <div class="sp-chat-hdr-name">{{ ts.activeTicket()!.name }}</div>
+              <div class="sp-chat-hdr-meta">
+                <span class="online-dot"></span>
+                <span>Online · {{ ts.activeTicket()!.plan }} Plan · {{ ts.activeTicket()!.zone }}</span>
+              </div>
+            </div>
+            <div class="sp-chat-actions">
+              <div class="sp-chat-act-btn" (click)="toggleMsgSearch()" title="Search messages">🔍</div>
+              <div class="sp-chat-act-btn" (click)="toast.show('Calling customer...','📞')" title="Call">📞</div>
+              <div class="sp-chat-act-btn" (click)="toast.show('Opening profile','👤')" title="Profile">👤</div>
+              <div class="sp-chat-act-btn" (click)="toast.show('Booking history','📋')" title="History">📋</div>
+              <button class="escalate-btn" (click)="escalate()">🚨 Escalate</button>
+              <button class="sp-status-pill" [class.open]="ts.activeTicket()!.status==='open'" [class.progress]="ts.activeTicket()!.status==='progress'" [class.resolved]="ts.activeTicket()!.status==='resolved'" (click)="cycleStatus()">
+                {{ ts.activeTicket()!.status==='open' ? '● Open' : ts.activeTicket()!.status==='progress' ? '⚡ In Progress' : '✅ Resolved' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Labels -->
+          <div style="padding:8px 16px;border-bottom:1px solid var(--border2);background:var(--white);position:relative;">
+            <div class="ticket-labels-wrap">
+              @for (l of activeLabels(); track l.name) {
+                <span class="tlabel" [style.background]="l.color + '18'" [style.color]="l.color" [style.border]="'1px solid ' + l.color + '30'">
+                  {{ l.name }} <span class="tlabel-x" (click)="removeLabel(l.name)">✕</span>
+                </span>
+              }
+              <button class="add-label-btn" (click)="toggleLabelPicker($event)">+ Add Label</button>
+              <div class="label-picker" [class.open]="labelPickerOpen()">
+                <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Labels</div>
+                @for (lbl of LABEL_PRESETS; track lbl.name) {
+                  <div class="label-option" (click)="addLabel(lbl.name, lbl.color)">
+                    <div class="label-dot" [style.background]="lbl.color"></div>{{ lbl.name }}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="msg-search-bar" [class.open]="msgSearchOpen()">
+            <span style="font-size:13px;">🔍</span>
+            <input class="msg-search-inp" placeholder="Search in this conversation..." [ngModel]="msgSearchQuery()" (ngModelChange)="onSearchMessages($event)">
+            <span class="msg-search-count">{{ msgSearchCount() }}</span>
+            <button class="msg-search-close" (click)="closeMsgSearch()">✕</button>
+          </div>
+        </div>
+
+        <!-- Chat body -->
+        <div class="sp-chat-body" #chatBody>
+          @for (item of renderedMessages(); track $index) {
+            @if (item.kind === 'sep') {
+              <div class="chat-day-sep"><span>{{ item.day }}</span></div>
+            } @else if (item.msg.from === 'system') {
+              <div class="chat-msg system-msg"><div class="msg-system-bubble">🔔 {{ item.msg.text }}</div></div>
+            } @else if (item.msg.from === 'agent') {
+              <div class="chat-msg outgoing">
+                <div class="msg-bubble">
+                  <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                  <span class="msg-meta">{{ item.msg.time }} <span class="msg-status">✓✓</span></span>
+                </div>
+                <div class="msg-av" style="background:var(--or-g);color:#fff">A</div>
+              </div>
+            } @else if (item.msg.from === 'img') {
+              <div class="chat-msg incoming">
+                <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+                <div class="msg-bubble">
+                  <div class="msg-img">🖼️ Photo</div>
+                  <span class="msg-text">Broken vase photo</span>
+                  <span class="msg-meta">{{ item.msg.time }}</span>
+                </div>
+              </div>
+            } @else {
+              <div class="chat-msg incoming">
+                <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+                <div class="msg-bubble">
+                  <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                  <span class="msg-meta">{{ item.msg.time }}</span>
+                </div>
+              </div>
+            }
+          }
+          @if (ts.activeTicket() && ts.activeTicket()!.status !== 'resolved') {
+            <div class="typing-indicator">
+              <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+              <div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+              <span class="typing-lbl">typing...</span>
+            </div>
+          }
+        </div>
+
+        <!-- Input -->
+        <div>
+          <div class="sp-chat-input-area">
+            <div class="composer-notices">
+              <div class="composer-notice warn" [class.show]="autoCloseBanner()">
+                <span>Auto-close in 23h 14m if customer does not reply</span>
+                <button type="button" (click)="autoCloseBanner.set(false)" aria-label="Dismiss auto-close notice">✕</button>
+              </div>
+
+              @if (showResolveBanner()) {
+                <div class="composer-notice success show">
+                  <span>Issue looks resolved</span>
+                  <button type="button" (click)="resolveTicket()">Resolve</button>
+                </div>
+              }
+
+              @if (aiBarVisible()) {
+                <div class="composer-notice ai show">
+                  <span>{{ aiText() }}</span>
+                  <button type="button" (click)="useAi()">Use</button>
+                  <button type="button" (click)="aiBarVisible.set(false)" aria-label="Dismiss suggestion">✕</button>
+                </div>
+              }
+            </div>
+
+            <div class="quick-replies">
+              <span class="quick-replies-label">Quick replies</span>
+              <button type="button" class="qr-chip" (click)="insertQuickReply('👋 Namaskar! Kaise madad karein?')">Greeting</button>
+              <button type="button" class="qr-chip" (click)="insertQuickReply('🔄 Backup maid assign ho rahi hai')">Backup maid</button>
+              <button type="button" class="qr-chip" (click)="insertQuickReply('💸 Refund 24hrs mein process hoga')">Refund update</button>
+              <button type="button" class="qr-chip" (click)="insertQuickReply('✅ Issue resolve ho gaya?')">Resolve check</button>
+            </div>
+
+            <div class="input-row professional-composer">
+              <div class="chat-tools">
+                <div class="chat-tool-btn" (click)="toggleEmoji()" title="Emoji">
+                  😊
+                  <div class="emoji-picker" [class.open]="emojiOpen()">
+                    @for (e of ['😊','👋','🙏','✅','❌','💰','🔄','📞','⏰','🏠','👩','⭐','💬','📋','🎁','🚨']; track e) {
+                      <button class="emoji-btn" (click)="insertEmoji(e)">{{ e }}</button>
+                    }
+                  </div>
+                </div>
+                <button type="button" class="chat-tool-btn" (click)="toast.show('File attach karo (max 5MB)','📎')" title="Attach">📎</button>
+                <button type="button" class="chat-tool-btn" (click)="toast.show('Screenshot attached','🖼️')" title="Image">🖼️</button>
+              </div>
+              <div class="chat-inp-wrap">
+                <textarea class="chat-inp" #chatInp rows="1"
+                          placeholder="{{ noteMode() ? 'Internal note (not visible to customer)...' : 'Message likho... (Enter to send)' }}"
+                          [style.background]="noteMode() ? 'rgba(245,158,11,.06)' : 'var(--cream2)'"
+                          [style.borderColor]="noteMode() ? 'rgba(245,158,11,.4)' : 'var(--border2)'"
+                          [ngModel]="inputText()" (ngModelChange)="onInputChange($event)"
+                          (keydown)="handleEnter($event)"></textarea>
+              </div>
+              <button class="note-toggle-btn composer-note-btn" [class.active]="noteMode()" (click)="toggleNoteMode()">Internal</button>
+              <button class="send-btn" (click)="sendMessage()" title="Send">➤</button>
+            </div>
+
+            <div class="composer-footer">
+              <span>{{ noteMode() ? 'Internal note enabled. Customer cannot see this.' : 'Enter to send. Shift + Enter for new line.' }}</span>
+              <span class="char-count" [style.color]="charCountColor()">{{ charCount() }} / 500</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT: Sidebar -->
+    <div class="sp-sidebar">
+      @if (ts.activeTicket()) {
+        <div class="sp-sidebar-section sp-profile">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Contact Info</div>
+          <div class="sp-profile-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+          <div class="sp-profile-name">{{ ts.activeTicket()!.name }}</div>
+          <div class="sp-profile-type">{{ ts.activeTicket()!.type }} · {{ ts.activeTicket()!.plan }} Plan</div>
+          <div class="sp-profile-tags">
+            <span class="sp-ptag" style="background:rgba(var(--primary-rgb),.1);color:var(--or);">{{ ts.activeTicket()!.plan }}</span>
+            @if (ts.activeTicket()!.plan === 'Annual') {
+              <span class="sp-ptag" style="background:rgba(28,140,82,.1);color:var(--g);">VIP</span>
+            }
+          </div>
+        </div>
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">Details</div>
+          <div class="sp-info-row"><span class="sp-info-key">Phone</span><span class="sp-info-val">{{ ts.activeTicket()!.phone }}</span></div>
+          <div class="sp-info-row"><span class="sp-info-key">Zone</span><span class="sp-info-val">{{ ts.activeTicket()!.zone }}</span></div>
+          <div class="sp-info-row"><span class="sp-info-key">Plan</span><span class="sp-info-val">{{ ts.activeTicket()!.plan }}</span></div>
+          <div class="sp-info-row"><span class="sp-info-key">Total Bookings</span><span class="sp-info-val">{{ ts.activeTicket()!.bookings }}</span></div>
+          <div class="sp-info-row"><span class="sp-info-key">Total Spent</span><span class="sp-info-val" style="color:var(--g)">{{ ts.activeTicket()!.spent }}</span></div>
+          <div class="sp-info-row"><span class="sp-info-key">Member Since</span><span class="sp-info-val">{{ ts.activeTicket()!.since }}</span></div>
+        </div>
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">SLA Status</div>
+          <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:10px 12px;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Time Open</div>
+            <div style="font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;color:#EF4444;">{{ slaDisplay() }}</div>
+            <div style="font-size:10px;color:#EF4444;margin-top:2px;font-weight:600;">⚠ SLA breach risk</div>
+          </div>
+        </div>
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">Assign To</div>
+          <select class="assign-select" (change)="toast.show('Assigned to '+$any($event.target).value,'👤')">
+            <option>Priya (Support Lead)</option>
+            <option>Rahul (Senior Agent)</option>
+            <option>Anita (Agent)</option>
+            <option>Bot (Auto)</option>
+          </select>
+          <div style="display:flex;gap:6px;">
+            <select class="assign-select" style="flex:1;" (change)="toast.show('Priority: '+$any($event.target).value,'🚨')">
+              <option>🔴 High Priority</option>
+              <option>🟡 Medium</option>
+              <option>🟢 Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">Quick Actions</div>
+          <div class="sp-quick-actions">
+            <button class="sp-action-btn success" (click)="resolveTicket()">✅ Mark as Resolved</button>
+            <button class="sp-action-btn" (click)="toast.show('Backup maid assigned!','🔄')">🔄 Assign Backup Maid</button>
+            <button class="sp-action-btn" (click)="toast.show('Refund ₹149 initiated!','💸')">💸 Issue Refund</button>
+            <button class="sp-action-btn" (click)="toast.show('Free visit credited!','🎁')">🎁 Give Free Visit</button>
+            <button class="sp-action-btn" (click)="toast.show('Plan paused for 7 days','⏸️')">⏸️ Pause Plan</button>
+            <button class="sp-action-btn" (click)="toast.show('Summary sent on WhatsApp','💬')">💬 Send Summary WA</button>
+            <button class="sp-action-btn danger" (click)="escalate()">🚨 Escalate to Manager</button>
+          </div>
+        </div>
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">CSAT Rating (Post-Resolution)</div>
+          <div class="csat-stars">
+            @for (i of [1,2,3,4,5]; track i) {
+              <span class="csat-star" [class.active]="csatRating() >= i" (click)="setCsat(i)">⭐</span>
+            }
+          </div>
+          <div style="font-size:11px;color:var(--muted);text-align:center;">{{ csatLabel() }}</div>
+        </div>
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">Past Tickets (4)</div>
+          <div class="hist-item"><div><div class="hist-issue">Maid late — 45 mins</div><div class="hist-date">Mar 22 · Resolved</div></div><span class="badge badge-green">✓</span></div>
+          <div class="hist-item"><div><div class="hist-issue">Plan pause request</div><div class="hist-date">Feb 14 · Resolved</div></div><span class="badge badge-green">✓</span></div>
+          <div class="hist-item"><div><div class="hist-issue">Refund for missed visit</div><div class="hist-date">Jan 30 · Resolved</div></div><span class="badge badge-green">✓</span></div>
+          <div class="hist-item" style="border-bottom:none"><div><div class="hist-issue">Cooking quality complaint</div><div class="hist-date">Jan 8 · Closed</div></div><span class="badge badge-gray">−</span></div>
+        </div>
+      } @else {
+        <div class="sp-sidebar-section">
+          <div class="sp-sidebar-label">Contact Info</div>
+          <div style="font-size:12px;color:var(--muted);text-align:center;padding:32px 8px;">Ticket select karne par yahan customer details aayengi</div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

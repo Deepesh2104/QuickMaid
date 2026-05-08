@@ -1,0 +1,42 @@
+<div class="admin-wrap">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo"><div class="tb-logo-box">🏠</div>QuickMaid</div>
+      <div class="tb-div"></div>
+      <div class="tb-bc">{{ breadcrumb() }}</div>
+    </div>
+    <div class="tb-right">
+      <app-theme-picker></app-theme-picker>
+      <div class="tb-notif" (click)="notify()">🔔<div class="notif-dot"></div></div>
+      <div class="tb-user">
+        <div class="tb-av">A</div>
+        <div>
+          <div class="tb-uname">Admin</div>
+          <div class="tb-urole">Super Admin</div>
+        </div>
+      </div>
+      <button class="tb-logout" (click)="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <div class="sidebar">
+      @for (section of nav; track section.title) {
+        <div class="sb-section">{{ section.title }}</div>
+        @for (item of section.items; track item.path) {
+          <div class="nav-item" [routerLink]="item.path" routerLinkActive="active">
+            <span class="nav-icon">{{ item.icon }}</span>{{ item.label }}
+            @if (item.badge) {
+              <span class="nav-badge" [class.red]="item.badgeTone === 'red'">{{ item.badge }}</span>
+            }
+          </div>
+        }
+      }
+    </div>
+    <div class="main-content">
+      <div class="page">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+</div>

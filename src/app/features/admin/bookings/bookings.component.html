@@ -1,0 +1,69 @@
+<div class="page-header"><div class="page-title">Bookings 📋</div><div class="page-sub">Sab bookings manage karo</div></div>
+
+<div class="mini-stats">
+  <div class="mini-stat"><div class="ms-val" style="color:#B45309">47</div><div class="ms-lbl">Active / Ongoing</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">1,724</div><div class="ms-lbl">Completed</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">8</div><div class="ms-lbl">No-Shows Today</div></div>
+</div>
+
+<div class="table-card">
+  <div class="table-hdr">
+    <div class="table-title">All Bookings</div>
+    <div class="table-actions">
+      <select class="filter-select"><option>All Status</option><option>Ongoing</option><option>Completed</option><option>No-Show</option></select>
+      <input class="search-inp" placeholder="🔍 Search bookings...">
+      <button class="btn-sm primary" (click)="toast.show('Export started!','📥')">Export</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead>
+        <tr><th>#ID</th><th>Customer</th><th>Maid</th><th>Service</th><th>Date & Time</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--muted)">#1847</td>
+          <td><div class="av-cell"><div class="tbl-av or">N</div><div><div class="av-name">Neha Agarwal</div><div class="av-sub">Tatibandh</div></div></div></td>
+          <td><div class="av-cell"><div class="tbl-av gr">S</div><div class="av-name">Savita Devi</div></div></td>
+          <td>Cleaning 2hr</td>
+          <td>Apr 7 · 10:00AM</td>
+          <td style="color:var(--g);font-weight:700">₹298</td>
+          <td><span class="badge badge-green">Completed</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Details opened','👁')">👁</div><div class="act-btn" (click)="toast.show('Reassigned!','🔄')">🔄</div></div></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">#1846</td>
+          <td><div class="av-cell"><div class="tbl-av bl">R</div><div><div class="av-name">Rahul Gupta</div><div class="av-sub">Civil Lines</div></div></div></td>
+          <td><div class="av-cell"><div class="tbl-av bl">P</div><div class="av-name">Priya Yadav</div></div></td>
+          <td>Cooking 1hr</td>
+          <td>Apr 7 · 9:30AM</td>
+          <td style="color:#B45309;font-weight:700">₹199</td>
+          <td><span class="badge badge-amber">Ongoing</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Tracking live','📍')">📍</div><div class="act-btn danger" (click)="toast.show('Cancelled','❌')">✕</div></div></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">#1845</td>
+          <td><div class="av-cell"><div class="tbl-av pu">A</div><div><div class="av-name">Anjali Tiwari</div><div class="av-sub">Shankar Nagar</div></div></div></td>
+          <td><div class="av-cell"><div class="tbl-av or">R</div><div class="av-name">Rekha Singh</div></div></td>
+          <td>Bartan 1hr</td>
+          <td>Apr 7 · 9:00AM</td>
+          <td style="color:var(--g);font-weight:700">₹149</td>
+          <td><span class="badge badge-green">Completed</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Details opened','👁')">👁</div></div></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">#1844</td>
+          <td><div class="av-cell"><div class="tbl-av gr">V</div><div><div class="av-name">Vijay Sharma</div><div class="av-sub">Pandri</div></div></div></td>
+          <td><span class="badge badge-red">Unassigned</span></td>
+          <td>Cleaning 1hr</td>
+          <td>Apr 7 · 8:30AM</td>
+          <td style="color:var(--muted);font-weight:700">₹149</td>
+          <td><span class="badge badge-red">No-Show</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Backup assigned!','🔄')">🔄</div><div class="act-btn" (click)="toast.show('Refund initiated','💸')">💸</div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="chart-card"><div class="chart-hdr"><div class="chart-title">Bookings This Week</div></div><div style="position:relative;height:200px;"><canvas #bookWeekChart></canvas></div></div>

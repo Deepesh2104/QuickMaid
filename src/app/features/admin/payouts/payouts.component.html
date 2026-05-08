@@ -1,0 +1,39 @@
+<div class="page-header"><div class="page-title">Payouts 💸</div><div class="page-sub">Worker payments aur processing</div></div>
+
+<div class="mini-stats">
+  <div class="mini-stat"><div class="ms-val" style="color:#B45309">₹48,200</div><div class="ms-lbl">Pending This Week</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">₹3,42,000</div><div class="ms-lbl">Paid This Month</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:#1D4ED8">186</div><div class="ms-lbl">Workers to Pay</div></div>
+</div>
+
+<div class="table-card">
+  <div class="table-hdr">
+    <div class="table-title">Pending Payouts</div>
+    <div class="table-actions">
+      <button class="btn-sm primary" (click)="toast.show('Batch payout initiated! ₹48,200 processing','💸')">Pay All (₹48,200)</button>
+    </div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Maid</th><th>Bookings</th><th>Amount Due</th><th>Last Paid</th><th>UPI ID</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><div class="av-cell"><div class="tbl-av or">S</div><div class="av-name">Savita Devi</div></div></td>
+        <td>22</td><td style="color:var(--g);font-weight:700">₹5,500</td>
+        <td style="color:var(--muted)">Mar 31</td><td style="color:var(--muted)">savita&#64;upi</td>
+        <td><button class="btn-sm primary" (click)="toast.show('₹5,500 sent to Savita!','✅')">Pay Now</button></td>
+      </tr>
+      <tr>
+        <td><div class="av-cell"><div class="tbl-av gr">P</div><div class="av-name">Priya Yadav</div></div></td>
+        <td>19</td><td style="color:var(--g);font-weight:700">₹4,750</td>
+        <td style="color:var(--muted)">Mar 31</td><td style="color:var(--muted)">priya&#64;upi</td>
+        <td><button class="btn-sm primary" (click)="toast.show('₹4,750 sent to Priya!','✅')">Pay Now</button></td>
+      </tr>
+      <tr>
+        <td><div class="av-cell"><div class="tbl-av bl">R</div><div class="av-name">Rekha Singh</div></div></td>
+        <td>17</td><td style="color:var(--g);font-weight:700">₹4,250</td>
+        <td style="color:var(--muted)">Mar 31</td><td style="color:var(--muted)">rekha&#64;upi</td>
+        <td><button class="btn-sm primary" (click)="toast.show('₹4,250 sent to Rekha!','✅')">Pay Now</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

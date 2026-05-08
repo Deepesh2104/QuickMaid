@@ -1,0 +1,72 @@
+<div class="page-header">
+  <div class="page-title">Dashboard 📊</div>
+  <div class="page-sub">Aaj ka overview — May 2, 2026</div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card orange"><div class="metric-top"><div class="metric-ico">💰</div><div class="metric-change up">↑ 18.4%</div></div><div class="metric-val">₹4,28,500</div><div class="metric-lbl">This Month GMV</div><div class="metric-sub">↑ ₹65K vs last month</div></div>
+  <div class="metric-card green"><div class="metric-top"><div class="metric-ico">📋</div><div class="metric-change up">↑ 22%</div></div><div class="metric-val">1,847</div><div class="metric-lbl">Total Bookings</div><div class="metric-sub">234 aaj ke</div></div>
+  <div class="metric-card blue"><div class="metric-top"><div class="metric-ico">👥</div><div class="metric-change up">↑ 31%</div></div><div class="metric-val">892</div><div class="metric-lbl">Active Customers</div><div class="metric-sub">127 new this month</div></div>
+  <div class="metric-card amber"><div class="metric-top"><div class="metric-ico">👩</div><div class="metric-change dn">↓ 2</div></div><div class="metric-val">186</div><div class="metric-lbl">Active Maids</div><div class="metric-sub">14 pending verify</div></div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div>
+        <div class="chart-title">Revenue & Bookings Trend</div>
+        <div class="chart-sub-lbl">Last 7 days performance</div>
+      </div>
+      <div class="chart-tabs">
+        <button class="ct-btn" [class.active]="range()==='7d'" (click)="setRange('7d')">7D</button>
+        <button class="ct-btn" [class.active]="range()==='30d'" (click)="setRange('30d')">30D</button>
+        <button class="ct-btn" [class.active]="range()==='90d'" (click)="setRange('90d')">3M</button>
+      </div>
+    </div>
+    <div style="position:relative;height:220px;"><canvas #mainChart></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-hdr"><div><div class="chart-title">Service Split</div><div class="chart-sub-lbl">By category</div></div></div>
+    <div style="position:relative;height:170px;"><canvas #donutChart></canvas></div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:var(--primary);display:inline-block"></span>Cleaning</span><span style="font-weight:700">42%</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#1C8C52;display:inline-block"></span>Cooking</span><span style="font-weight:700">28%</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#1D4ED8;display:inline-block"></span>Bartan</span><span style="font-weight:700">18%</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#B45309;display:inline-block"></span>Other</span><span style="font-weight:700">12%</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="chart-card"><div class="chart-hdr"><div><div class="chart-title">Hourly Booking Heatmap</div><div class="chart-sub-lbl">Peak demand hours today</div></div></div><div style="position:relative;height:190px;"><canvas #heatChart></canvas></div></div>
+  <div class="chart-card">
+    <div class="chart-hdr"><div class="chart-title">Top Maids This Month</div></div>
+    <div class="top-maid-row"><div class="rank g">1</div><div class="tbl-av or">S</div><div class="maid-info"><div class="maid-nm">Savita Devi</div><div class="maid-st">⭐ 4.9 · 87 bookings</div></div><div class="earn-pill">₹21,750</div></div>
+    <div class="top-maid-row"><div class="rank s">2</div><div class="tbl-av gr">P</div><div class="maid-info"><div class="maid-nm">Priya Yadav</div><div class="maid-st">⭐ 4.8 · 79 bookings</div></div><div class="earn-pill">₹19,750</div></div>
+    <div class="top-maid-row"><div class="rank b">3</div><div class="tbl-av bl">R</div><div class="maid-info"><div class="maid-nm">Rekha Singh</div><div class="maid-st">⭐ 4.8 · 74 bookings</div></div><div class="earn-pill">₹18,500</div></div>
+    <div class="top-maid-row"><div class="rank">4</div><div class="tbl-av pu">K</div><div class="maid-info"><div class="maid-nm">Kavita Patel</div><div class="maid-st">⭐ 4.7 · 68 bookings</div></div><div class="earn-pill">₹17,000</div></div>
+    <div class="top-maid-row" style="border-bottom:none"><div class="rank">5</div><div class="tbl-av or">M</div><div class="maid-info"><div class="maid-nm">Meena Sahu</div><div class="maid-st">⭐ 4.7 · 61 bookings</div></div><div class="earn-pill">₹15,250</div></div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="chart-card">
+    <div class="chart-hdr"><div class="chart-title">Zone Demand Map</div></div>
+    <div class="zone-grid">
+      <div class="zone-item"><div class="zone-hdr"><span class="zone-nm">Tatibandh</span><span style="font-size:10px;color:var(--g);font-weight:700;">High</span></div><div class="zone-bg"><div class="zone-fill" style="width:88%"></div></div><div class="zone-nums"><span>88 bookings</span><span>34 maids</span></div></div>
+      <div class="zone-item"><div class="zone-hdr"><span class="zone-nm">Civil Lines</span><span style="font-size:10px;color:var(--or);font-weight:700;">Med</span></div><div class="zone-bg"><div class="zone-fill" style="width:65%"></div></div><div class="zone-nums"><span>65 bookings</span><span>28 maids</span></div></div>
+      <div class="zone-item"><div class="zone-hdr"><span class="zone-nm">Shankar Nagar</span><span style="font-size:10px;color:#B45309;font-weight:700;">Med</span></div><div class="zone-bg"><div class="zone-fill" style="width:54%;background:#F59E0B"></div></div><div class="zone-nums"><span>54 bookings</span><span>21 maids</span></div></div>
+      <div class="zone-item"><div class="zone-hdr"><span class="zone-nm">Pandri</span><span style="font-size:10px;color:#EF4444;font-weight:700;">Low</span></div><div class="zone-bg"><div class="zone-fill" style="width:32%;background:#EF4444"></div></div><div class="zone-nums"><span>32 bookings</span><span>12 maids</span></div></div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-hdr"><div class="chart-title">Recent Activity</div></div>
+    <div class="activity-list">
+      <div class="act-item"><div class="act-dot" style="background:rgba(28,140,82,.1)">✅</div><div><div class="act-title">Booking #1847 completed — Savita Devi</div><div class="act-time">2 min ago · Tatibandh</div></div></div>
+      <div class="act-item"><div class="act-dot" style="background:rgba(59,130,246,.1)">👤</div><div><div class="act-title">New customer signup — Neha Agarwal</div><div class="act-time">8 min ago · Civil Lines</div></div></div>
+      <div class="act-item"><div class="act-dot" style="background:rgba(245,158,11,.1)">💰</div><div><div class="act-title">Monthly plan purchased — ₹2,799</div><div class="act-time">15 min ago · Pandri</div></div></div>
+      <div class="act-item"><div class="act-dot" style="background:rgba(239,68,68,.1)">🚨</div><div><div class="act-title">No-show alert — Booking #1839</div><div class="act-time">32 min ago · Shankar Nagar</div></div></div>
+      <div class="act-item" style="border-bottom:none"><div class="act-dot" style="background:rgba(28,140,82,.1)">👩</div><div><div class="act-title">New maid verified — Sunita Rao</div><div class="act-time">1 hr ago · Tatibandh</div></div></div>
+    </div>
+  </div>
+</div>

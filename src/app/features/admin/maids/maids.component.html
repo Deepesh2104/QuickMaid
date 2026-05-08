@@ -1,0 +1,70 @@
+<div class="page-header"><div class="page-title">Maids Management 👩</div><div class="page-sub">Verified workers aur pending applications</div></div>
+
+<div class="mini-stats">
+  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">186</div><div class="ms-lbl">Active Maids</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:#B45309">14</div><div class="ms-lbl">Pending Verification</div></div>
+  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">3</div><div class="ms-lbl">Suspended</div></div>
+</div>
+
+<div class="table-card">
+  <div class="table-hdr">
+    <div class="table-title">All Maids</div>
+    <div class="table-actions">
+      <select class="filter-select"><option>All Status</option><option>Active</option><option>Pending</option><option>Suspended</option></select>
+      <input class="search-inp" placeholder="🔍 Search maids...">
+      <button class="btn-sm primary" (click)="router.navigateByUrl('/admin/add-maid')">+ Add Maid</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>Maid</th><th>Phone</th><th>Zone</th><th>Bookings</th><th>Rating</th><th>Earnings</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av or">S</div><div><div class="av-name">Savita Devi</div><div class="av-sub">Aadhaar ✓</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-00001</td>
+          <td>Tatibandh</td>
+          <td style="font-weight:700">87</td>
+          <td><span class="star-r">★★★★★</span> 4.9</td>
+          <td style="color:var(--g);font-weight:700">₹21,750</td>
+          <td><span class="badge badge-green">Active</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Profile opened','👁')">👁</div><div class="act-btn" (click)="toast.show('Edited!','✏️')">✏️</div><div class="act-btn danger" (click)="toast.show('Suspended','⛔')">⛔</div></div></td>
+        </tr>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av gr">P</div><div><div class="av-name">Priya Yadav</div><div class="av-sub">Aadhaar ✓</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-00002</td>
+          <td>Civil Lines</td>
+          <td style="font-weight:700">79</td>
+          <td><span class="star-r">★★★★★</span> 4.8</td>
+          <td style="color:var(--g);font-weight:700">₹19,750</td>
+          <td><span class="badge badge-green">Active</span></td>
+          <td><div class="act-btns"><div class="act-btn">👁</div><div class="act-btn">✏️</div></div></td>
+        </tr>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av" style="background:rgba(245,158,11,.1);color:#B45309">G</div><div><div class="av-name">Geeta Sahu</div><div class="av-sub">Pending</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-00099</td>
+          <td>Pandri</td>
+          <td style="color:var(--muted)">—</td>
+          <td style="color:var(--muted)">Not rated</td>
+          <td style="color:var(--muted)">₹0</td>
+          <td><span class="badge badge-amber">Pending</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Verified! ✅','✅')">✅</div><div class="act-btn danger" (click)="toast.show('Rejected','❌')">✕</div></div></td>
+        </tr>
+        <tr>
+          <td><div class="av-cell"><div class="tbl-av re">D</div><div><div class="av-name">Durga Bai</div><div class="av-sub">Suspended</div></div></div></td>
+          <td style="color:var(--muted)">+91 98765-00088</td>
+          <td>Shankar Nagar</td>
+          <td style="font-weight:700">12</td>
+          <td style="color:#EF4444">★★☆☆☆ 2.1</td>
+          <td style="color:var(--muted)">₹3,000</td>
+          <td><span class="badge badge-red">Suspended</span></td>
+          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Reinstated!','✅')">♻️</div><div class="act-btn danger" (click)="toast.show('Removed','🗑️')">🗑️</div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Maid Onboarding Trend</div></div><div style="position:relative;height:190px;"><canvas #maidTrendChart></canvas></div></div>
+  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Rating Distribution</div></div><div style="position:relative;height:190px;"><canvas #ratingChart></canvas></div></div>
+</div>
