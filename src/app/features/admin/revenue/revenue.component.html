@@ -1,13 +1,171 @@
-<div class="page-header"><div class="page-title">Revenue 💰</div><div class="page-sub">Financial overview aur trends</div></div>
+<div class="adm-page rev-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Finance</p>
+      <h1 class="adm-title">Revenue</h1>
+      <p class="adm-sub">GMV stack, mix chart, aur recognition ledger — filters + search Bookings jaisa instant (demo).</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">FY snapshot · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Rates refreshed','✨')">Refresh</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Finance export queued','📥')">Export</button>
+    </div>
+  </header>
 
-<div class="metrics-grid">
-  <div class="metric-card orange"><div class="metric-top"><div class="metric-ico">📈</div><div class="metric-change up">↑ 18%</div></div><div class="metric-val">₹4.28L</div><div class="metric-lbl">This Month GMV</div></div>
-  <div class="metric-card green"><div class="metric-top"><div class="metric-ico">💵</div><div class="metric-change up">↑ 22%</div></div><div class="metric-val">₹68,560</div><div class="metric-lbl">Platform Commission</div><div class="metric-sub">16% of GMV</div></div>
-  <div class="metric-card blue"><div class="metric-top"><div class="metric-ico">📦</div><div class="metric-change up">↑ 34%</div></div><div class="metric-val">₹2,40,000</div><div class="metric-lbl">Subscription Revenue</div></div>
-  <div class="metric-card amber"><div class="metric-top"><div class="metric-ico">🏢</div><div class="metric-change up">↑ 41%</div></div><div class="metric-val">₹85,000</div><div class="metric-lbl">B2B Contracts</div></div>
-</div>
+  <section class="adm-kpi-grid" aria-label="Revenue KPIs">
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">📈</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹4.28L</span>
+        <span class="adm-kpi-lbl">This month GMV</span>
+        <span class="adm-kpi-hint">↑ 18% vs last month</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">💵</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹68,560</span>
+        <span class="adm-kpi-lbl">Platform commission</span>
+        <span class="adm-kpi-hint">16% of GMV · ↑ 22%</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--blue">
+      <span class="adm-kpi-ico" aria-hidden="true">📦</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹2,40,000</span>
+        <span class="adm-kpi-lbl">Subscription revenue</span>
+        <span class="adm-kpi-hint">↑ 34% recurring</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">🏢</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹85,000</span>
+        <span class="adm-kpi-lbl">B2B contracts</span>
+        <span class="adm-kpi-hint">↑ 41% pipeline</span>
+      </div>
+    </article>
+  </section>
 
-<div class="charts-grid">
-  <div class="chart-card"><div class="chart-hdr"><div><div class="chart-title">Monthly Revenue Breakdown</div><div class="chart-sub-lbl">Last 6 months</div></div></div><div style="position:relative;height:220px;"><canvas #revChart></canvas></div></div>
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Revenue by Source</div></div><div style="position:relative;height:220px;"><canvas #revSrcChart></canvas></div></div>
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Recognition ledger</div>
+        <p class="table-hint">{{ ledgerCount() }} of {{ ledgerTotal }} lines · source + search</p>
+      </div>
+      <div class="adm-toolbar adm-toolbar--stack">
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Source</span>
+          <div class="adm-seg" role="group" aria-label="Filter by revenue source">
+            <button type="button" class="adm-seg-btn" [class.active]="sourceFilter() === 'all'" (click)="setSource('all')">All</button>
+            <button type="button" class="adm-seg-btn" [class.active]="sourceFilter() === 'instant'" (click)="setSource('instant')">Instant</button>
+            <button type="button" class="adm-seg-btn" [class.active]="sourceFilter() === 'subscription'" (click)="setSource('subscription')">Subs</button>
+            <button type="button" class="adm-seg-btn" [class.active]="sourceFilter() === 'b2b'" (click)="setSource('b2b')">B2B</button>
+            <button type="button" class="adm-seg-btn" [class.active]="sourceFilter() === 'addon'" (click)="setSource('addon')">Add-ons</button>
+          </div>
+        </div>
+        <div class="adm-search-wrap adm-search-wrap--wide">
+          <span class="adm-search-ico" aria-hidden="true">🔍</span>
+          <input class="adm-search-inp" type="search" placeholder="ID, label, period…" [value]="searchQuery()" (input)="onSearch($event)" autocomplete="off">
+        </div>
+      </div>
+    </div>
+    @if (ledgerCount() === 0) {
+      <div class="adm-empty">
+        <div class="adm-empty-ico" aria-hidden="true">📊</div>
+        <p class="adm-empty-title">Koi line match nahi</p>
+        <p class="adm-empty-sub">Source ya search clear karo.</p>
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setSource('all')">Reset filters</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--adm">
+          <thead>
+            <tr>
+              <th>Entry ID</th>
+              <th>Description</th>
+              <th>Source</th>
+              <th>Period</th>
+              <th>Amount</th>
+              <th>Mix share</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredLedger(); track r.id) {
+              <tr>
+                <td><span class="adm-id-chip">{{ r.id }}</span></td>
+                <td><span class="adm-service-pill">{{ r.label }}</span></td>
+                <td><span [class]="'badge ' + sourceBadgeClass(r.source)">{{ sourceLabel(r.source) }}</span></td>
+                <td class="adm-last">{{ r.period }}</td>
+                <td class="adm-amt" style="color:var(--g)">{{ r.amount }}</td>
+                <td class="adm-num">{{ r.share }}</td>
+                <td>
+                  <div class="act-btns">
+                    <div class="act-btn" (click)="toast.show('Drilldown (demo)','🔎')" title="Drill">🔎</div>
+                    <div class="act-btn" (click)="toast.show('Journal entry export','📤')" title="Export line">📤</div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <div class="adm-split" style="margin-top:18px">
+    <div class="adm-charts-stack">
+      <div class="adm-charts-row" style="margin-bottom:0">
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">Monthly revenue breakdown</h2>
+              <p class="chart-sub-lbl">Stacked · Instant + subscriptions + B2B</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #revChart></canvas></div>
+        </section>
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">Revenue by source</h2>
+              <p class="chart-sub-lbl">Share of booked GMV</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #revSrcChart></canvas></div>
+        </section>
+      </div>
+    </div>
+    <aside class="adm-aside" aria-label="Finance flags">
+      <h3 class="adm-aside-title">Board flags</h3>
+      <p class="adm-aside-sub">Demo checks — API se bind karna future step.</p>
+      <ul class="adm-queue-list">
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">GST filing · May</span>
+            <span class="adm-queue-meta">Filed · receipt in drive</span>
+          </div>
+          <span class="adm-queue-pill adm-queue-pill--soft">OK</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Refund reserve</span>
+            <span class="adm-queue-meta">12% buffer vs policy 10%</span>
+          </div>
+          <span class="adm-queue-pill">Watch</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Payout vs GMV</span>
+            <span class="adm-queue-meta">Within T+2 SLA</span>
+          </div>
+        </li>
+      </ul>
+      <button type="button" class="adm-aside-btn" (click)="toast.show('CFO pack PDF (demo)','📑')">Download board pack</button>
+    </aside>
+  </div>
 </div>

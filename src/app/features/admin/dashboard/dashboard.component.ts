@@ -27,6 +27,15 @@ const RANGES: Readonly<Record<DateRange, RangeData>> = {
   '90d': { labels: ['Jan', 'Feb', 'Mar'], rev: [520000, 610000, 780000], book: [1920, 2340, 2980] },
 };
 
+function bizMarginSeries(r: DateRange): { labels: readonly string[]; gmvK: number[]; commK: number[] } {
+  const d = RANGES[r];
+  return {
+    labels: d.labels,
+    gmvK: d.rev.map((v) => Math.round((v / 1000) * 10) / 10),
+    commK: d.rev.map((v) => Math.round((v * 0.16 / 1000) * 10) / 10),
+  };
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -46,9 +55,18 @@ export class DashboardComponent implements AfterViewInit {
   @ViewChild('miniLineChart') miniLineCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('miniHBarChart') miniHBarCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('heatChart') heatCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('compareChart') compareCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('payMixChart') payMixCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('cohortChart') cohortCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('csatChart') csatCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('qualityChart') qualityCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('zoneGmvChart') zoneGmvCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('demandPolarChart') demandPolarCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('bizMarginChart') bizMarginCanvas!: ElementRef<HTMLCanvasElement>;
 
   readonly range = signal<DateRange>('7d');
   private mainChart: Chart | null = null;
+  private bizMarginChart: Chart | null = null;
 
   readonly todayLabel = computed(() =>
     new Intl.DateTimeFormat('en-IN', {
@@ -64,6 +82,40 @@ export class DashboardComponent implements AfterViewInit {
     if (r === '7d') return 'Last 7 days';
     if (r === '30d') return 'Last 30 days';
     return 'Last 3 months';
+  });
+
+  /** Business pulse tiles — demo ratios derived from same GMV series as main chart */
+  readonly bizPulse = computed(() => {
+    const r = this.range();
+    const d = RANGES[r];
+    const gmv = d.rev.reduce((a, b) => a + b, 0);
+    const bookings = d.book.reduce((a, b) => a + b, 0);
+    const inr = (n: number) =>
+      new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+    const commission = Math.round(gmv * 0.16);
+    const refunds = Math.round(gmv * 0.006);
+    const netAfter = Math.round(gmv * 0.655 - refunds);
+    const payouts = Math.round(gmv * 0.27);
+    const subs = Math.min(999, Math.round(220 + bookings / 5));
+    const mrr = Math.round(subs * 2690);
+    const b2b = Math.round(gmv * 0.013);
+    const periodLbl = r === '7d' ? 'Week window' : r === '30d' ? 'Month window' : 'Quarter window';
+    const quotesHint = r === '7d' ? '3 quotes · closing' : r === '30d' ? '4 quotes · closing' : '6 quotes · 2 won';
+    const commHint = r === '7d' ? '↑ 9.2% vs target' : r === '30d' ? '↑ 6.1% vs target' : '↑ 11% vs target';
+    return {
+      netAfter: inr(netAfter),
+      netSub: `${periodLbl} · after refunds`,
+      commission: inr(commission),
+      commissionSub: `${commHint} · 16% take rate`,
+      refunds: inr(refunds),
+      refundsSub: `${((refunds / gmv) * 100).toFixed(1)}% of GMV`,
+      payouts: inr(payouts),
+      payoutsSub: 'Maids · T+2 cycle',
+      subs: String(subs),
+      subsSub: `MRR est. ${inr(mrr)}`,
+      b2b: inr(b2b),
+      b2bSub: quotesHint,
+    };
   });
 
   ngAfterViewInit(): void {
@@ -276,16 +328,333 @@ export class DashboardComponent implements AfterViewInit {
         },
       },
     } as any);
+
+    this.initDeepAnalyticsCharts();
+    this.initBusinessPulseChart();
+  }
+
+  /** GMV vs commission — business P&L view (₹K) */
+  private initBusinessPulseChart(): void {
+    const { OR, GR, OR_RGB } = this.palette;
+    const s = bizMarginSeries(this.range());
+    this.bizMarginChart = this.cs.make(this.bizMarginCanvas.nativeElement, {
+      type: 'line',
+      data: {
+        labels: [...s.labels],
+        datasets: [
+          {
+            label: 'GMV (₹K)',
+            data: [...s.gmvK],
+            borderColor: OR,
+            backgroundColor: `rgba(${OR_RGB},.1)`,
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'y',
+            borderWidth: 2.5,
+            pointRadius: 3,
+          },
+          {
+            label: 'Commission (₹K)',
+            data: [...s.commK],
+            borderColor: GR,
+            backgroundColor: 'rgba(28,140,82,.08)',
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'y1',
+            borderWidth: 2,
+            pointRadius: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index' as const, intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top' as const,
+            labels: { boxWidth: 10, font: { size: 10 }, usePointStyle: true },
+          },
+        },
+        scales: {
+          x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: {
+            position: 'left' as const,
+            border: { display: false },
+            grid: { color: 'rgba(19,17,14,.06)' },
+            ticks: { font: { size: 10 }, callback: (v: string | number) => '₹' + v + 'K' },
+          },
+          y1: {
+            position: 'right' as const,
+            border: { display: false },
+            grid: { display: false },
+            ticks: { font: { size: 10 }, color: GR, callback: (v: string | number) => '₹' + v + 'K' },
+          },
+        },
+      },
+    } as any);
+  }
+
+  private updateBizMarginChartData(r: DateRange): void {
+    if (!this.bizMarginChart) return;
+    const s = bizMarginSeries(r);
+    this.bizMarginChart.data.labels = [...s.labels];
+    (this.bizMarginChart.data.datasets[0].data as number[]) = [...s.gmvK];
+    (this.bizMarginChart.data.datasets[1].data as number[]) = [...s.commK];
+    this.bizMarginChart.update('active');
+  }
+
+  private initDeepAnalyticsCharts(): void {
+    const { OR, GR, BL, AM, OR_RGB, PU } = this.palette;
+    const cream = '#FAF8F5';
+    const axisSoft = { grid: { color: 'rgba(19,17,14,.06)' }, border: { display: false } };
+
+    this.cs.make(this.compareCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: [...DAYS],
+        datasets: [
+          {
+            label: 'This week',
+            data: [182, 198, 154, 234, 212, 276, 247],
+            backgroundColor: `rgba(${OR_RGB},.78)`,
+            borderRadius: 6,
+            maxBarThickness: 16,
+          },
+          {
+            label: 'Last week',
+            data: [168, 175, 160, 210, 198, 250, 230],
+            backgroundColor: 'rgba(19,17,14,.16)',
+            borderRadius: 6,
+            maxBarThickness: 16,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' as const, labels: { boxWidth: 10, font: { size: 10 }, usePointStyle: true } },
+        },
+        scales: {
+          x: { ...axisSoft, ticks: { font: { size: 10 } }, stacked: false },
+          y: {
+            ...axisSoft,
+            ticks: { font: { size: 10 } },
+            stacked: false,
+          },
+        },
+      },
+    } as any);
+
+    this.cs.make(this.payMixCanvas.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: ['UPI', 'Cash', 'Card / net', 'Wallet'],
+        datasets: [
+          {
+            data: [62, 18, 12, 8],
+            backgroundColor: [`rgba(${OR_RGB},.9)`, GR, BL, PU],
+            borderColor: cream,
+            borderWidth: 2,
+            hoverOffset: 5,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '54%',
+        plugins: {
+          legend: { position: 'right' as const, labels: { boxWidth: 8, font: { size: 9 }, padding: 8 } },
+        },
+      },
+    } as any);
+
+    this.cs.make(this.cohortCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: [...DAYS],
+        datasets: [
+          {
+            label: 'New',
+            data: [22, 28, 19, 35, 30, 40, 36],
+            backgroundColor: BL,
+            stack: 'c',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
+            maxBarThickness: 22,
+          },
+          {
+            label: 'Repeat',
+            data: [160, 170, 135, 199, 182, 236, 211],
+            backgroundColor: GR,
+            stack: 'c',
+            borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 4, bottomRight: 4 },
+            maxBarThickness: 22,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' as const, labels: { boxWidth: 10, font: { size: 9 } } },
+        },
+        scales: {
+          x: { stacked: true, ...axisSoft, ticks: { font: { size: 9 } } },
+          y: { stacked: true, ...axisSoft, ticks: { font: { size: 9 } } },
+        },
+      },
+    } as any);
+
+    this.cs.make(this.csatCanvas.nativeElement, {
+      type: 'line',
+      data: {
+        labels: [...DAYS],
+        datasets: [
+          {
+            label: 'CSAT',
+            data: [4.65, 4.7, 4.68, 4.72, 4.7, 4.74, 4.72],
+            borderColor: AM,
+            backgroundColor: 'rgba(245, 158, 11,.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ...axisSoft, ticks: { font: { size: 9 } } },
+          y: {
+            ...axisSoft,
+            min: 4.5,
+            max: 4.85,
+            ticks: { font: { size: 9 }, callback: (v: string | number) => Number(v).toFixed(2) },
+          },
+        },
+      },
+    } as any);
+
+    this.cs.make(this.qualityCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: [...DAYS],
+        datasets: [
+          {
+            label: 'No-show',
+            data: [3, 2, 4, 1, 2, 3, 2],
+            backgroundColor: '#EF4444',
+            borderRadius: 4,
+            maxBarThickness: 10,
+          },
+          {
+            label: 'Cancel',
+            data: [8, 6, 7, 9, 5, 8, 7],
+            backgroundColor: `rgba(${OR_RGB},.65)`,
+            borderRadius: 4,
+            maxBarThickness: 10,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' as const, labels: { boxWidth: 10, font: { size: 9 } } },
+        },
+        scales: {
+          x: { ...axisSoft, ticks: { font: { size: 9 } } },
+          y: { ...axisSoft, ticks: { font: { size: 9 }, stepSize: 2 } },
+        },
+      },
+    } as any);
+
+    this.cs.make(this.zoneGmvCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: ['Tatibandh', 'Civil Ln.', 'Shankar Ng.', 'Pandri'],
+        datasets: [
+          {
+            label: 'GMV (₹K)',
+            data: [148, 112, 86, 52],
+            backgroundColor: [
+              `rgba(${OR_RGB},.85)`,
+              `rgba(${OR_RGB},.55)`,
+              `rgba(${OR_RGB},.38)`,
+              `rgba(${OR_RGB},.22)`,
+            ],
+            borderRadius: 8,
+            barThickness: 18,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y' as const,
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            ...axisSoft,
+            ticks: { font: { size: 10 }, callback: (v: string | number) => '₹' + v + 'K' },
+          },
+          y: { ...axisSoft, ticks: { font: { size: 10 } } },
+        },
+      },
+    } as any);
+
+    this.cs.make(this.demandPolarCanvas.nativeElement, {
+      type: 'polarArea',
+      data: {
+        labels: ['Tatibandh', 'Civil Ln.', 'Shankar', 'Pandri', 'Outskirts'],
+        datasets: [
+          {
+            data: [88, 72, 58, 42, 38],
+            backgroundColor: [
+              `rgba(${OR_RGB},.55)`,
+              `rgba(${OR_RGB},.4)`,
+              'rgba(28,140,82,.45)',
+              'rgba(59,130,246,.4)',
+              'rgba(124,58,237,.35)',
+            ],
+            borderWidth: 1,
+            borderColor: cream,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right' as const, labels: { boxWidth: 8, font: { size: 9 }, padding: 6 } },
+        },
+        scales: {
+          r: {
+            grid: { color: 'rgba(19,17,14,.07)' },
+            ticks: { display: false, backdropColor: 'transparent' },
+            pointLabels: { font: { size: 10 } },
+          },
+        },
+      },
+    } as any);
   }
 
   setRange(r: DateRange): void {
     this.range.set(r);
     const d = RANGES[r];
-    if (!this.mainChart) return;
-    this.mainChart.data.labels = [...d.labels];
-    this.mainChart.data.datasets[0].data = [...d.rev];
-    this.mainChart.data.datasets[1].data = [...d.book];
-    this.mainChart.update('active');
+    if (this.mainChart) {
+      this.mainChart.data.labels = [...d.labels];
+      this.mainChart.data.datasets[0].data = [...d.rev];
+      this.mainChart.data.datasets[1].data = [...d.book];
+      this.mainChart.update('active');
+    }
+    this.updateBizMarginChartData(r);
   }
 
   exportSnapshot(): void {

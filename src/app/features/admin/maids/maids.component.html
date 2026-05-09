@@ -1,70 +1,240 @@
-<div class="page-header"><div class="page-title">Maids Management 👩</div><div class="page-sub">Verified workers aur pending applications</div></div>
-
-<div class="mini-stats">
-  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">186</div><div class="ms-lbl">Active Maids</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#B45309">14</div><div class="ms-lbl">Pending Verification</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">3</div><div class="ms-lbl">Suspended</div></div>
-</div>
-
-<div class="table-card">
-  <div class="table-hdr">
-    <div class="table-title">All Maids</div>
-    <div class="table-actions">
-      <select class="filter-select"><option>All Status</option><option>Active</option><option>Pending</option><option>Suspended</option></select>
-      <input class="search-inp" placeholder="🔍 Search maids...">
-      <button class="btn-sm primary" (click)="router.navigateByUrl('/admin/add-maid')">+ Add Maid</button>
+<div class="adm-page md-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Workforce</p>
+      <h1 class="adm-title">Maids</h1>
+      <p class="adm-sub">Roster, KYC, zones, ratings, aur payouts — filters + search; charts fleet health (demo).</p>
     </div>
-  </div>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr><th>Maid</th><th>Phone</th><th>Zone</th><th>Bookings</th><th>Rating</th><th>Earnings</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av or">S</div><div><div class="av-name">Savita Devi</div><div class="av-sub">Aadhaar ✓</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-00001</td>
-          <td>Tatibandh</td>
-          <td style="font-weight:700">87</td>
-          <td><span class="star-r">★★★★★</span> 4.9</td>
-          <td style="color:var(--g);font-weight:700">₹21,750</td>
-          <td><span class="badge badge-green">Active</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Profile opened','👁')">👁</div><div class="act-btn" (click)="toast.show('Edited!','✏️')">✏️</div><div class="act-btn danger" (click)="toast.show('Suspended','⛔')">⛔</div></div></td>
-        </tr>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av gr">P</div><div><div class="av-name">Priya Yadav</div><div class="av-sub">Aadhaar ✓</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-00002</td>
-          <td>Civil Lines</td>
-          <td style="font-weight:700">79</td>
-          <td><span class="star-r">★★★★★</span> 4.8</td>
-          <td style="color:var(--g);font-weight:700">₹19,750</td>
-          <td><span class="badge badge-green">Active</span></td>
-          <td><div class="act-btns"><div class="act-btn">👁</div><div class="act-btn">✏️</div></div></td>
-        </tr>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av" style="background:rgba(245,158,11,.1);color:#B45309">G</div><div><div class="av-name">Geeta Sahu</div><div class="av-sub">Pending</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-00099</td>
-          <td>Pandri</td>
-          <td style="color:var(--muted)">—</td>
-          <td style="color:var(--muted)">Not rated</td>
-          <td style="color:var(--muted)">₹0</td>
-          <td><span class="badge badge-amber">Pending</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Verified! ✅','✅')">✅</div><div class="act-btn danger" (click)="toast.show('Rejected','❌')">✕</div></div></td>
-        </tr>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av re">D</div><div><div class="av-name">Durga Bai</div><div class="av-sub">Suspended</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-00088</td>
-          <td>Shankar Nagar</td>
-          <td style="font-weight:700">12</td>
-          <td style="color:#EF4444">★★☆☆☆ 2.1</td>
-          <td style="color:var(--muted)">₹3,000</td>
-          <td><span class="badge badge-red">Suspended</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Reinstated!','✅')">♻️</div><div class="act-btn danger" (click)="toast.show('Removed','🗑️')">🗑️</div></div></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Roster snapshot · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Roster CSV queued','📥')">Export roster</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="router.navigateByUrl('/admin/add-maid')">+ Add maid</button>
+    </div>
+  </header>
 
-<div class="two-col">
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Maid Onboarding Trend</div></div><div style="position:relative;height:190px;"><canvas #maidTrendChart></canvas></div></div>
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Rating Distribution</div></div><div style="position:relative;height:190px;"><canvas #ratingChart></canvas></div></div>
+  <section class="adm-kpi-grid" aria-label="Maid KPIs">
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">👷</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ kpiActive() }}</span>
+        <span class="adm-kpi-lbl">Active on platform</span>
+        <span class="adm-kpi-hint">Taking bookings</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">📋</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ kpiPending() }}</span>
+        <span class="adm-kpi-lbl">Pending verification</span>
+        <span class="adm-kpi-hint">KYC / bank / training</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--red">
+      <span class="adm-kpi-ico" aria-hidden="true">⛔</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ kpiSuspended() }}</span>
+        <span class="adm-kpi-lbl">Suspended</span>
+        <span class="adm-kpi-hint">Review before reinstate</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">⭐</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ kpiAvgRating() }}</span>
+        <span class="adm-kpi-lbl">Avg fleet rating</span>
+        <span class="adm-kpi-hint">Rated maids only</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Maid directory</div>
+        <p class="table-hint">{{ filteredCount() }} of {{ totalRows }} · status + zone + search</p>
+      </div>
+      <div class="adm-toolbar adm-toolbar--stack">
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Status</span>
+          <div class="adm-seg" role="group" aria-label="Maid status">
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'all'" (click)="setStatus('all')">All</button>
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'active'" (click)="setStatus('active')">Active</button>
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'pending'" (click)="setStatus('pending')">Pending</button>
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'suspended'" (click)="setStatus('suspended')">Suspended</button>
+          </div>
+        </div>
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Zone</span>
+          <div class="adm-seg adm-seg--compact" role="group" aria-label="Zone">
+            <button type="button" class="adm-seg-btn" [class.active]="zoneFilter() === 'all'" (click)="setZone('all')">All</button>
+            @for (z of zones(); track z) {
+              <button type="button" class="adm-seg-btn" [class.active]="zoneFilter() === z" (click)="setZone(z)">{{ z }}</button>
+            }
+          </div>
+        </div>
+        <div class="adm-search-wrap adm-search-wrap--wide">
+          <span class="adm-search-ico" aria-hidden="true">🔍</span>
+          <input class="adm-search-inp" type="search" placeholder="ID, name, phone, zone, UPI, skills…" [value]="searchQuery()" (input)="onSearch($event)" autocomplete="off">
+        </div>
+      </div>
+    </div>
+    @if (filteredCount() === 0) {
+      <div class="adm-empty">
+        <div class="adm-empty-ico" aria-hidden="true">👷</div>
+        <p class="adm-empty-title">Koi maid match nahi</p>
+        <p class="adm-empty-sub">Status, zone, ya search adjust karo.</p>
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setStatus('all'); setZone('all')">Reset filters</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--adm">
+          <thead>
+            <tr>
+              <th>Maid</th>
+              <th>Worker ID</th>
+              <th>Phone</th>
+              <th>Zone</th>
+              <th>Skills</th>
+              <th>Bookings</th>
+              <th>Rating</th>
+              <th>MTD earnings</th>
+              <th>Last active</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredRows(); track r.id) {
+              <tr>
+                <td>
+                  <div class="av-cell">
+                    <div class="tbl-av" [class.or]="r.av === 'or'" [class.gr]="r.av === 'gr'" [class.bl]="r.av === 'bl'" [class.pu]="r.av === 'pu'" [class.re]="r.av === 're'">{{ r.init }}</div>
+                    <div>
+                      <div class="av-name">{{ r.name }}</div>
+                      <div class="av-sub">{{ r.kycLine }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="adm-id-chip">{{ r.id }}</span></td>
+                <td><span class="adm-mono">{{ r.phone }}</span></td>
+                <td><span class="adm-zone-tag">{{ r.zone }}</span></td>
+                <td><span class="adm-service-pill">{{ r.skills }}</span></td>
+                <td class="adm-num">{{ r.bookings ?? '—' }}</td>
+                <td [style.color]="starTone(r.rating)">{{ starLine(r.rating) }}</td>
+                <td class="adm-amt" [style.color]="earningsColor(r.earningsTone)">{{ r.earnings }}</td>
+                <td class="adm-last" [style.color]="r.lastActive === '—' ? 'var(--muted)' : 'var(--ink2)'">{{ r.lastActive }}</td>
+                <td>
+                  @switch (r.status) {
+                    @case ('active') { <span class="badge badge-green">Active</span> }
+                    @case ('pending') { <span class="badge badge-amber">Pending</span> }
+                    @case ('suspended') { <span class="badge badge-red">Suspended</span> }
+                  }
+                </td>
+                <td>
+                  <div class="act-btns">
+                    <div class="act-btn" (click)="toast.show('Profile · ' + r.name,'👁')" title="Profile">👁</div>
+                    <div class="act-btn" (click)="toast.show('Edit worker · ' + r.id,'✏️')" title="Edit">✏️</div>
+                    @if (r.status === 'pending') {
+                      <div class="act-btn" (click)="toast.show('KYC approved · ' + r.name,'✅')" title="Approve">✅</div>
+                      <div class="act-btn danger" (click)="toast.show('Application rejected','❌')" title="Reject">✕</div>
+                    } @else if (r.status === 'suspended') {
+                      <div class="act-btn" (click)="toast.show('Reinstated · ' + r.name,'♻️')" title="Reinstate">♻️</div>
+                      <div class="act-btn danger" (click)="toast.show('Removed from roster','🗑️')" title="Remove">🗑️</div>
+                    } @else {
+                      <div class="act-btn" (click)="toast.show('Payout rail · ' + r.upi,'💸')" title="Payout">💸</div>
+                      <div class="act-btn danger" (click)="toast.show('Suspended · ' + r.name,'⛔')" title="Suspend">⛔</div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <div class="adm-split" style="margin-top:18px">
+    <div class="adm-charts-stack">
+      <div class="adm-charts-row" style="margin-bottom:0">
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">New maids onboarded</h2>
+              <p class="chart-sub-lbl">Monthly trend · HR + referrals</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-line"><canvas #maidTrendChart></canvas></div>
+        </section>
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">Rating distribution</h2>
+              <p class="chart-sub-lbl">Fleet · last 90 days (demo)</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-line" style="min-height:200px"><canvas #ratingChart></canvas></div>
+        </section>
+      </div>
+      <div class="adm-charts-row adm-charts-row--3">
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">Skill mix (active)</h2>
+              <p class="chart-sub-lbl">Primary service tags · ops planning</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar chart-canvas-wrap--adm-donut"><canvas #maidSkillChart></canvas></div>
+        </section>
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">Active by zone</h2>
+              <p class="chart-sub-lbl">Headcount · geo roster (demo)</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #maidZoneChart></canvas></div>
+        </section>
+        <section class="chart-card chart-card--adm">
+          <div class="chart-hdr chart-hdr--adm">
+            <div>
+              <h2 class="chart-title">Load &amp; punctuality</h2>
+              <p class="chart-sub-lbl">Weekly · jobs/maid vs on-time %</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #maidUtilChart></canvas></div>
+        </section>
+      </div>
+    </div>
+    <aside class="adm-aside" aria-label="Verification queue">
+      <h3 class="adm-aside-title">Verification &amp; training</h3>
+      <p class="adm-aside-sub">Pending docs aur L2 slots — demo queue.</p>
+      <ul class="adm-queue-list">
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Geeta Sahu · Pandri</span>
+            <span class="adm-queue-meta">Bank proof + UPI name match</span>
+          </div>
+          <span class="adm-queue-pill">KYC</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Anita S. · Mana</span>
+            <span class="adm-queue-meta">Video KYC · tomorrow 11 AM</span>
+          </div>
+          <span class="adm-queue-pill adm-queue-pill--soft">Slot</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Deep clean L2 batch</span>
+            <span class="adm-queue-meta">6 maids · Sat workshop</span>
+          </div>
+        </li>
+      </ul>
+      <button type="button" class="adm-aside-btn" (click)="toast.show('Bulk invite SMS (demo)','📣')">Send bulk doc reminder</button>
+    </aside>
+  </div>
 </div>

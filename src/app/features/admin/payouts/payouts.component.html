@@ -1,39 +1,167 @@
-<div class="page-header"><div class="page-title">Payouts 💸</div><div class="page-sub">Worker payments aur processing</div></div>
-
-<div class="mini-stats">
-  <div class="mini-stat"><div class="ms-val" style="color:#B45309">₹48,200</div><div class="ms-lbl">Pending This Week</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">₹3,42,000</div><div class="ms-lbl">Paid This Month</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#1D4ED8">186</div><div class="ms-lbl">Workers to Pay</div></div>
-</div>
-
-<div class="table-card">
-  <div class="table-hdr">
-    <div class="table-title">Pending Payouts</div>
-    <div class="table-actions">
-      <button class="btn-sm primary" (click)="toast.show('Batch payout initiated! ₹48,200 processing','💸')">Pay All (₹48,200)</button>
+<div class="adm-page po-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Finance</p>
+      <h1 class="adm-title">Payouts</h1>
+      <p class="adm-sub">Worker queue, KYC holds, UPI batch — filters + search + row actions (demo).</p>
     </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">T+2 cycle · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Reconciled with ledger','📒')">Reconcile</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Batch payout initiated!','💸')">Pay all pending</button>
+    </div>
+  </header>
+
+  <section class="adm-kpi-grid" aria-label="Payout KPIs">
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">⏳</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹48,200</span>
+        <span class="adm-kpi-lbl">Pending this week</span>
+        <span class="adm-kpi-hint">3 batches · auto-run Fri</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">✅</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹3,42,000</span>
+        <span class="adm-kpi-lbl">Paid this month</span>
+        <span class="adm-kpi-hint">186 workers settled</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--blue">
+      <span class="adm-kpi-ico" aria-hidden="true">👷</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ totalRows }}</span>
+        <span class="adm-kpi-lbl">In this view</span>
+        <span class="adm-kpi-hint">Demo worker rows</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">⚡</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">99.2%</span>
+        <span class="adm-kpi-lbl">Success rate</span>
+        <span class="adm-kpi-hint">UPI + bank rails</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="adm-split">
+    <div class="table-card table-card--adm">
+      <div class="table-hdr table-hdr--adm">
+        <div class="table-hdr-text">
+          <div class="table-title">Payout queue</div>
+          <p class="table-hint">{{ filteredCount() }} of {{ totalRows }} rows · status + search</p>
+        </div>
+        <div class="adm-toolbar adm-toolbar--stack">
+          <div class="adm-toolbar-row">
+            <span class="adm-filter-label">Status</span>
+            <div class="adm-seg" role="group" aria-label="Payout status">
+              <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'all'" (click)="setFilter('all')">All</button>
+              <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'ready'" (click)="setFilter('ready')">Ready</button>
+              <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'pending'" (click)="setFilter('pending')">Pending</button>
+              <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'held'" (click)="setFilter('held')">Held</button>
+            </div>
+          </div>
+          <div class="adm-search-wrap adm-search-wrap--wide">
+            <span class="adm-search-ico" aria-hidden="true">🔍</span>
+            <input class="adm-search-inp" type="search" placeholder="ID, name, UPI…" [value]="searchQuery()" (input)="onSearch($event)" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      @if (filteredCount() === 0) {
+        <div class="adm-empty">
+          <div class="adm-empty-ico" aria-hidden="true">💸</div>
+          <p class="adm-empty-title">Koi row match nahi</p>
+          <p class="adm-empty-sub">Filters reset karke dubara try karo.</p>
+          <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setFilter('all')">Reset</button>
+        </div>
+      } @else {
+        <div class="table-scroll">
+          <table class="data-table data-table--adm">
+            <thead>
+              <tr>
+                <th>Worker</th>
+                <th>ID</th>
+                <th>Bookings</th>
+                <th>Due</th>
+                <th>Last paid</th>
+                <th>UPI</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of filteredRows(); track r.id) {
+                <tr>
+                  <td>
+                    <div class="av-cell">
+                      <div class="tbl-av" [class.or]="r.av === 'or'" [class.gr]="r.av === 'gr'" [class.bl]="r.av === 'bl'">{{ r.init }}</div>
+                      <div class="av-name">{{ r.name }}</div>
+                    </div>
+                  </td>
+                  <td><span class="adm-id-chip">{{ r.id }}</span></td>
+                  <td class="adm-num">{{ r.bookings }}</td>
+                  <td class="adm-amt" style="color:var(--g)">{{ r.amount }}</td>
+                  <td class="adm-last" style="color:var(--muted)">{{ r.lastPaid }}</td>
+                  <td><span class="adm-mono">{{ r.upi }}</span></td>
+                  <td>
+                    @switch (r.status) {
+                      @case ('ready') { <span class="badge badge-green">Ready</span> }
+                      @case ('pending') { <span class="badge badge-amber">Pending</span> }
+                      @case ('held') { <span class="badge badge-red">Held</span> }
+                    }
+                    @if (r.riskNote) {
+                      <div class="adm-risk-note">{{ r.riskNote }}</div>
+                    }
+                  </td>
+                  <td>
+                    <div class="act-btns" style="flex-wrap:wrap">
+                      @if (r.status === 'held') {
+                        <button type="button" class="btn-sm" (click)="toast.show('KYC desk opened (demo)','📎')">Fix KYC</button>
+                      } @else {
+                        <button type="button" class="btn-sm primary" (click)="payRow(r)">Pay now</button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <aside class="adm-aside" aria-label="Payout runbook">
+      <h3 class="adm-aside-title">Runbook</h3>
+      <p class="adm-aside-sub">Friday 6 PM auto-batch · manual override yahan se (demo).</p>
+      <ul class="adm-queue-list">
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Held · UPI mismatch</span>
+            <span class="adm-queue-meta">2 workers · ops callback</span>
+          </div>
+          <span class="adm-queue-pill">2</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">NPCI window</span>
+            <span class="adm-queue-meta">Best success 10AM–4PM</span>
+          </div>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Ledger sync</span>
+            <span class="adm-queue-meta">Last run · 12 min ago</span>
+          </div>
+          <span class="adm-queue-pill adm-queue-pill--soft">OK</span>
+        </li>
+      </ul>
+      <button type="button" class="adm-aside-btn" (click)="toast.show('Slack #payouts pinged','📣')">Notify finance</button>
+    </aside>
   </div>
-  <table class="data-table">
-    <thead><tr><th>Maid</th><th>Bookings</th><th>Amount Due</th><th>Last Paid</th><th>UPI ID</th><th>Action</th></tr></thead>
-    <tbody>
-      <tr>
-        <td><div class="av-cell"><div class="tbl-av or">S</div><div class="av-name">Savita Devi</div></div></td>
-        <td>22</td><td style="color:var(--g);font-weight:700">₹5,500</td>
-        <td style="color:var(--muted)">Mar 31</td><td style="color:var(--muted)">savita&#64;upi</td>
-        <td><button class="btn-sm primary" (click)="toast.show('₹5,500 sent to Savita!','✅')">Pay Now</button></td>
-      </tr>
-      <tr>
-        <td><div class="av-cell"><div class="tbl-av gr">P</div><div class="av-name">Priya Yadav</div></div></td>
-        <td>19</td><td style="color:var(--g);font-weight:700">₹4,750</td>
-        <td style="color:var(--muted)">Mar 31</td><td style="color:var(--muted)">priya&#64;upi</td>
-        <td><button class="btn-sm primary" (click)="toast.show('₹4,750 sent to Priya!','✅')">Pay Now</button></td>
-      </tr>
-      <tr>
-        <td><div class="av-cell"><div class="tbl-av bl">R</div><div class="av-name">Rekha Singh</div></div></td>
-        <td>17</td><td style="color:var(--g);font-weight:700">₹4,250</td>
-        <td style="color:var(--muted)">Mar 31</td><td style="color:var(--muted)">rekha&#64;upi</td>
-        <td><button class="btn-sm primary" (click)="toast.show('₹4,250 sent to Rekha!','✅')">Pay Now</button></td>
-      </tr>
-    </tbody>
-  </table>
 </div>

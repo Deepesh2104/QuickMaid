@@ -29,25 +29,18 @@ export class SupportComponent implements AfterViewInit {
   readonly toast = inject(ToastService);
 
   // Direct passthroughs for template parity ----------------------------------
-  get noteMode() { return this.facade.noteMode; }
   get soundOn() { return this.facade.soundOn; }
   get agentStatusIdx() { return this.facade.agentStatusIdx; }
   get msgSearchOpen() { return this.facade.msgSearchOpen; }
   get msgSearchQuery() { return this.facade.msgSearchQuery; }
   get msgSearchCount() { return this.facade.msgSearchCount; }
-  get emojiOpen() { return this.facade.emojiOpen; }
   get labelPickerOpen() { return this.facade.labelPickerOpen; }
-  get charCount() { return this.facade.charCount; }
-  get charCountColor() { return this.facade.charCountColor; }
   get inboxFilter() { return this.facade.inboxFilter; }
   get searchQuery() { return this.facade.searchQuery; }
   get bulkOpen() { return this.facade.bulkOpen; }
   get cannedOpen() { return this.facade.cannedOpen; }
   get analyticsOpen() { return this.facade.analyticsOpen; }
   get mergeOpen() { return this.facade.mergeOpen; }
-  get showResolveBanner() { return this.facade.showResolveBanner; }
-  get autoCloseBanner() { return this.facade.autoCloseBanner; }
-  get aiBarVisible() { return this.facade.aiBarVisible; }
   get inputText() { return this.facade.inputText; }
   get csatRating() { return this.facade.csatRating; }
   get csatLabel() { return this.facade.csatLabel; }
@@ -67,7 +60,6 @@ export class SupportComponent implements AfterViewInit {
   get ticketCountBadge() { return this.facade.ticketCountBadge; }
   get handlingCount() { return this.facade.handlingCount; }
   get renderedMessages() { return this.facade.renderedMessages; }
-  get aiText() { return this.facade.aiText; }
   get mergeSelectedId() { return this.facade.mergeSelectedId; }
   get mergeCandidates() { return this.facade.mergeCandidates; }
   get AGENT_STATUSES() { return this.facade.AGENT_STATUSES; }
@@ -107,7 +99,6 @@ export class SupportComponent implements AfterViewInit {
 
   onInputChange(text: string): void {
     this.inputText.set(text);
-    this.charCount.set(text.length);
     const el = this.chatInp?.nativeElement;
     if (el) {
       el.style.height = 'auto';
@@ -132,20 +123,6 @@ export class SupportComponent implements AfterViewInit {
     }
   }
 
-  insertQuickReply(txt: string): void {
-    this.facade.insertQuickReply(txt);
-    setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
-  }
-  useAi(): void {
-    this.facade.useAi();
-    setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
-  }
-  toggleNoteMode(): void { this.facade.toggleNoteMode(); }
-  toggleEmoji(): void { this.facade.toggleEmoji(); }
-  insertEmoji(e: string): void {
-    this.facade.insertEmoji(e);
-    setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
-  }
   toggleSound(): void { this.facade.toggleSound(); }
 
   cycleStatus(): void { this.facade.cycleStatus(); }

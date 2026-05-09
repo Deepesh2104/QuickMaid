@@ -219,47 +219,71 @@
     </div>
 
     <!-- CENTER: Chat -->
-    <div class="sp-chat">
+    <div class="sp-chat" [class.sp-chat--active]="!!ts.activeTicket()">
       @if (!ts.activeTicket()) {
-        <div class="chat-empty">
-          <div class="chat-empty-ico">💬</div>
-          <div class="chat-empty-txt">Ticket Select Karo</div>
-          <div class="chat-empty-sub">Left side se koi bhi ticket open karo</div>
+        <div class="sp-chat-zero">
+          <div class="sp-chat-zero-card">
+            <div class="sp-chat-zero-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h2 class="sp-chat-zero-title">Conversation</h2>
+            <p class="sp-chat-zero-lead">Inbox se ticket select karein — yahan pura thread, SLA context, aur reply tools ek panel mein milenge.</p>
+            <ul class="sp-chat-zero-list">
+              <li><span class="sp-chat-zero-k">Search</span> In-thread message search</li>
+              <li><span class="sp-chat-zero-k">Canned</span> Saved replies modal</li>
+              <li><span class="sp-chat-zero-k">Analytics</span> Team overlay (header)</li>
+            </ul>
+          </div>
         </div>
       } @else {
-        <div>
-          <div class="sp-chat-hdr">
+        <div class="sp-chat-top">
+          <header class="sp-chat-head sp-chat-head--compact">
             <div class="sp-chat-hdr-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
             <div class="sp-chat-hdr-info">
               <div class="sp-chat-hdr-name">{{ ts.activeTicket()!.name }}</div>
               <div class="sp-chat-hdr-meta">
-                <span class="online-dot"></span>
-                <span>Online · {{ ts.activeTicket()!.plan }} Plan · {{ ts.activeTicket()!.zone }}</span>
+                <span class="sp-chat-status-dot" aria-hidden="true"></span>
+                <span>Online</span>
+                <span class="sp-chat-meta-sep">·</span>
+                <span>{{ ts.activeTicket()!.plan }} plan</span>
+                <span class="sp-chat-meta-sep">·</span>
+                <span>{{ ts.activeTicket()!.zone }}</span>
               </div>
             </div>
-            <div class="sp-chat-actions">
-              <div class="sp-chat-act-btn" (click)="toggleMsgSearch()" title="Search messages">🔍</div>
-              <div class="sp-chat-act-btn" (click)="toast.show('Calling customer...','📞')" title="Call">📞</div>
-              <div class="sp-chat-act-btn" (click)="toast.show('Opening profile','👤')" title="Profile">👤</div>
-              <div class="sp-chat-act-btn" (click)="toast.show('Booking history','📋')" title="History">📋</div>
-              <button class="escalate-btn" (click)="escalate()">🚨 Escalate</button>
-              <button class="sp-status-pill" [class.open]="ts.activeTicket()!.status==='open'" [class.progress]="ts.activeTicket()!.status==='progress'" [class.resolved]="ts.activeTicket()!.status==='resolved'" (click)="cycleStatus()">
-                {{ ts.activeTicket()!.status==='open' ? '● Open' : ts.activeTicket()!.status==='progress' ? '⚡ In Progress' : '✅ Resolved' }}
-              </button>
+            <div class="sp-chat-head-inline-end">
+              <div class="sp-chat-tool-group sp-chat-tool-group--compact">
+                <button type="button" class="sp-icon-btn" (click)="toggleMsgSearch()" title="Search in thread" aria-label="Search in thread">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                </button>
+                <button type="button" class="sp-icon-btn" (click)="toast.show('Calling customer...','📞')" title="Call" aria-label="Call customer">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </button>
+                <button type="button" class="sp-icon-btn" (click)="toast.show('Opening profile','👤')" title="Profile" aria-label="Customer profile">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                <button type="button" class="sp-icon-btn" (click)="toast.show('Booking history','📋')" title="History" aria-label="Booking history">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                </button>
+              </div>
+              <div class="sp-chat-head-cta sp-chat-head-cta--compact">
+                <button type="button" class="sp-btn-ghost-danger" (click)="escalate()">Escalate</button>
+                <button type="button" class="sp-status-pill" [class.open]="ts.activeTicket()!.status==='open'" [class.progress]="ts.activeTicket()!.status==='progress'" [class.resolved]="ts.activeTicket()!.status==='resolved'" (click)="cycleStatus()">
+                  {{ ts.activeTicket()!.status==='open' ? 'Open' : ts.activeTicket()!.status==='progress' ? 'In progress' : 'Resolved' }}
+                </button>
+              </div>
             </div>
-          </div>
+          </header>
 
-          <!-- Labels -->
-          <div style="padding:8px 16px;border-bottom:1px solid var(--border2);background:var(--white);position:relative;">
+          <div class="sp-chat-labels-row sp-chat-labels-row--airy sp-chat-labels-row--compact">
             <div class="ticket-labels-wrap">
               @for (l of activeLabels(); track l.name) {
-                <span class="tlabel" [style.background]="l.color + '18'" [style.color]="l.color" [style.border]="'1px solid ' + l.color + '30'">
-                  {{ l.name }} <span class="tlabel-x" (click)="removeLabel(l.name)">✕</span>
+                <span class="tlabel tlabel--pro" [style.background]="l.color + '14'" [style.color]="l.color" [style.border-color]="l.color + '35'">
+                  {{ l.name }} <span class="tlabel-x" (click)="removeLabel(l.name)" aria-label="Remove label">×</span>
                 </span>
               }
-              <button class="add-label-btn" (click)="toggleLabelPicker($event)">+ Add Label</button>
+              <button type="button" class="add-label-btn add-label-btn--pro" (click)="toggleLabelPicker($event)">+ Label</button>
               <div class="label-picker" [class.open]="labelPickerOpen()">
-                <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Labels</div>
+                <div class="label-picker-hdr">Labels</div>
                 @for (lbl of LABEL_PRESETS; track lbl.name) {
                   <div class="label-option" (click)="addLabel(lbl.name, lbl.color)">
                     <div class="label-dot" [style.background]="lbl.color"></div>{{ lbl.name }}
@@ -269,122 +293,81 @@
             </div>
           </div>
 
-          <!-- Search Bar -->
-          <div class="msg-search-bar" [class.open]="msgSearchOpen()">
-            <span style="font-size:13px;">🔍</span>
-            <input class="msg-search-inp" placeholder="Search in this conversation..." [ngModel]="msgSearchQuery()" (ngModelChange)="onSearchMessages($event)">
+          <div class="msg-search-bar msg-search-bar--pro" [class.open]="msgSearchOpen()">
+            <span class="msg-search-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            </span>
+            <input class="msg-search-inp" placeholder="Search in this conversation…" [ngModel]="msgSearchQuery()" (ngModelChange)="onSearchMessages($event)">
             <span class="msg-search-count">{{ msgSearchCount() }}</span>
-            <button class="msg-search-close" (click)="closeMsgSearch()">✕</button>
+            <button type="button" class="msg-search-close" (click)="closeMsgSearch()" aria-label="Close search">×</button>
           </div>
         </div>
 
-        <!-- Chat body -->
-        <div class="sp-chat-body" #chatBody>
-          @for (item of renderedMessages(); track $index) {
-            @if (item.kind === 'sep') {
-              <div class="chat-day-sep"><span>{{ item.day }}</span></div>
-            } @else if (item.msg.from === 'system') {
-              <div class="chat-msg system-msg"><div class="msg-system-bubble">🔔 {{ item.msg.text }}</div></div>
-            } @else if (item.msg.from === 'agent') {
-              <div class="chat-msg outgoing">
-                <div class="msg-bubble">
-                  <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
-                  <span class="msg-meta">{{ item.msg.time }} <span class="msg-status">✓✓</span></span>
+        <div class="sp-chat-body sp-chat-body--premium sp-chat-body--pro sp-chat-body--wa" #chatBody>
+          <div class="sp-chat-messages-stack">
+            @for (item of renderedMessages(); track $index) {
+              @if (item.kind === 'sep') {
+                <div class="chat-day-sep"><span>{{ item.day }}</span></div>
+              } @else if (item.msg.from === 'system') {
+                <div class="chat-msg system-msg"><div class="msg-system-bubble">{{ item.msg.text }}</div></div>
+              } @else if (item.msg.from === 'agent') {
+                <div class="chat-msg outgoing">
+                  <div class="msg-bubble">
+                    <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                    <span class="msg-meta">{{ item.msg.time }} <span class="msg-status">✓✓</span></span>
+                  </div>
+                  <div class="msg-av" style="background:var(--or-g);color:#fff">A</div>
                 </div>
-                <div class="msg-av" style="background:var(--or-g);color:#fff">A</div>
-              </div>
-            } @else if (item.msg.from === 'img') {
-              <div class="chat-msg incoming">
-                <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
-                <div class="msg-bubble">
-                  <div class="msg-img">🖼️ Photo</div>
-                  <span class="msg-text">Broken vase photo</span>
-                  <span class="msg-meta">{{ item.msg.time }}</span>
-                </div>
-              </div>
-            } @else {
-              <div class="chat-msg incoming">
-                <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
-                <div class="msg-bubble">
-                  <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
-                  <span class="msg-meta">{{ item.msg.time }}</span>
-                </div>
-              </div>
-            }
-          }
-          @if (ts.activeTicket() && ts.activeTicket()!.status !== 'resolved') {
-            <div class="typing-indicator">
-              <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
-              <div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
-              <span class="typing-lbl">typing...</span>
-            </div>
-          }
-        </div>
-
-        <!-- Input -->
-        <div>
-          <div class="sp-chat-input-area">
-            <div class="composer-notices">
-              <div class="composer-notice warn" [class.show]="autoCloseBanner()">
-                <span>Auto-close in 23h 14m if customer does not reply</span>
-                <button type="button" (click)="autoCloseBanner.set(false)" aria-label="Dismiss auto-close notice">✕</button>
-              </div>
-
-              @if (showResolveBanner()) {
-                <div class="composer-notice success show">
-                  <span>Issue looks resolved</span>
-                  <button type="button" (click)="resolveTicket()">Resolve</button>
-                </div>
-              }
-
-              @if (aiBarVisible()) {
-                <div class="composer-notice ai show">
-                  <span>{{ aiText() }}</span>
-                  <button type="button" (click)="useAi()">Use</button>
-                  <button type="button" (click)="aiBarVisible.set(false)" aria-label="Dismiss suggestion">✕</button>
-                </div>
-              }
-            </div>
-
-            <div class="quick-replies">
-              <span class="quick-replies-label">Quick replies</span>
-              <button type="button" class="qr-chip" (click)="insertQuickReply('👋 Namaskar! Kaise madad karein?')">Greeting</button>
-              <button type="button" class="qr-chip" (click)="insertQuickReply('🔄 Backup maid assign ho rahi hai')">Backup maid</button>
-              <button type="button" class="qr-chip" (click)="insertQuickReply('💸 Refund 24hrs mein process hoga')">Refund update</button>
-              <button type="button" class="qr-chip" (click)="insertQuickReply('✅ Issue resolve ho gaya?')">Resolve check</button>
-            </div>
-
-            <div class="input-row professional-composer">
-              <div class="chat-tools">
-                <div class="chat-tool-btn" (click)="toggleEmoji()" title="Emoji">
-                  😊
-                  <div class="emoji-picker" [class.open]="emojiOpen()">
-                    @for (e of ['😊','👋','🙏','✅','❌','💰','🔄','📞','⏰','🏠','👩','⭐','💬','📋','🎁','🚨']; track e) {
-                      <button class="emoji-btn" (click)="insertEmoji(e)">{{ e }}</button>
-                    }
+              } @else if (item.msg.from === 'img') {
+                <div class="chat-msg incoming">
+                  <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+                  <div class="msg-bubble">
+                    <div class="msg-img">🖼️ Photo</div>
+                    <span class="msg-text">Broken vase photo</span>
+                    <span class="msg-meta">{{ item.msg.time }}</span>
                   </div>
                 </div>
-                <button type="button" class="chat-tool-btn" (click)="toast.show('File attach karo (max 5MB)','📎')" title="Attach">📎</button>
-                <button type="button" class="chat-tool-btn" (click)="toast.show('Screenshot attached','🖼️')" title="Image">🖼️</button>
+              } @else {
+                <div class="chat-msg incoming">
+                  <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+                  <div class="msg-bubble">
+                    <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                    <span class="msg-meta">{{ item.msg.time }}</span>
+                  </div>
+                </div>
+              }
+            }
+            @if (ts.activeTicket() && ts.activeTicket()!.status !== 'resolved') {
+              <div class="typing-indicator">
+                <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+                <div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+                <span class="typing-lbl">typing...</span>
               </div>
-              <div class="chat-inp-wrap">
-                <textarea class="chat-inp" #chatInp rows="1"
-                          placeholder="{{ noteMode() ? 'Internal note (not visible to customer)...' : 'Message likho... (Enter to send)' }}"
-                          [style.background]="noteMode() ? 'rgba(245,158,11,.06)' : 'var(--cream2)'"
-                          [style.borderColor]="noteMode() ? 'rgba(245,158,11,.4)' : 'var(--border2)'"
-                          [ngModel]="inputText()" (ngModelChange)="onInputChange($event)"
-                          (keydown)="handleEnter($event)"></textarea>
-              </div>
-              <button class="note-toggle-btn composer-note-btn" [class.active]="noteMode()" (click)="toggleNoteMode()">Internal</button>
-              <button class="send-btn" (click)="sendMessage()" title="Send">➤</button>
-            </div>
-
-            <div class="composer-footer">
-              <span>{{ noteMode() ? 'Internal note enabled. Customer cannot see this.' : 'Enter to send. Shift + Enter for new line.' }}</span>
-              <span class="char-count" [style.color]="charCountColor()">{{ charCount() }} / 500</span>
-            </div>
+            }
           </div>
         </div>
+
+        <footer class="sp-chat-foot sp-chat-foot--minimal">
+          <div class="sp-chat-input-area sp-composer-minimal">
+            <div class="sp-compose-panel sp-compose-panel--minimal">
+              <textarea class="chat-inp sp-compose-textarea sp-compose-textarea--minimal" #chatInp rows="1"
+                        placeholder="Reply likho… Enter bheje, Shift+Enter nayi line"
+                        [ngModel]="inputText()" (ngModelChange)="onInputChange($event)"
+                        (keydown)="handleEnter($event)"></textarea>
+              <div class="sp-compose-minimal-actions">
+                <div class="sp-compose-minimal-tools">
+                  <button type="button" class="sp-compose-tool sp-compose-media" (click)="toast.show('Photo chuno (demo)','🖼️')" title="Gallery" aria-label="Add photo">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  </button>
+                  <button type="button" class="sp-compose-tool sp-compose-files" (click)="toast.show('File attach (max 5MB)','📎')" title="Files" aria-label="Attach file">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  </button>
+                </div>
+                <button type="button" class="send-btn send-btn--pro send-btn--minimal" (click)="sendMessage()" title="Send">Send</button>
+              </div>
+            </div>
+          </div>
+        </footer>
       }
     </div>
 

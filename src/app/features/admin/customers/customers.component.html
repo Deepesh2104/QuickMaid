@@ -1,66 +1,171 @@
-<div class="page-header"><div class="page-title">Customers 👥</div><div class="page-sub">Active, churned aur new customers</div></div>
-
-<div class="mini-stats">
-  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">892</div><div class="ms-lbl">Total Customers</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#1D4ED8">312</div><div class="ms-lbl">On Monthly Plan</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">48</div><div class="ms-lbl">Churned This Month</div></div>
-</div>
-
-<div class="table-card">
-  <div class="table-hdr">
-    <div class="table-title">Customer List</div>
-    <div class="table-actions">
-      <select class="filter-select"><option>All Plans</option><option>Instant</option><option>Monthly</option><option>Annual</option></select>
-      <input class="search-inp" placeholder="🔍 Search...">
+<div class="adm-page cu-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Growth</p>
+      <h1 class="adm-title">Customers</h1>
+      <p class="adm-sub">LTV, plans, churn risk — filter by plan, health, or search; chart shows acquisition vs churn.</p>
     </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">CRM snapshot · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Segment sync (demo)','🔄')">Sync segments</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Export queued','📥')">Export</button>
+    </div>
+  </header>
+
+  <section class="adm-kpi-grid adm-kpi-grid--5" aria-label="Customer KPIs">
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">👥</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">892</span>
+        <span class="adm-kpi-lbl">Total customers</span>
+        <span class="adm-kpi-hint">+127 last 90d</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--blue">
+      <span class="adm-kpi-ico" aria-hidden="true">📅</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">312</span>
+        <span class="adm-kpi-lbl">On recurring plan</span>
+        <span class="adm-kpi-hint">Monthly + annual</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--red">
+      <span class="adm-kpi-ico" aria-hidden="true">📉</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">48</span>
+        <span class="adm-kpi-lbl">Churned this month</span>
+        <span class="adm-kpi-hint">Win-back 12 sent</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">⭐</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">4.6</span>
+        <span class="adm-kpi-lbl">Avg CSAT (90d)</span>
+        <span class="adm-kpi-hint">Post-visit survey</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--muted">
+      <span class="adm-kpi-ico" aria-hidden="true">₹</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹3.1k</span>
+        <span class="adm-kpi-lbl">Avg LTV / active</span>
+        <span class="adm-kpi-hint">Blended demo</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Customer directory</div>
+        <p class="table-hint">{{ filteredCount() }} of {{ totalRows }} shown</p>
+      </div>
+      <div class="adm-toolbar adm-toolbar--stack">
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Plan</span>
+          <div class="adm-seg" role="group" aria-label="Filter by plan">
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'all'" (click)="setPlanFilter('all')">All</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'monthly'" (click)="setPlanFilter('monthly')">Monthly</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'annual'" (click)="setPlanFilter('annual')">Annual</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'instant'" (click)="setPlanFilter('instant')">Instant</button>
+          </div>
+        </div>
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Health</span>
+          <div class="adm-seg adm-seg--compact" role="group" aria-label="Filter by health">
+            <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'all'" (click)="setHealthFilter('all')">All</button>
+            <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'vip'" (click)="setHealthFilter('vip')">VIP</button>
+            <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'active'" (click)="setHealthFilter('active')">Active</button>
+            <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'at-risk'" (click)="setHealthFilter('at-risk')">At-risk</button>
+          </div>
+        </div>
+        <div class="adm-search-wrap adm-search-wrap--wide">
+          <span class="adm-search-ico" aria-hidden="true">🔍</span>
+          <input class="adm-search-inp" type="search" placeholder="Name, email, phone, zone…" [value]="searchQuery()" (input)="onSearchInput($event)" autocomplete="off">
+        </div>
+      </div>
+    </div>
+    @if (filteredCount() === 0) {
+      <div class="adm-empty">
+        <div class="adm-empty-ico" aria-hidden="true">👤</div>
+        <p class="adm-empty-title">Koi customer match nahi</p>
+        <p class="adm-empty-sub">Plan / health filters ya search adjust karo.</p>
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setPlanFilter('all'); setHealthFilter('all')">Reset</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--adm">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Zone</th>
+              <th>Plan</th>
+              <th>Health</th>
+              <th>Bookings</th>
+              <th>Spent</th>
+              <th>Last visit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of filteredRows(); track c.email) {
+              <tr>
+                <td>
+                  <div class="av-cell">
+                    <div class="tbl-av" [class.or]="c.av === 'or'" [class.gr]="c.av === 'gr'" [class.bl]="c.av === 'bl'" [class.pu]="c.av === 'pu'">{{ c.init }}</div>
+                    <div>
+                      <div class="av-name">{{ c.name }}</div>
+                      <div class="av-sub">{{ c.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="adm-mono">{{ c.phone }}</span></td>
+                <td><span class="adm-zone-tag">{{ c.zone }}</span></td>
+                <td>
+                  @switch (c.plan) {
+                    @case ('monthly') { <span class="badge badge-or">{{ c.planLabel }}</span> }
+                    @case ('annual') { <span class="badge badge-green">{{ c.planLabel }}</span> }
+                    @case ('instant') { <span class="badge badge-gray">{{ c.planLabel }}</span> }
+                  }
+                </td>
+                <td>
+                  @switch (c.health) {
+                    @case ('vip') { <span class="adm-health adm-health--vip">VIP</span> }
+                    @case ('active') { <span class="adm-health adm-health--ok">Active</span> }
+                    @case ('at-risk') { <span class="adm-health adm-health--risk">At-risk</span> }
+                  }
+                </td>
+                <td class="adm-num">{{ c.bookings }}</td>
+                <td class="adm-amt" [style.color]="spentColor(c.spentTone)">{{ c.spent }}</td>
+                <td [style.color]="lastColor(c.lastTone)" class="adm-last">{{ c.lastBooking }}</td>
+                <td>
+                  <div class="act-btns">
+                    <div class="act-btn" (click)="toast.show('Profile viewed','👁')" title="Profile">👁</div>
+                    <div class="act-btn" (click)="toast.show('Message sent','💬')" title="Message">💬</div>
+                    @if (c.health === 'at-risk') {
+                      <div class="act-btn" (click)="toast.show('Win-back sent!','🎁')" title="Win-back">🎁</div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr><th>Customer</th><th>Phone</th><th>Zone</th><th>Plan</th><th>Bookings</th><th>Total Spent</th><th>Last Booking</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av or">N</div><div><div class="av-name">Neha Agarwal</div><div class="av-sub">neha&#64;gmail.com</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-11111</td>
-          <td>Tatibandh</td>
-          <td><span class="badge badge-or">Monthly</span></td>
-          <td style="font-weight:700">34</td>
-          <td style="color:var(--g);font-weight:700">₹9,520</td>
-          <td style="color:var(--muted)">Today</td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Profile viewed','👁')">👁</div><div class="act-btn" (click)="toast.show('Message sent','💬')">💬</div></div></td>
-        </tr>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av bl">R</div><div><div class="av-name">Rahul Gupta</div><div class="av-sub">rahul&#64;gmail.com</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-22222</td>
-          <td>Civil Lines</td>
-          <td><span class="badge badge-green">Annual</span></td>
-          <td style="font-weight:700">142</td>
-          <td style="color:var(--g);font-weight:700">₹28,000</td>
-          <td style="color:var(--muted)">Yesterday</td>
-          <td><div class="act-btns"><div class="act-btn">👁</div></div></td>
-        </tr>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av pu">A</div><div><div class="av-name">Anjali Tiwari</div><div class="av-sub">anjali&#64;gmail.com</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-33333</td>
-          <td>Shankar Nagar</td>
-          <td><span class="badge badge-or">Monthly</span></td>
-          <td style="font-weight:700">28</td>
-          <td style="color:var(--g);font-weight:700">₹7,840</td>
-          <td style="color:var(--muted)">2 days ago</td>
-          <td><div class="act-btns"><div class="act-btn">👁</div><div class="act-btn" (click)="toast.show('Offer sent!','🎁')">🎁</div></div></td>
-        </tr>
-        <tr>
-          <td><div class="av-cell"><div class="tbl-av gr">V</div><div><div class="av-name">Vijay Sharma</div><div class="av-sub">vijay&#64;gmail.com</div></div></div></td>
-          <td style="color:var(--muted)">+91 98765-44444</td>
-          <td>Pandri</td>
-          <td><span class="badge badge-gray">Instant</span></td>
-          <td style="font-weight:700">3</td>
-          <td style="color:var(--muted);font-weight:700">₹447</td>
-          <td style="color:#EF4444">18 days ago</td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Win-back sent!','🎁')">🎁</div></div></td>
-        </tr>
-      </tbody>
-    </table>
+
+  <div class="adm-split adm-split--chart-only">
+    <section class="chart-card chart-card--adm chart-card--adm-wide">
+      <div class="chart-hdr chart-hdr--adm">
+        <div>
+          <h2 class="chart-title">Acquisition &amp; churn</h2>
+          <p class="chart-sub-lbl">Monthly trend · dashed = net adds (demo)</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap chart-canvas-wrap--adm-line"><canvas #custChart></canvas></div>
+    </section>
   </div>
 </div>
-
-<div class="chart-card"><div class="chart-hdr"><div class="chart-title">Customer Acquisition & Churn</div></div><div style="position:relative;height:200px;"><canvas #custChart></canvas></div></div>

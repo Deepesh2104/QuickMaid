@@ -21,6 +21,38 @@
           Peak load <strong>10AM–2PM</strong> slot mein aaj ke bookings ka ~<strong>34%</strong>. Tatibandh &amp; Civil Lines par extra capacity plan karna best ROI dega.
         </p>
       </div>
+      <div class="dash-insight-mid" aria-label="Signal context">
+        <div class="dash-mid-h">Context · vs last week</div>
+        <div class="dash-mid-deltas">
+          <span class="dash-mid-d dash-mid-d--up"><span class="dash-mid-dk">Bookings</span><strong>+12%</strong></span>
+          <span class="dash-mid-d dash-mid-d--up"><span class="dash-mid-dk">GMV</span><strong>+8.1%</strong></span>
+          <span class="dash-mid-d dash-mid-d--dn"><span class="dash-mid-dk">Cancel</span><strong>−0.4pp</strong></span>
+        </div>
+        <div class="dash-mid-zones" aria-label="Zone stress snapshot">
+          <div class="dash-mid-z">
+            <span class="dash-mid-zn">Tatibandh</span><span class="dash-mid-zv">88%</span>
+            <div class="dash-mid-zb"><span class="dash-mid-zf" style="width:88%"></span></div>
+          </div>
+          <div class="dash-mid-z">
+            <span class="dash-mid-zn">Civil Lines</span><span class="dash-mid-zv">65%</span>
+            <div class="dash-mid-zb"><span class="dash-mid-zf dash-mid-zf--med" style="width:65%"></span></div>
+          </div>
+          <div class="dash-mid-z">
+            <span class="dash-mid-zn">Shankar Ng.</span><span class="dash-mid-zv">54%</span>
+            <div class="dash-mid-zb"><span class="dash-mid-zf dash-mid-zf--low" style="width:54%"></span></div>
+          </div>
+        </div>
+        <div class="dash-mid-cap">
+          <div class="dash-mid-cap-h"><span>Peak slots filled</span><span class="dash-mid-cap-pct">81%</span></div>
+          <div class="dash-mid-cap-track" role="presentation"><span class="dash-mid-cap-fill" style="width:81%"></span></div>
+          <p class="dash-mid-cap-note"><strong>19%</strong> headroom · overtime risk low until Fri PM</p>
+        </div>
+        <div class="dash-mid-tags" aria-label="Related tags">
+          <span class="dash-mid-tag">Same-day</span>
+          <span class="dash-mid-tag">Weekday</span>
+          <span class="dash-mid-tag">Raipur core</span>
+        </div>
+      </div>
       <div class="dash-insight-panel" aria-label="Signal breakdown">
         <ul class="dash-sig-stats">
           <li class="dash-sig-stat">
@@ -133,6 +165,72 @@
     </article>
   </section>
 
+  <section class="dash-biz-section" aria-labelledby="dash-biz-title">
+    <div class="dash-biz-hdr">
+      <h2 id="dash-biz-title" class="dash-section-title">Business pulse</h2>
+      <p class="dash-section-sub">P&amp;L view, cash, fulfillment &amp; retention — KPI tiles &amp; GMV chart sync with the date range on Revenue &amp; bookings (demo).</p>
+    </div>
+    <div class="dash-biz-kpis">
+      <div class="dash-biz-tile">
+        <span class="dash-biz-tk">Net after platform fee</span>
+        <span class="dash-biz-tv">{{ bizPulse().netAfter }}</span>
+        <span class="dash-biz-th">{{ bizPulse().netSub }}</span>
+      </div>
+      <div class="dash-biz-tile">
+        <span class="dash-biz-tk">Commission (16%)</span>
+        <span class="dash-biz-tv">{{ bizPulse().commission }}</span>
+        <span class="dash-biz-th">{{ bizPulse().commissionSub }}</span>
+      </div>
+      <div class="dash-biz-tile">
+        <span class="dash-biz-tk">Refunds issued</span>
+        <span class="dash-biz-tv">{{ bizPulse().refunds }}</span>
+        <span class="dash-biz-th">{{ bizPulse().refundsSub }}</span>
+      </div>
+      <div class="dash-biz-tile">
+        <span class="dash-biz-tk">Payouts pending</span>
+        <span class="dash-biz-tv">{{ bizPulse().payouts }}</span>
+        <span class="dash-biz-th">{{ bizPulse().payoutsSub }}</span>
+      </div>
+      <div class="dash-biz-tile">
+        <span class="dash-biz-tk">Active subscriptions</span>
+        <span class="dash-biz-tv">{{ bizPulse().subs }}</span>
+        <span class="dash-biz-th">{{ bizPulse().subsSub }}</span>
+      </div>
+      <div class="dash-biz-tile">
+        <span class="dash-biz-tk">B2B pipeline</span>
+        <span class="dash-biz-tv">{{ bizPulse().b2b }}</span>
+        <span class="dash-biz-th">{{ bizPulse().b2bSub }}</span>
+      </div>
+    </div>
+    <div class="dash-biz-split">
+      <div class="dash-biz-funnel-card">
+        <h3 class="dash-biz-funnel-title">Fulfillment funnel · MTD</h3>
+        <p class="dash-biz-funnel-sub">Visit → complete → repeat · aligns with {{ rangeLabel() }} (demo %)</p>
+        <ol class="dash-biz-funnel">
+          <li><span class="dash-bf-lbl">Leads / inquiries</span><span class="dash-bf-pct">100%</span><span class="dash-bf-bar"><span class="dash-bf-fill" style="width:100%"></span></span></li>
+          <li><span class="dash-bf-lbl">Booked slot</span><span class="dash-bf-pct">78%</span><span class="dash-bf-bar"><span class="dash-bf-fill" style="width:78%"></span></span></li>
+          <li><span class="dash-bf-lbl">Completed visit</span><span class="dash-bf-pct">71%</span><span class="dash-bf-bar"><span class="dash-bf-fill" style="width:71%"></span></span></li>
+          <li><span class="dash-bf-lbl">Paid &amp; closed</span><span class="dash-bf-pct">68%</span><span class="dash-bf-bar"><span class="dash-bf-fill" style="width:68%"></span></span></li>
+          <li><span class="dash-bf-lbl">Repeat within 30d</span><span class="dash-bf-pct">41%</span><span class="dash-bf-bar"><span class="dash-bf-fill dash-bf-fill--accent" style="width:41%"></span></span></li>
+        </ol>
+      </div>
+      <article class="chart-card dash-biz-chart-card">
+        <div class="chart-hdr dash-biz-chart-hdr">
+          <div>
+            <h3 class="chart-title">GMV vs commission</h3>
+            <p class="chart-sub-lbl">{{ rangeLabel() }} · ₹ thousands</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--biz-margin"><canvas #bizMarginChart></canvas></div>
+      </article>
+    </div>
+    <div class="dash-biz-flags" role="list" aria-label="Business alerts">
+      <span class="dash-biz-flag dash-biz-flag--ok">Cash runway: <strong>OK</strong> · 6.2 mo</span>
+      <span class="dash-biz-flag dash-biz-flag--warn">Payout ratio vs GMV: <strong>43%</strong> · watch Fri spike</span>
+      <span class="dash-biz-flag dash-biz-flag--info">NPS proxy: <strong>62</strong> · +4 vs last month</span>
+    </div>
+  </section>
+
   <div class="dash-charts-top-split">
     <section class="chart-card dash-chart-main dash-chart-main--half">
       <div class="chart-hdr dash-chart-hdr">
@@ -198,6 +296,78 @@
       </section>
     </div>
   </div>
+
+  <section class="dash-analytics-section" aria-labelledby="dash-analytics-title">
+    <div class="dash-analytics-hdr">
+      <h2 id="dash-analytics-title" class="dash-section-title">Deep analytics</h2>
+      <p class="dash-section-sub">Bookings, quality, payments &amp; zones · demo series (API-ready)</p>
+    </div>
+    <div class="dash-analytics-grid">
+      <article class="chart-card dash-an-card dash-an-card--compare">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">Bookings · this week vs last</h3>
+            <p class="chart-sub-lbl">Same calendar days · count</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-compare"><canvas #compareChart></canvas></div>
+      </article>
+      <article class="chart-card dash-an-card dash-an-card--pay">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">Payment mix</h3>
+            <p class="chart-sub-lbl">Settled GMV · 7D</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-pay"><canvas #payMixChart></canvas></div>
+      </article>
+      <article class="chart-card dash-an-card dash-an-card--cohort">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">New vs repeat</h3>
+            <p class="chart-sub-lbl">Customers · stacked</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-triple"><canvas #cohortChart></canvas></div>
+      </article>
+      <article class="chart-card dash-an-card dash-an-card--csat">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">CSAT trend</h3>
+            <p class="chart-sub-lbl">Rolling avg · post-visit</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-triple"><canvas #csatChart></canvas></div>
+      </article>
+      <article class="chart-card dash-an-card dash-an-card--quality">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">Quality incidents</h3>
+            <p class="chart-sub-lbl">No-show vs cancel · daily</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-triple"><canvas #qualityChart></canvas></div>
+      </article>
+      <article class="chart-card dash-an-card dash-an-card--zones">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">GMV by zone</h3>
+            <p class="chart-sub-lbl">Thousands ₹ · MTD</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-zone"><canvas #zoneGmvChart></canvas></div>
+      </article>
+      <article class="chart-card dash-an-card dash-an-card--polar">
+        <div class="chart-hdr dash-an-hdr">
+          <div>
+            <h3 class="chart-title">Demand index</h3>
+            <p class="chart-sub-lbl">Normalized · zones</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--an-polar"><canvas #demandPolarChart></canvas></div>
+      </article>
+    </div>
+  </section>
 
   <div class="dash-mid-grid">
     <section class="chart-card dash-heat-wide">

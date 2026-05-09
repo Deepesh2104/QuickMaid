@@ -1,20 +1,168 @@
-<div class="page-header"><div class="page-title">Zone Management 🗺️</div><div class="page-sub">Demand vs supply across Raipur zones</div></div>
+<div class="adm-page zn-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Operations</p>
+      <h1 class="adm-title">Zones</h1>
+      <p class="adm-sub">Demand vs supply, coverage %, ETAs — chart data table se sync; health filter + search (demo).</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Raipur · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Coverage recalculated','📡')">Recalc</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('New zone created!','🗺️')">+ Add zone</button>
+    </div>
+  </header>
 
-<div class="chart-card" style="margin-bottom:20px"><div class="chart-hdr"><div class="chart-title">Zone Performance Overview</div></div><div style="position:relative;height:260px;"><canvas #zoneChart></canvas></div></div>
+  <section class="adm-kpi-grid" aria-label="Zone summary">
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">📍</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ zoneTotal }}</span>
+        <span class="adm-kpi-lbl">Zones live</span>
+        <span class="adm-kpi-hint">Geo-fenced service</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">📊</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ avgCoverage() }}%</span>
+        <span class="adm-kpi-lbl">Avg coverage</span>
+        <span class="adm-kpi-hint">Weighted by demand</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">⏱️</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">26m</span>
+        <span class="adm-kpi-lbl">Worst ETA</span>
+        <span class="adm-kpi-hint">Telibandha peak</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--red">
+      <span class="adm-kpi-ico" aria-hidden="true">🚨</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">2</span>
+        <span class="adm-kpi-lbl">Critical zones</span>
+        <span class="adm-kpi-hint">Surge hiring</span>
+      </div>
+    </article>
+  </section>
 
-<div class="table-card">
-  <div class="table-hdr">
-    <div class="table-title">All Zones</div>
-    <div class="table-actions"><button class="btn-sm primary" (click)="toast.show('New zone created!','🗺️')">+ Add Zone</button></div>
+  <div class="adm-split">
+    <div class="adm-charts-stack">
+      <section class="chart-card chart-card--adm">
+        <div class="chart-hdr chart-hdr--adm">
+          <div>
+            <h2 class="chart-title">Zone performance overview</h2>
+            <p class="chart-sub-lbl">Demand vs supply · same rows as table</p>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar" style="min-height:260px;height:min(300px,32vh)"><canvas #zoneChart></canvas></div>
+      </section>
+
+      <div class="table-card table-card--adm">
+        <div class="table-hdr table-hdr--adm">
+          <div class="table-hdr-text">
+            <div class="table-title">Zone directory</div>
+            <p class="table-hint">{{ zoneCount() }} of {{ zoneTotal }} · health + search</p>
+          </div>
+          <div class="adm-toolbar adm-toolbar--stack">
+            <div class="adm-toolbar-row">
+              <span class="adm-filter-label">Health</span>
+              <div class="adm-seg" role="group" aria-label="Zone health">
+                <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'all'" (click)="setHealth('all')">All</button>
+                <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'optimal'" (click)="setHealth('optimal')">Optimal</button>
+                <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'good'" (click)="setHealth('good')">Good</button>
+                <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'needs'" (click)="setHealth('needs')">Needs</button>
+                <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'under'" (click)="setHealth('under')">Under</button>
+                <button type="button" class="adm-seg-btn" [class.active]="healthFilter() === 'critical'" (click)="setHealth('critical')">Critical</button>
+              </div>
+            </div>
+            <div class="adm-search-wrap adm-search-wrap--wide">
+              <span class="adm-search-ico" aria-hidden="true">🔍</span>
+              <input class="adm-search-inp" type="search" placeholder="Zone name…" [value]="searchQuery()" (input)="onSearch($event)" autocomplete="off">
+            </div>
+          </div>
+        </div>
+        @if (zoneCount() === 0) {
+          <div class="adm-empty">
+            <div class="adm-empty-ico" aria-hidden="true">🗺️</div>
+            <p class="adm-empty-title">Koi zone match nahi</p>
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setHealth('all')">Reset</button>
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="data-table data-table--adm">
+              <thead>
+                <tr>
+                  <th>Zone</th>
+                  <th>Demand</th>
+                  <th>Supply</th>
+                  <th>Coverage</th>
+                  <th>Avg ETA</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (z of filteredZones(); track z.name) {
+                  <tr>
+                    <td><span class="adm-zone-tag">{{ z.name }}</span></td>
+                    <td class="adm-num">{{ z.demand }}</td>
+                    <td class="adm-num">{{ z.supply }}</td>
+                    <td class="adm-amt" [style.color]="covColor(z.coveragePct)">{{ z.coveragePct }}%</td>
+                    <td>{{ z.eta }}</td>
+                    <td>
+                      @switch (z.health) {
+                        @case ('optimal') { <span class="badge badge-green">Optimal</span> }
+                        @case ('good') { <span class="badge badge-green">Good</span> }
+                        @case ('needs') { <span class="badge badge-amber">Needs maids</span> }
+                        @case ('under') { <span class="badge badge-red">Under-served</span> }
+                        @case ('critical') { <span class="badge badge-red">Critical</span> }
+                      }
+                    </td>
+                    <td>
+                      <div class="act-btns">
+                        <div class="act-btn" (click)="toast.show('Surge pricing (demo)','⚡')" title="Surge">⚡</div>
+                        <div class="act-btn" (click)="toast.show('Assign maids map','👷')" title="Assign">👷</div>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+
+    <aside class="adm-aside" aria-label="Zone actions">
+      <h3 class="adm-aside-title">Dispatch hints</h3>
+      <p class="adm-aside-sub">Priority boosts aur maid pulls — demo queue.</p>
+      <ul class="adm-queue-list">
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Telibandha · surge</span>
+            <span class="adm-queue-meta">+6 maids suggested from Pandri</span>
+          </div>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Shankar Nagar</span>
+            <span class="adm-queue-meta">ETA SLA at risk 4–7 PM</span>
+          </div>
+          <span class="adm-queue-pill adm-queue-pill--soft">Watch</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">Tatibandh</span>
+            <span class="adm-queue-meta">Gold tier · keep buffer 3</span>
+          </div>
+        </li>
+      </ul>
+      <button type="button" class="adm-aside-btn" (click)="toast.show('Bulk zone policy (demo)','📋')">Open zone policy</button>
+    </aside>
   </div>
-  <table class="data-table">
-    <thead><tr><th>Zone</th><th>Demand</th><th>Supply</th><th>Coverage %</th><th>Avg ETA</th><th>Status</th></tr></thead>
-    <tbody>
-      <tr><td style="font-weight:700">Tatibandh</td><td>88</td><td>34</td><td><span style="color:var(--g);font-weight:700">97%</span></td><td>12 min</td><td><span class="badge badge-green">Optimal</span></td></tr>
-      <tr><td style="font-weight:700">Civil Lines</td><td>65</td><td>28</td><td><span style="color:var(--g);font-weight:700">91%</span></td><td>18 min</td><td><span class="badge badge-green">Good</span></td></tr>
-      <tr><td style="font-weight:700">Shankar Nagar</td><td>54</td><td>21</td><td><span style="color:#B45309;font-weight:700">78%</span></td><td>24 min</td><td><span class="badge badge-amber">Needs Maids</span></td></tr>
-      <tr><td style="font-weight:700">Pandri</td><td>32</td><td>12</td><td><span style="color:#EF4444;font-weight:700">58%</span></td><td>35 min</td><td><span class="badge badge-red">Under-served</span></td></tr>
-      <tr><td style="font-weight:700">Telibandha</td><td>28</td><td>9</td><td><span style="color:#EF4444;font-weight:700">51%</span></td><td>41 min</td><td><span class="badge badge-red">Critical</span></td></tr>
-    </tbody>
-  </table>
 </div>

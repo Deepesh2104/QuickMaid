@@ -1,13 +1,156 @@
-<div class="page-header"><div class="page-title">Plans & Subscriptions 📦</div><div class="page-sub">Active plans aur subscription analytics</div></div>
+<div class="adm-page pl-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Subscriptions</p>
+      <h1 class="adm-title">Plans</h1>
+      <p class="adm-sub">Forecast charts + live subscriber directory — plan type, lifecycle, search (demo).</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Plans v2 · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Prices preview (demo)','🏷️')">Price rules</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('New plan draft saved','📦')">New plan</button>
+    </div>
+  </header>
 
-<div class="metrics-grid">
-  <div class="metric-card orange"><div class="metric-top"><div class="metric-ico">📦</div><div class="metric-change up">↑ 12%</div></div><div class="metric-val">312</div><div class="metric-lbl">Monthly Plans Active</div></div>
-  <div class="metric-card green"><div class="metric-top"><div class="metric-ico">🗓️</div><div class="metric-change up">↑ 8%</div></div><div class="metric-val">47</div><div class="metric-lbl">Annual Plans Active</div></div>
-  <div class="metric-card blue"><div class="metric-top"><div class="metric-ico">🏢</div><div class="metric-change up">↑ 41%</div></div><div class="metric-val">17</div><div class="metric-lbl">B2B Contracts</div></div>
-  <div class="metric-card amber"><div class="metric-top"><div class="metric-ico">⏸️</div><div class="metric-change dn">↑ 3</div></div><div class="metric-val">23</div><div class="metric-lbl">Paused Plans</div></div>
-</div>
+  <section class="adm-kpi-grid" aria-label="Plan KPIs">
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">📦</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">312</span>
+        <span class="adm-kpi-lbl">Monthly active</span>
+        <span class="adm-kpi-hint">↑ 12% vs target</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">🗓️</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">47</span>
+        <span class="adm-kpi-lbl">Annual active</span>
+        <span class="adm-kpi-hint">↑ 8% renewals</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--blue">
+      <span class="adm-kpi-ico" aria-hidden="true">🏢</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">17</span>
+        <span class="adm-kpi-lbl">B2B contracts</span>
+        <span class="adm-kpi-hint">↑ 41% pipeline</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">⏸️</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">23</span>
+        <span class="adm-kpi-lbl">Paused</span>
+        <span class="adm-kpi-hint">Win-back 9 queued</span>
+      </div>
+    </article>
+  </section>
 
-<div class="charts-grid">
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Plan Renewals Forecast</div><div class="chart-sub-lbl">Next 30 days</div></div><div style="position:relative;height:220px;"><canvas #renewalChart></canvas></div></div>
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Plan Distribution</div></div><div style="position:relative;height:220px;"><canvas #planChart></canvas></div></div>
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Subscribers &amp; contracts</div>
+        <p class="table-hint">{{ subCount() }} of {{ subTotal }} · plan + lifecycle + search</p>
+      </div>
+      <div class="adm-toolbar adm-toolbar--stack">
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Plan</span>
+          <div class="adm-seg" role="group" aria-label="Plan type">
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'all'" (click)="setPlan('all')">All</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'monthly'" (click)="setPlan('monthly')">Monthly</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'annual'" (click)="setPlan('annual')">Annual</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'b2b'" (click)="setPlan('b2b')">B2B</button>
+            <button type="button" class="adm-seg-btn" [class.active]="planFilter() === 'instant'" (click)="setPlan('instant')">Instant</button>
+          </div>
+        </div>
+        <div class="adm-toolbar-row">
+          <span class="adm-filter-label">Life</span>
+          <div class="adm-seg adm-seg--compact" role="group" aria-label="Lifecycle">
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'all'" (click)="setStatus('all')">All</button>
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'active'" (click)="setStatus('active')">Active</button>
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'renewal'" (click)="setStatus('renewal')">Renewal</button>
+            <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'paused'" (click)="setStatus('paused')">Paused</button>
+          </div>
+        </div>
+        <div class="adm-search-wrap adm-search-wrap--wide">
+          <span class="adm-search-ico" aria-hidden="true">🔍</span>
+          <input class="adm-search-inp" type="search" placeholder="ID, customer…" [value]="searchQuery()" (input)="onSearch($event)" autocomplete="off">
+        </div>
+      </div>
+    </div>
+    @if (subCount() === 0) {
+      <div class="adm-empty">
+        <div class="adm-empty-ico" aria-hidden="true">📦</div>
+        <p class="adm-empty-title">Koi subscriber nahi</p>
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setPlan('all'); setStatus('all')">Reset</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--adm">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>ID</th>
+              <th>Plan</th>
+              <th>Renews</th>
+              <th>MRR / fee</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filteredSubs(); track s.id) {
+              <tr>
+                <td>
+                  <div class="av-cell">
+                    <div class="tbl-av" [class.or]="s.av === 'or'" [class.gr]="s.av === 'gr'" [class.bl]="s.av === 'bl'" [class.pu]="s.av === 'pu'">{{ s.init }}</div>
+                    <div class="av-name">{{ s.customer }}</div>
+                  </div>
+                </td>
+                <td><span class="adm-id-chip">{{ s.id }}</span></td>
+                <td><span class="adm-service-pill">{{ s.planLabel }}</span></td>
+                <td class="adm-last">{{ s.renews }}</td>
+                <td class="adm-amt" style="color:var(--g)">{{ s.mrr }}</td>
+                <td>
+                  @switch (s.status) {
+                    @case ('active') { <span class="badge badge-green">Active</span> }
+                    @case ('paused') { <span class="badge badge-gray">Paused</span> }
+                    @case ('renewal') { <span class="badge badge-amber">Renewal</span> }
+                  }
+                </td>
+                <td>
+                  <div class="act-btns">
+                    <div class="act-btn" (click)="toast.show('Subscription opened','👁')" title="View">👁</div>
+                    <div class="act-btn" (click)="toast.show('Pause / resume (demo)','⏸️')" title="Lifecycle">⏸️</div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <div class="adm-charts-row" style="margin-top:18px">
+    <section class="chart-card chart-card--adm">
+      <div class="chart-hdr chart-hdr--adm">
+        <div>
+          <h2 class="chart-title">Renewals forecast</h2>
+          <p class="chart-sub-lbl">Due vs likely churn · next 30 days</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #renewalChart></canvas></div>
+    </section>
+    <section class="chart-card chart-card--adm">
+      <div class="chart-hdr chart-hdr--adm">
+        <div>
+          <h2 class="chart-title">Plan distribution</h2>
+          <p class="chart-sub-lbl">Active seats by type</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #planChart></canvas></div>
+    </section>
+  </div>
 </div>

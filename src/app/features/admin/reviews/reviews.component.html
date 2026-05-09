@@ -1,12 +1,171 @@
-<div class="page-header"><div class="page-title">Reviews & Ratings ⭐</div><div class="page-sub">Customer feedback aur maid ratings</div></div>
+<div class="adm-page rv-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Quality</p>
+      <h1 class="adm-title">Reviews</h1>
+      <p class="adm-sub">Moderation inbox + trend charts — star bucket / flagged filters + search (demo).</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Last 6 periods</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('CSV of reviews (demo)','📥')">Export</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Moderation queue opened','🛡️')">Moderate</button>
+    </div>
+  </header>
 
-<div class="mini-stats">
-  <div class="mini-stat"><div class="ms-val" style="color:#B45309">4.8 ★</div><div class="ms-lbl">Overall Rating</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">1,284</div><div class="ms-lbl">Total Reviews</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">12</div><div class="ms-lbl">Negative Reviews</div></div>
-</div>
+  <section class="adm-kpi-grid" aria-label="Review KPIs">
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">⭐</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">4.8</span>
+        <span class="adm-kpi-lbl">Overall rating</span>
+        <span class="adm-kpi-hint">Weighted by recency</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">💬</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">1,284</span>
+        <span class="adm-kpi-lbl">Total reviews</span>
+        <span class="adm-kpi-hint">+8% vs prior month</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--red">
+      <span class="adm-kpi-ico" aria-hidden="true">⚠️</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">12</span>
+        <span class="adm-kpi-lbl">Negative (&lt;3★)</span>
+        <span class="adm-kpi-hint">4 need callback</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--blue">
+      <span class="adm-kpi-ico" aria-hidden="true">📣</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">62</span>
+        <span class="adm-kpi-lbl">NPS proxy</span>
+        <span class="adm-kpi-hint">Promoters − detractors</span>
+      </div>
+    </article>
+  </section>
 
-<div class="charts-grid">
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Rating Trend</div></div><div style="position:relative;height:200px;"><canvas #revTrendChart></canvas></div></div>
-  <div class="chart-card"><div class="chart-hdr"><div class="chart-title">Star Distribution</div></div><div style="position:relative;height:200px;"><canvas #starChart></canvas></div></div>
+  <div class="adm-split">
+    <div class="table-card table-card--adm">
+      <div class="table-hdr table-hdr--adm">
+        <div class="table-hdr-text">
+          <div class="table-title">Review inbox</div>
+          <p class="table-hint">{{ revCount() }} of {{ revTotal }} · bucket + search</p>
+        </div>
+        <div class="adm-toolbar adm-toolbar--stack">
+          <div class="adm-toolbar-row">
+            <span class="adm-filter-label">View</span>
+            <div class="adm-seg" role="group" aria-label="Review filter">
+              <button type="button" class="adm-seg-btn" [class.active]="bucketFilter() === 'all'" (click)="setBucket('all')">All</button>
+              <button type="button" class="adm-seg-btn" [class.active]="bucketFilter() === 'five'" (click)="setBucket('five')">5★ only</button>
+              <button type="button" class="adm-seg-btn" [class.active]="bucketFilter() === 'low'" (click)="setBucket('low')">≤3★</button>
+              <button type="button" class="adm-seg-btn" [class.active]="bucketFilter() === 'flagged'" (click)="setBucket('flagged')">Flagged</button>
+            </div>
+          </div>
+          <div class="adm-search-wrap adm-search-wrap--wide">
+            <span class="adm-search-ico" aria-hidden="true">🔍</span>
+            <input class="adm-search-inp" type="search" placeholder="ID, customer, maid, text…" [value]="searchQuery()" (input)="onSearch($event)" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      @if (revCount() === 0) {
+        <div class="adm-empty adm-empty--rich">
+          <div class="adm-empty-ico" aria-hidden="true">⭐</div>
+          <p class="adm-empty-title">Koi review nahi</p>
+          <p class="adm-empty-sub">Bucket + search reset karke poora inbox dubara dikhega (demo).</p>
+          <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setBucket('all')">Reset</button>
+        </div>
+      } @else {
+        <div class="table-scroll">
+          <table class="data-table data-table--adm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Maid</th>
+                <th>Rating</th>
+                <th>Feedback</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of filteredReviews(); track r.id) {
+                <tr [class.adm-row-flagged]="r.flagged">
+                  <td><span class="adm-id-chip">{{ r.id }}</span></td>
+                  <td class="adm-last">{{ r.customer }}</td>
+                  <td>{{ r.maid }}</td>
+                  <td><span class="adm-star-lbl" [class.adm-star-warn]="r.stars <= 3">{{ starStr(r.stars) }}</span></td>
+                  <td><span class="adm-service-pill">{{ r.excerpt }}</span></td>
+                  <td class="adm-last">{{ r.date }}</td>
+                  <td>
+                    <div class="act-btns">
+                      @if (r.flagged) {
+                        <div class="act-btn" (click)="toast.show('Escalated to CX lead','🚨')" title="Escalate">🚨</div>
+                      }
+                      <div class="act-btn" (click)="toast.show('Reply template sent','💬')" title="Reply">💬</div>
+                      <div class="act-btn" (click)="toast.show('Marked helpful','👍')" title="Helpful">👍</div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <aside class="adm-aside" aria-label="Moderation tips">
+      <h3 class="adm-aside-title">SLA</h3>
+      <p class="adm-aside-sub">Flagged reviews · respond in 4h (demo policy).</p>
+      <ul class="adm-queue-list">
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">RV-499 · 2★</span>
+            <span class="adm-queue-meta">Late arrival · ops verify</span>
+          </div>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">RV-496 · 1★</span>
+            <span class="adm-queue-meta">B2B no-show · refund</span>
+          </div>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">CSAT push</span>
+            <span class="adm-queue-meta">SMS nudge post-visit</span>
+          </div>
+          <span class="adm-queue-pill adm-queue-pill--soft">On</span>
+        </li>
+      </ul>
+      <button type="button" class="adm-aside-btn" (click)="toast.show('Auto-reply rules (demo)','🤖')">Edit auto-replies</button>
+    </aside>
+  </div>
+
+  <div class="adm-charts-row" style="margin-top:18px">
+    <section class="chart-card chart-card--adm">
+      <div class="chart-hdr chart-hdr--adm">
+        <div>
+          <h2 class="chart-title">Rating trend</h2>
+          <p class="chart-sub-lbl">Average stars by month</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap chart-canvas-wrap--adm-line" style="min-height:200px"><canvas #revTrendChart></canvas></div>
+    </section>
+    <section class="chart-card chart-card--adm">
+      <div class="chart-hdr chart-hdr--adm">
+        <div>
+          <h2 class="chart-title">Star distribution</h2>
+          <p class="chart-sub-lbl">Volume by bucket</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap chart-canvas-wrap--adm-line" style="min-height:200px"><canvas #starChart></canvas></div>
+    </section>
+  </div>
 </div>

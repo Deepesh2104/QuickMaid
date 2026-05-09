@@ -1,69 +1,187 @@
-<div class="page-header"><div class="page-title">Bookings 📋</div><div class="page-sub">Sab bookings manage karo</div></div>
-
-<div class="mini-stats">
-  <div class="mini-stat"><div class="ms-val" style="color:#B45309">47</div><div class="ms-lbl">Active / Ongoing</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:var(--g)">1,724</div><div class="ms-lbl">Completed</div></div>
-  <div class="mini-stat"><div class="ms-val" style="color:#EF4444">8</div><div class="ms-lbl">No-Shows Today</div></div>
-</div>
-
-<div class="table-card">
-  <div class="table-hdr">
-    <div class="table-title">All Bookings</div>
-    <div class="table-actions">
-      <select class="filter-select"><option>All Status</option><option>Ongoing</option><option>Completed</option><option>No-Show</option></select>
-      <input class="search-inp" placeholder="🔍 Search bookings...">
-      <button class="btn-sm primary" (click)="toast.show('Export started!','📥')">Export</button>
+<div class="adm-page bk-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Operations</p>
+      <h1 class="adm-title">Bookings</h1>
+      <p class="adm-sub">Pipeline, assignments, SLA handoffs — demo list; filters search instantly.</p>
     </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Live view · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Board refreshed','✨')">Refresh</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Export started!','📥')">Export CSV</button>
+    </div>
+  </header>
+
+  <section class="adm-kpi-grid" aria-label="Booking KPIs">
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">⚡</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">47</span>
+        <span class="adm-kpi-lbl">Active / ongoing</span>
+        <span class="adm-kpi-hint">12 in next 2h window</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">✅</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">1,724</span>
+        <span class="adm-kpi-lbl">Completed MTD</span>
+        <span class="adm-kpi-hint">↑ 6.2% vs last month</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--red">
+      <span class="adm-kpi-ico" aria-hidden="true">⛔</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">8</span>
+        <span class="adm-kpi-lbl">No-shows today</span>
+        <span class="adm-kpi-hint">3 refunds queued</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">₹</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">₹4.28L</span>
+        <span class="adm-kpi-lbl">GMV today</span>
+        <span class="adm-kpi-hint">Slot fill 81%</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">All bookings</div>
+        <p class="table-hint">{{ filteredCount() }} of {{ totalRows }} shown · status + search</p>
+      </div>
+      <div class="adm-toolbar">
+        <div class="adm-seg" role="group" aria-label="Filter by status">
+          <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'all'" (click)="setStatusFilter('all')">All</button>
+          <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'ongoing'" (click)="setStatusFilter('ongoing')">Ongoing</button>
+          <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'completed'" (click)="setStatusFilter('completed')">Done</button>
+          <button type="button" class="adm-seg-btn" [class.active]="statusFilter() === 'no-show'" (click)="setStatusFilter('no-show')">No-show</button>
+        </div>
+        <div class="adm-search-wrap">
+          <span class="adm-search-ico" aria-hidden="true">🔍</span>
+          <input class="adm-search-inp" type="search" placeholder="ID, customer, service…" [value]="searchQuery()" (input)="onSearchInput($event)" autocomplete="off">
+        </div>
+      </div>
+    </div>
+    @if (filteredCount() === 0) {
+      <div class="adm-empty">
+        <div class="adm-empty-ico" aria-hidden="true">🔎</div>
+        <p class="adm-empty-title">Koi match nahi</p>
+        <p class="adm-empty-sub">Filter ya search clear karke dubara dekho.</p>
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="searchQuery.set(''); setStatusFilter('all')">Reset filters</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--adm">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Maid</th>
+              <th>Service</th>
+              <th>Schedule</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of filteredRows(); track b.id) {
+              <tr>
+                <td><span class="adm-id-chip">{{ b.id }}</span></td>
+                <td>
+                  <div class="av-cell">
+                    <div class="tbl-av" [class.or]="b.customerAv === 'or'" [class.gr]="b.customerAv === 'gr'" [class.bl]="b.customerAv === 'bl'" [class.pu]="b.customerAv === 'pu'">{{ b.customerInit }}</div>
+                    <div>
+                      <div class="av-name">{{ b.customerName }}</div>
+                      <div class="av-sub">{{ b.customerZone }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if (b.maidUnassigned) {
+                    <span class="badge badge-red">Unassigned</span>
+                  } @else {
+                    <div class="av-cell">
+                      <div class="tbl-av" [class.or]="b.maidAv === 'or'" [class.gr]="b.maidAv === 'gr'" [class.bl]="b.maidAv === 'bl'" [class.pu]="b.maidAv === 'pu'">{{ b.maidInit }}</div>
+                      <div class="av-name">{{ b.maidName }}</div>
+                    </div>
+                  }
+                </td>
+                <td><span class="adm-service-pill">{{ b.service }}</span></td>
+                <td><span class="adm-when">{{ b.when }}</span></td>
+                <td class="adm-amt" [style.color]="amtColor(b.amountTone)">{{ b.amount }}</td>
+                <td>
+                  @switch (b.status) {
+                    @case ('completed') { <span class="badge badge-green">Completed</span> }
+                    @case ('ongoing') { <span class="badge badge-amber">Ongoing</span> }
+                    @case ('no-show') { <span class="badge badge-red">No-show</span> }
+                  }
+                </td>
+                <td>
+                  <div class="act-btns">
+                    @if (b.status === 'ongoing') {
+                      <div class="act-btn" (click)="toast.show('Live tracking','📍')" title="Track">📍</div>
+                      <div class="act-btn danger" (click)="toast.show('Cancelled','❌')" title="Cancel">✕</div>
+                    } @else if (b.status === 'no-show') {
+                      <div class="act-btn" (click)="toast.show('Backup assigned!','🔄')" title="Reassign">🔄</div>
+                      <div class="act-btn" (click)="toast.show('Refund initiated','💸')" title="Refund">💸</div>
+                    } @else {
+                      <div class="act-btn" (click)="toast.show('Details opened','👁')" title="View">👁</div>
+                      <div class="act-btn" (click)="toast.show('Reassigned!','🔄')" title="Reassign">🔄</div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead>
-        <tr><th>#ID</th><th>Customer</th><th>Maid</th><th>Service</th><th>Date & Time</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="color:var(--muted)">#1847</td>
-          <td><div class="av-cell"><div class="tbl-av or">N</div><div><div class="av-name">Neha Agarwal</div><div class="av-sub">Tatibandh</div></div></div></td>
-          <td><div class="av-cell"><div class="tbl-av gr">S</div><div class="av-name">Savita Devi</div></div></td>
-          <td>Cleaning 2hr</td>
-          <td>Apr 7 · 10:00AM</td>
-          <td style="color:var(--g);font-weight:700">₹298</td>
-          <td><span class="badge badge-green">Completed</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Details opened','👁')">👁</div><div class="act-btn" (click)="toast.show('Reassigned!','🔄')">🔄</div></div></td>
-        </tr>
-        <tr>
-          <td style="color:var(--muted)">#1846</td>
-          <td><div class="av-cell"><div class="tbl-av bl">R</div><div><div class="av-name">Rahul Gupta</div><div class="av-sub">Civil Lines</div></div></div></td>
-          <td><div class="av-cell"><div class="tbl-av bl">P</div><div class="av-name">Priya Yadav</div></div></td>
-          <td>Cooking 1hr</td>
-          <td>Apr 7 · 9:30AM</td>
-          <td style="color:#B45309;font-weight:700">₹199</td>
-          <td><span class="badge badge-amber">Ongoing</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Tracking live','📍')">📍</div><div class="act-btn danger" (click)="toast.show('Cancelled','❌')">✕</div></div></td>
-        </tr>
-        <tr>
-          <td style="color:var(--muted)">#1845</td>
-          <td><div class="av-cell"><div class="tbl-av pu">A</div><div><div class="av-name">Anjali Tiwari</div><div class="av-sub">Shankar Nagar</div></div></div></td>
-          <td><div class="av-cell"><div class="tbl-av or">R</div><div class="av-name">Rekha Singh</div></div></td>
-          <td>Bartan 1hr</td>
-          <td>Apr 7 · 9:00AM</td>
-          <td style="color:var(--g);font-weight:700">₹149</td>
-          <td><span class="badge badge-green">Completed</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Details opened','👁')">👁</div></div></td>
-        </tr>
-        <tr>
-          <td style="color:var(--muted)">#1844</td>
-          <td><div class="av-cell"><div class="tbl-av gr">V</div><div><div class="av-name">Vijay Sharma</div><div class="av-sub">Pandri</div></div></div></td>
-          <td><span class="badge badge-red">Unassigned</span></td>
-          <td>Cleaning 1hr</td>
-          <td>Apr 7 · 8:30AM</td>
-          <td style="color:var(--muted);font-weight:700">₹149</td>
-          <td><span class="badge badge-red">No-Show</span></td>
-          <td><div class="act-btns"><div class="act-btn" (click)="toast.show('Backup assigned!','🔄')">🔄</div><div class="act-btn" (click)="toast.show('Refund initiated','💸')">💸</div></div></td>
-        </tr>
-      </tbody>
-    </table>
+
+  <div class="adm-split">
+    <section class="chart-card chart-card--adm">
+      <div class="chart-hdr chart-hdr--adm">
+        <div>
+          <h2 class="chart-title">Volume this week</h2>
+          <p class="chart-sub-lbl">Completed vs cancelled / no-show · daily</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #bookWeekChart></canvas></div>
+    </section>
+    <aside class="adm-aside" aria-label="Quick queue">
+      <h3 class="adm-aside-title">Assignment queue</h3>
+      <p class="adm-aside-sub">Unassigned &amp; at-risk slots (demo)</p>
+      <ul class="adm-queue-list">
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot adm-queue-dot--urgent"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">#1844 · Vijay · 8:30 AM</span>
+            <span class="adm-queue-meta">Cleaning · Pandri</span>
+          </div>
+          <span class="adm-queue-pill">SLA</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">#1840 · Guest · 2:00 PM</span>
+            <span class="adm-queue-meta">Cooking · Civil Lines</span>
+          </div>
+          <span class="adm-queue-pill adm-queue-pill--soft">New</span>
+        </li>
+        <li class="adm-queue-item">
+          <span class="adm-queue-dot"></span>
+          <div class="adm-queue-body">
+            <span class="adm-queue-name">#1838 · Office deep clean</span>
+            <span class="adm-queue-meta">Tomorrow · B2B</span>
+          </div>
+        </li>
+      </ul>
+      <button type="button" class="adm-aside-btn" (click)="toast.show('Bulk assign (demo)','👥')">Open bulk assign</button>
+    </aside>
   </div>
 </div>
-
-<div class="chart-card"><div class="chart-hdr"><div class="chart-title">Bookings This Week</div></div><div style="position:relative;height:200px;"><canvas #bookWeekChart></canvas></div></div>
