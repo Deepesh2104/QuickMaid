@@ -3,13 +3,12 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } fro
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { ToastService } from '@core/services/toast.service';
-import { ThemePickerComponent } from '@shared/ui/theme-picker/theme-picker.component';
 import { ADMIN_NAV, BREADCRUMB_LABELS } from './admin-nav.config';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ThemePickerComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-layout.component.html',
 })

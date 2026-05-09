@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ThemeService } from '@core/services/theme.service';
 import { ToastComponent } from '@shared/ui/toast/toast.component';
 import { MobileBlockComponent } from '@shared/ui/mobile-block/mobile-block.component';
 
@@ -14,4 +15,7 @@ import { MobileBlockComponent } from '@shared/ui/mobile-block/mobile-block.compo
     <app-mobile-block></app-mobile-block>
   `,
 })
-export class AppComponent {}
+export class AppComponent {
+  /** Eager init so body theme classes apply (picker UI removed). */
+  private readonly _theme = inject(ThemeService);
+}

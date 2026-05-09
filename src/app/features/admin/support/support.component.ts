@@ -9,14 +9,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastService } from '@core/services/toast.service';
-import { ThemePickerComponent } from '@shared/ui/theme-picker/theme-picker.component';
 import { Ticket } from './models/ticket.model';
 import { SupportFacade } from './data/support-facade.service';
 
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [FormsModule, ThemePickerComponent],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [SupportFacade],
   templateUrl: './support.component.html',

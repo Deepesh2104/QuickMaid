@@ -1,89 +1,310 @@
-<div class="auth-wrap">
-  <div class="auth-left">
-    <div class="auth-logo"><div class="auth-logo-box">🏠</div>QuickMaid</div>
-    <div class="auth-tagline">India ka <em>Sabse Trusted</em> Maid Platform</div>
-    <div class="auth-sub">Instant booking, verified maids, aur powerful admin tools — sab ek jagah.</div>
-    <div class="auth-nums">
-      <div class="auth-num-box"><div class="auth-num-val">500+</div><div class="auth-num-lbl">Active Maids</div></div>
-      <div class="auth-num-box"><div class="auth-num-val">12K+</div><div class="auth-num-lbl">Bookings Done</div></div>
-      <div class="auth-num-box"><div class="auth-num-val">4.8★</div><div class="auth-num-lbl">Avg Rating</div></div>
+<main class="auth-wrap">
+  <aside class="auth-left" aria-label="QuickMaid brand">
+    <div class="auth-left-inner">
+      <a routerLink="/" class="auth-brand" (click)="$event.stopPropagation()">
+        <span class="auth-logo-box" aria-hidden="true">🏠</span>
+        <span class="auth-logo-text">QuickMaid</span>
+      </a>
+      <h1 class="auth-tagline">India ka <em>Sabse Trusted</em> Maid Platform</h1>
+      <p class="auth-sub">Instant booking, verified maids, aur powerful admin tools — sab ek jagah.</p>
+      <ul class="auth-bullets" aria-label="Platform highlights">
+        <li><span class="auth-bul-ico">✓</span> Aadhaar + background verified maids</li>
+        <li><span class="auth-bul-ico">✓</span> OTP se safe start / end</li>
+        <li><span class="auth-bul-ico">✓</span> Dashboard, support &amp; payouts — ek admin hub</li>
+      </ul>
+      <div class="auth-nums">
+        <div class="auth-num-box">
+          <div class="auth-num-val">500+</div>
+          <div class="auth-num-lbl">Active Maids</div>
+        </div>
+        <div class="auth-num-box">
+          <div class="auth-num-val">12K+</div>
+          <div class="auth-num-lbl">Bookings Done</div>
+        </div>
+        <div class="auth-num-box">
+          <div class="auth-num-val">4.8★</div>
+          <div class="auth-num-lbl">Avg Rating</div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="auth-right" style="display:flex;flex-direction:column;justify-content:center;">
-    <div class="auth-form-inner">
-      <div class="auth-tabs">
-        <button class="auth-tab" [class.active]="tab()==='login'" (click)="switchTab('login')">Login</button>
-        <button class="auth-tab" [class.active]="tab()==='signup'" (click)="switchTab('signup')">Sign Up</button>
+  </aside>
+
+  <section class="auth-right" aria-label="Login ya sign up">
+    <a routerLink="/" class="auth-back-mob">← Home</a>
+
+    <div class="auth-panel">
+      <div class="auth-form-inner">
+        <div class="auth-tabs" role="tablist" aria-label="Login ya Sign up">
+          <button
+            type="button"
+            role="tab"
+            class="auth-tab"
+            [class.active]="tab() === 'login'"
+            [attr.aria-selected]="tab() === 'login'"
+            (click)="switchTab('login')">
+            Login
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="auth-tab"
+            [class.active]="tab() === 'signup'"
+            [attr.aria-selected]="tab() === 'signup'"
+            (click)="switchTab('signup')">
+            Sign Up
+          </button>
+        </div>
+
+        @if (tab() === 'login') {
+          <div role="tabpanel">
+            <h2 class="form-title">Wapas Aao! 👋</h2>
+            <p class="form-sub">Admin portal — email <em>ya</em> registered mobile se login.</p>
+            <form class="auth-form-stack" (ngSubmit)="doLogin()">
+              <div class="fg">
+                <label class="fl" for="auth-login-id">Email ya phone <abbr class="req" title="Zaroori">*</abbr></label>
+                <input
+                  id="auth-login-id"
+                  class="fi"
+                  type="text"
+                  name="loginId"
+                  autocomplete="username"
+                  inputmode="text"
+                  required
+                  aria-required="true"
+                  placeholder="admin@quickmaid.in ya 9876543210"
+                  [ngModel]="loginId()"
+                  (ngModelChange)="loginId.set($event)" />
+                <p class="field-hint">Registered email ya 10-digit mobile (sirf number, +91 optional).</p>
+              </div>
+              <div class="fg">
+                <label class="fl" for="auth-password">Password <abbr class="req" title="Zaroori">*</abbr></label>
+                <div class="pw-wrap">
+                  <input
+                    id="auth-password"
+                    class="fi fi--pw"
+                    name="loginPw"
+                    [type]="loginPwType()"
+                    autocomplete="current-password"
+                    required
+                    aria-required="true"
+                    placeholder="••••••••"
+                    [ngModel]="loginPw()"
+                    (ngModelChange)="loginPw.set($event)" />
+                  <button
+                    type="button"
+                    class="pw-toggle"
+                    (click)="togglePw('login')"
+                    [attr.aria-label]="loginPwToggleLabel()">
+                    {{ loginPwType() === 'password' ? '👁' : '🙈' }}
+                  </button>
+                </div>
+              </div>
+              <div class="auth-meta-row">
+                <label class="auth-remember">
+                  <input type="checkbox" name="remember" />
+                  <span>Remember me</span>
+                </label>
+                <a href="#" class="auth-inline-link" (click)="$event.preventDefault()">Bhool gaye?</a>
+              </div>
+              <button type="submit" class="btn-auth">Login Karein →</button>
+            </form>
+            <div class="divider">
+              <div class="divider-line"></div>
+              <span class="divider-text">ya</span>
+              <div class="divider-line"></div>
+            </div>
+            <button type="button" class="btn-google" (click)="doLogin()">
+              <span class="btn-google-ico" aria-hidden="true">G</span>
+              Google se Continue Karo
+            </button>
+            <p class="auth-demo"><strong>Demo:</strong> valid email/phone format + koi bhi password — submit par dashboard.</p>
+          </div>
+        } @else {
+          <div role="tabpanel">
+            <h2 class="form-title">Account Banao 🚀</h2>
+            <p class="form-sub">Neeche <abbr class="req" title="Zaroori">*</abbr> wale sab fields bharein — phir account banayein.</p>
+            <form class="auth-form-stack" (ngSubmit)="doSignup()">
+              <div class="fg">
+                <span class="fl" id="role-label">Role <abbr class="req" title="Zaroori">*</abbr></span>
+                <div class="role-grid" role="group" aria-labelledby="role-label">
+                  <button
+                    type="button"
+                    class="role-card"
+                    [class.sel]="selectedRole() === 'admin'"
+                    [attr.aria-pressed]="selectedRole() === 'admin'"
+                    (click)="selectRole('admin')">
+                    <span class="role-ico" aria-hidden="true">🖥️</span><span class="role-nm">Admin</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="role-card"
+                    [class.sel]="selectedRole() === 'manager'"
+                    [attr.aria-pressed]="selectedRole() === 'manager'"
+                    (click)="selectRole('manager')">
+                    <span class="role-ico" aria-hidden="true">👷</span><span class="role-nm">Manager</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="role-card"
+                    [class.sel]="selectedRole() === 'analyst'"
+                    [attr.aria-pressed]="selectedRole() === 'analyst'"
+                    (click)="selectRole('analyst')">
+                    <span class="role-ico" aria-hidden="true">📊</span><span class="role-nm">Analyst</span>
+                  </button>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="fg">
+                  <label class="fl" for="auth-fn">Pehla naam <abbr class="req" title="Zaroori">*</abbr></label>
+                  <input
+                    id="auth-fn"
+                    class="fi"
+                    type="text"
+                    name="firstName"
+                    autocomplete="given-name"
+                    required
+                    aria-required="true"
+                    placeholder="Rahul"
+                    [ngModel]="firstName()"
+                    (ngModelChange)="firstName.set($event)" />
+                </div>
+                <div class="fg">
+                  <label class="fl" for="auth-ln">Aakhri naam <abbr class="req" title="Zaroori">*</abbr></label>
+                  <input
+                    id="auth-ln"
+                    class="fi"
+                    type="text"
+                    name="lastName"
+                    autocomplete="family-name"
+                    required
+                    aria-required="true"
+                    placeholder="Sharma"
+                    [ngModel]="lastName()"
+                    (ngModelChange)="lastName.set($event)" />
+                </div>
+              </div>
+              <div class="fg">
+                <label class="fl" for="auth-mail">Work email <abbr class="req" title="Zaroori">*</abbr></label>
+                <input
+                  id="auth-mail"
+                  class="fi"
+                  type="email"
+                  name="email"
+                  autocomplete="email"
+                  required
+                  aria-required="true"
+                  placeholder="rahul@quickmaid.in"
+                  [ngModel]="email()"
+                  (ngModelChange)="email.set($event)" />
+              </div>
+              <div class="fg">
+                <label class="fl" for="auth-phone">Mobile number <abbr class="req" title="Zaroori">*</abbr></label>
+                <input
+                  id="auth-phone"
+                  class="fi"
+                  type="tel"
+                  name="phone"
+                  autocomplete="tel"
+                  inputmode="numeric"
+                  maxlength="14"
+                  required
+                  aria-required="true"
+                  placeholder="9876543210 ya +91 9876543210"
+                  [ngModel]="phone()"
+                  (ngModelChange)="phone.set($event)" />
+                <p class="field-hint">10 digits — India mobile (6–9 se start). +91 / space optional.</p>
+              </div>
+              <div class="fg">
+                <label class="fl" for="auth-city">City / Hub <abbr class="req" title="Zaroori">*</abbr></label>
+                <select
+                  id="auth-city"
+                  class="fs"
+                  name="city"
+                  required
+                  aria-required="true"
+                  [ngModel]="city()"
+                  (ngModelChange)="city.set($event)">
+                  <option value="Raipur">Raipur</option>
+                  <option value="Bhilai">Bhilai</option>
+                  <option value="Nagpur">Nagpur</option>
+                  <option value="Indore">Indore</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="fl" for="auth-newpw">Password <abbr class="req" title="Zaroori">*</abbr></label>
+                <div class="pw-wrap">
+                  <input
+                    id="auth-newpw"
+                    class="fi fi--pw"
+                    name="newPassword"
+                    [type]="signupPwType()"
+                    autocomplete="new-password"
+                    required
+                    aria-required="true"
+                    minlength="8"
+                    placeholder="Kam se kam 8 characters"
+                    [ngModel]="signupPw()"
+                    (ngModelChange)="signupPw.set($event)" />
+                  <button
+                    type="button"
+                    class="pw-toggle"
+                    (click)="togglePw('signup')"
+                    [attr.aria-label]="signupPwToggleLabel()">
+                    {{ signupPwType() === 'password' ? '👁' : '🙈' }}
+                  </button>
+                </div>
+                <div class="str-meta">
+                  <span class="str-label">Strength</span>
+                  <span class="str-val">{{ strengthLabel() }}</span>
+                </div>
+                <div class="str-bar" role="progressbar" [attr.aria-valuenow]="strength() * 25" aria-valuemin="0" aria-valuemax="100" aria-label="Password strength">
+                  <div class="str-fill" [style.width]="strengthWidth()" [style.background]="strengthColor()"></div>
+                </div>
+              </div>
+              <div class="fg">
+                <label class="fl" for="auth-confirm-pw">Confirm password <abbr class="req" title="Zaroori">*</abbr></label>
+                <div class="pw-wrap">
+                  <input
+                    id="auth-confirm-pw"
+                    class="fi fi--pw"
+                    name="confirmPassword"
+                    [type]="signupPwType()"
+                    autocomplete="new-password"
+                    required
+                    aria-required="true"
+                    placeholder="Password dubara"
+                    [ngModel]="signupConfirmPw()"
+                    (ngModelChange)="signupConfirmPw.set($event)" />
+                  <button
+                    type="button"
+                    class="pw-toggle"
+                    (click)="togglePw('signup')"
+                    [attr.aria-label]="signupPwToggleLabel()">
+                    {{ signupPwType() === 'password' ? '👁' : '🙈' }}
+                  </button>
+                </div>
+              </div>
+              <div class="check-row">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  name="terms"
+                  required
+                  [ngModel]="termsAccepted()"
+                  (ngModelChange)="termsAccepted.set($event)" />
+                <label for="terms">
+                  Main <a href="#" class="auth-inline-link" (click)="$event.preventDefault()">Terms</a> aur
+                  <a href="#" class="auth-inline-link" (click)="$event.preventDefault()">Privacy Policy</a> se agree karta hun
+                  <abbr class="req" title="Zaroori">*</abbr>
+                </label>
+              </div>
+              <button type="submit" class="btn-auth">Account Banao →</button>
+            </form>
+          </div>
+        }
       </div>
 
-      @if (tab() === 'login') {
-        <div>
-          <div class="form-title">Wapas Aao! 👋</div>
-          <div class="form-sub">Admin portal mein login karein</div>
-          <div class="fg">
-            <label class="fl">Email Address</label>
-            <input class="fi" type="email" placeholder="admin@quickmaid.in">
-          </div>
-          <div class="fg">
-            <label class="fl">Password</label>
-            <div class="pw-wrap">
-              <input class="fi" [type]="loginPwType()" placeholder="••••••••" style="padding-right:44px">
-              <button class="pw-toggle" (click)="togglePw('login')">{{ loginPwType()==='password' ? '👁' : '🙈' }}</button>
-            </div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;">
-              <input type="checkbox" style="accent-color:var(--or)"> Remember me
-            </label>
-            <a href="#" style="font-size:12px;color:var(--or);text-decoration:none;font-weight:700;">Bhool gaye?</a>
-          </div>
-          <button class="btn-auth" (click)="doLogin()">Login Karein →</button>
-          <div class="divider"><div class="divider-line"></div><div class="divider-text">ya</div><div class="divider-line"></div></div>
-          <button class="btn-google" (click)="doLogin()"><span>🔍</span> Google se Continue Karo</button>
-          <div class="auth-hint" style="margin-top:16px;"><strong>Demo:</strong> koi bhi email + password dalke login karo</div>
-        </div>
-      } @else {
-        <div>
-          <div class="form-title">Account Banao 🚀</div>
-          <div class="form-sub">QuickMaid admin portal join karein</div>
-          <div class="fg">
-            <label class="fl">Aap kaun hain?</label>
-            <div class="role-grid">
-              <div class="role-card" [class.sel]="selectedRole()==='admin'" (click)="selectRole('admin')">
-                <div class="role-ico">🖥️</div><div class="role-nm">Admin</div>
-              </div>
-              <div class="role-card" [class.sel]="selectedRole()==='manager'" (click)="selectRole('manager')">
-                <div class="role-ico">👷</div><div class="role-nm">Manager</div>
-              </div>
-              <div class="role-card" [class.sel]="selectedRole()==='analyst'" (click)="selectRole('analyst')">
-                <div class="role-ico">📊</div><div class="role-nm">Analyst</div>
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="fg"><label class="fl">Pehla Naam</label><input class="fi" type="text" placeholder="Rahul"></div>
-            <div class="fg"><label class="fl">Aakhri Naam</label><input class="fi" type="text" placeholder="Sharma"></div>
-          </div>
-          <div class="fg"><label class="fl">Email</label><input class="fi" type="email" placeholder="rahul@quickmaid.in"></div>
-          <div class="fg">
-            <label class="fl">City</label>
-            <select class="fs"><option>Raipur</option><option>Bhilai</option><option>Nagpur</option><option>Indore</option></select>
-          </div>
-          <div class="fg">
-            <label class="fl">Password</label>
-            <div class="pw-wrap">
-              <input class="fi" [type]="signupPwType()" placeholder="••••••••" [ngModel]="signupPw()" (ngModelChange)="signupPw.set($event)" style="padding-right:44px">
-              <button class="pw-toggle" (click)="togglePw('signup')">{{ signupPwType()==='password' ? '👁' : '🙈' }}</button>
-            </div>
-            <div class="str-bar"><div class="str-fill" [style.width]="strengthWidth()" [style.background]="strengthColor()"></div></div>
-          </div>
-          <div class="check-row">
-            <input type="checkbox" id="terms">
-            <label for="terms">Main <a href="#" style="color:var(--or)">Terms</a> aur <a href="#" style="color:var(--or)">Privacy Policy</a> se agree karta hun</label>
-          </div>
-          <button class="btn-auth" (click)="doLogin()">Account Banao →</button>
-        </div>
-      }
+      <a routerLink="/" class="auth-back-desk">← Wapas website par</a>
     </div>
-  </div>
-</div>
+  </section>
+</main>

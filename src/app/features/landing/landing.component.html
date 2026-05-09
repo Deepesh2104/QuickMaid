@@ -1,43 +1,99 @@
 <div id="landing">
-  <nav>
-    <a href="#" class="nav-logo"><div class="nav-logo-box">🏠</div><span class="nav-logo-text">QuickMaid</span></a>
+  <nav class="landing-nav" aria-label="Primary">
+    <a href="#" class="nav-logo" (click)="$event.preventDefault()">
+      <div class="nav-logo-box" aria-hidden="true">🏠</div>
+      <span class="nav-logo-text">QuickMaid</span>
+    </a>
     <div class="nav-links">
       <a href="#services">Services</a>
       <a href="#plans">Plans</a>
       <a href="#how">Kaise Kaam Karta Hai</a>
       <a href="#maid-join">Maid Bano</a>
     </div>
-    <a href="#" class="nav-cta" (click)="showAuth($event)">Admin Login →</a>
+    <a href="#" class="nav-cta nav-cta--desktop" (click)="showAuth($event)">Admin Login →</a>
+    <button
+      type="button"
+      class="nav-menu-btn"
+      (click)="toggleMobileNav()"
+      [attr.aria-expanded]="mobileNavOpen()"
+      aria-controls="landing-menu"
+      aria-label="Menu open karein ya band karein">
+      <span class="nav-menu-bar" [class.open]="mobileNavOpen()"></span>
+      <span class="nav-menu-bar" [class.open]="mobileNavOpen()"></span>
+      <span class="nav-menu-bar" [class.open]="mobileNavOpen()"></span>
+    </button>
   </nav>
 
+  <div
+    class="nav-drawer-overlay"
+    [class.open]="mobileNavOpen()"
+    (click)="closeMobileNav()"
+    aria-hidden="true"></div>
+
+  <aside id="landing-menu" class="nav-drawer" [class.open]="mobileNavOpen()" aria-label="Mobile navigation">
+    <div class="nav-drawer-top">
+      <span class="nav-drawer-title">QuickMaid</span>
+      <button type="button" class="nav-drawer-close" (click)="closeMobileNav()" aria-label="Menu band karein">✕</button>
+    </div>
+    <div class="nav-drawer-links">
+      <a href="#services" (click)="closeMobileNav()">Services</a>
+      <a href="#plans" (click)="closeMobileNav()">Plans</a>
+      <a href="#how" (click)="closeMobileNav()">Kaise Kaam Karta Hai</a>
+      <a href="#maid-join" (click)="closeMobileNav()">Maid Bano</a>
+    </div>
+    <button type="button" class="nav-drawer-cta" (click)="showAuth($event)">Admin Login →</button>
+  </aside>
+
   <div class="hero">
-    <div>
-      <div class="hero-eyebrow"><div class="hero-eyebrow-dot"></div><span class="hero-eyebrow-text">Raipur mein Available — Abhi Book Karo</span></div>
+    <div class="hero-copy">
+      <div class="hero-eyebrow">
+        <div class="hero-eyebrow-dot" aria-hidden="true"></div>
+        <span class="hero-eyebrow-text">Raipur mein Available — Abhi Book Karo</span>
+      </div>
       <h1>Ghar Ki Safai,<br><em>30 Minutes</em> Mein</h1>
       <p class="hero-sub">Aadhaar-verified maids, instant booking, zero agent commission. Monthly aur annual plans bhi — ek WhatsApp mein.</p>
       <div class="hero-btns">
         <a href="#" class="btn-hero-p">📱 WhatsApp pe Book Karo</a>
         <a href="#plans" class="btn-hero-s">Plans Dekho →</a>
       </div>
-      <div class="hero-trust">
-        <div><div class="trust-num">500+</div><div class="trust-lbl">Happy Families</div></div>
-        <div><div class="trust-num">4.8★</div><div class="trust-lbl">Average Rating</div></div>
-        <div><div class="trust-num">₹0</div><div class="trust-lbl">Agent Commission</div></div>
+      <div class="hero-trust" role="list">
+        <div class="hero-trust-item" role="listitem">
+          <div class="trust-num">500+</div>
+          <div class="trust-lbl">Happy Families</div>
+        </div>
+        <div class="hero-trust-item" role="listitem">
+          <div class="trust-num">4.8★</div>
+          <div class="trust-lbl">Average Rating</div>
+        </div>
+        <div class="hero-trust-item" role="listitem">
+          <div class="trust-num">₹0</div>
+          <div class="trust-lbl">Agent Commission</div>
+        </div>
       </div>
     </div>
     <div class="hero-visual">
-      <div class="fcard fcard-1"><div class="fc-t">✅ Verified Maid Assigned</div><div class="fc-s">Savita Didi · 4.9★ · 2 min away</div></div>
-      <div class="fcard fcard-2"><div class="fc-t">💰 Monthly Plan Active</div><div class="fc-n">₹2,799</div><div class="fc-s">26 visits included</div></div>
-      <div class="fcard fcard-3"><div class="fc-t">Booking Done!</div><div class="fc-s" style="color:var(--g);font-weight:700;">⏱ 28 min ETA</div></div>
+      <div class="fcard fcard-1">
+        <div class="fc-t">✅ Verified Maid Assigned</div>
+        <div class="fc-s">Savita Didi · 4.9★ · 2 min away</div>
+      </div>
+      <div class="fcard fcard-2">
+        <div class="fc-t">💰 Monthly Plan Active</div>
+        <div class="fc-n">₹2,799</div>
+        <div class="fc-s">26 visits included</div>
+      </div>
+      <div class="fcard fcard-3">
+        <div class="fc-t">Booking Done!</div>
+        <div class="fc-s fc-s--ok">⏱ 28 min ETA</div>
+      </div>
       <div class="phone-wrap">
         <div class="phone-screen">
           <div class="ph-header">
             <div class="ph-h-top">
               <div>
                 <div class="ph-brand">QuickMaid</div>
-                <div style="font-size:10px;opacity:.8;">Namaskar! Aaj kya chahiye?</div>
+                <div class="ph-tagline">Namaskar! Aaj kya chahiye?</div>
               </div>
-              <div style="font-size:16px;">🔔</div>
+              <div class="ph-notif" aria-hidden="true">🔔</div>
             </div>
             <div class="ph-loc">📍 Tatibandh, Raipur</div>
           </div>
@@ -45,7 +101,7 @@
             <div class="ph-banner">
               <div class="ph-banner-lbl">INSTANT BOOKING</div>
               <div class="ph-banner-title">Abhi Didi Bulao</div>
-              <button class="ph-banner-btn">Book in 30 sec →</button>
+              <button type="button" class="ph-banner-btn">Book in 30 sec →</button>
             </div>
             <div class="ph-grid">
               <div class="ph-card"><div class="ph-card-icon">🧹</div><div class="ph-card-name">Cleaning</div><div class="ph-card-price">₹149/hr</div></div>
@@ -54,7 +110,7 @@
               <div class="ph-card"><div class="ph-card-icon">👔</div><div class="ph-card-name">Laundry</div><div class="ph-card-price">₹99/hr</div></div>
             </div>
             <div class="ph-maid">
-              <div class="ph-maid-av">S</div>
+              <div class="ph-maid-av" aria-hidden="true">S</div>
               <div>
                 <div class="ph-maid-name">Savita Devi</div>
                 <div class="ph-maid-sub">⭐ 4.9 · 147 bookings</div>
@@ -68,10 +124,10 @@
   </div>
 
   <div class="trust-strip">
-    <div class="ts-item"><div class="ts-ico">👩</div><div class="ts-num">200+</div><div class="ts-lbl">Verified Maids</div></div>
-    <div class="ts-item"><div class="ts-ico">⚡</div><div class="ts-num">30 min</div><div class="ts-lbl">Avg Arrival Time</div></div>
-    <div class="ts-item"><div class="ts-ico">🛡️</div><div class="ts-num">₹5,000</div><div class="ts-lbl">Damage Guarantee</div></div>
-    <div class="ts-item"><div class="ts-ico">🔄</div><div class="ts-num">0</div><div class="ts-lbl">No-Show Zero Policy</div></div>
+    <div class="ts-item"><div class="ts-ico" aria-hidden="true">👩</div><div class="ts-num">200+</div><div class="ts-lbl">Verified Maids</div></div>
+    <div class="ts-item"><div class="ts-ico" aria-hidden="true">⚡</div><div class="ts-num">30 min</div><div class="ts-lbl">Avg Arrival Time</div></div>
+    <div class="ts-item"><div class="ts-ico" aria-hidden="true">🛡️</div><div class="ts-num">₹5,000</div><div class="ts-lbl">Damage Guarantee</div></div>
+    <div class="ts-item"><div class="ts-ico" aria-hidden="true">🔄</div><div class="ts-num">0</div><div class="ts-lbl">No-Show Zero Policy</div></div>
   </div>
 
   <section class="section" id="how">
@@ -81,7 +137,7 @@
       <p class="sec-desc">Booking itni aasaan hai jitna WhatsApp message karna</p>
     </div>
     <div class="how-wrap">
-      <div class="how-line"></div>
+      <div class="how-line" aria-hidden="true"></div>
       <div class="how-grid reveal">
         <div class="how-step"><div class="how-ico">📱<div class="how-num">1</div></div><div class="how-title">WhatsApp Karo</div><div class="how-desc">Service, time, address batao — 30 second mein confirm</div></div>
         <div class="how-step"><div class="how-ico">👩<div class="how-num">2</div></div><div class="how-title">Maid Match</div><div class="how-desc">Nearest verified maid assign hoti hai, profile dekho</div></div>
@@ -157,26 +213,27 @@
     </div>
   </section>
 
-  <section class="section" style="background:var(--cream2);">
+  <section class="section section--muted">
     <div class="sec-center reveal">
       <div class="sec-tag">Customer Reviews</div>
       <h2 class="sec-title">Kya Kehte Hain Hamare Customers</h2>
+      <p class="sec-desc">Real families, real bookings — Raipur se seedhi baat</p>
     </div>
     <div class="testi-grid reveal">
       <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
+        <div class="testi-stars" aria-label="5 stars">★★★★★</div>
         <div class="testi-text">"Pehle agent se maid dhundhte the — kabhi aati thi, kabhi nahi. QuickMaid se book kiya, 25 minute mein Savita Didi aa gayi. Bilkul verified, bilkul professional. Ab monthly plan le liya."</div>
-        <div class="testi-auth"><div class="testi-av">P</div><div><div class="testi-name">Priya Sharma</div><div class="testi-city">Tatibandh, Raipur</div></div></div>
+        <div class="testi-auth"><div class="testi-av" aria-hidden="true">P</div><div><div class="testi-name">Priya Sharma</div><div class="testi-city">Tatibandh, Raipur</div></div></div>
       </div>
       <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
+        <div class="testi-stars" aria-label="5 stars">★★★★★</div>
         <div class="testi-text">"Dono log office jaate hain. QuickMaid ka monthly plan liya — same didi roz aati hai, ghar hamesha saaf rehta hai. Paise bhi bachte hain agent se compare karke."</div>
-        <div class="testi-auth"><div class="testi-av">R</div><div><div class="testi-name">Rahul Gupta</div><div class="testi-city">Civil Lines, Raipur</div></div></div>
+        <div class="testi-auth"><div class="testi-av" aria-hidden="true">R</div><div><div class="testi-name">Rahul Gupta</div><div class="testi-city">Civil Lines, Raipur</div></div></div>
       </div>
       <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
+        <div class="testi-stars" aria-label="5 stars">★★★★★</div>
         <div class="testi-text">"Mere burzurg parents ke liye elderly care plan liya. Didi unka bahut khyal rakhti hai — medication reminder, safai, company bhi. 100% recommend karunga."</div>
-        <div class="testi-auth"><div class="testi-av">A</div><div><div class="testi-name">Anjali Tiwari</div><div class="testi-city">Shankar Nagar, Raipur</div></div></div>
+        <div class="testi-auth"><div class="testi-av" aria-hidden="true">A</div><div><div class="testi-name">Anjali Tiwari</div><div class="testi-city">Shankar Nagar, Raipur</div></div></div>
       </div>
     </div>
   </section>
@@ -217,11 +274,12 @@
     <div class="sec-center reveal">
       <div class="sec-tag">FAQ</div>
       <h2 class="sec-title">Aapke Sawaal, Hamare Jawab</h2>
+      <p class="sec-desc">Jo sabse zyada poochte hain — short aur clear jawab</p>
     </div>
     <div class="faq-wrap reveal">
-      @for (faq of faqs; track $index; let i = $index) {
+      @for (faq of faqs(); track $index; let i = $index) {
         <div class="faq-item" [class.open]="faq.open">
-          <button class="faq-q" (click)="toggleFaq(i)">{{ faq.q }}<span class="faq-ico">+</span></button>
+          <button type="button" class="faq-q" (click)="toggleFaq(i)" [attr.aria-expanded]="faq.open">{{ faq.q }}<span class="faq-ico" aria-hidden="true">+</span></button>
           <div class="faq-a">{{ faq.a }}</div>
         </div>
       }
@@ -240,25 +298,25 @@
   <footer>
     <div class="footer-grid">
       <div>
-        <a href="#" class="footer-logo"><div class="footer-logo-box">🏠</div><span class="footer-logo-text">QuickMaid</span></a>
+        <a href="#" class="footer-logo" (click)="$event.preventDefault()"><div class="footer-logo-box" aria-hidden="true">🏠</div><span class="footer-logo-text">QuickMaid</span></a>
         <p class="footer-tag">Raipur ki pehli on-demand, verified maid service.</p>
         <div class="footer-socials">
-          <a href="#" class="social-btn">📘</a>
-          <a href="#" class="social-btn">📸</a>
-          <a href="#" class="social-btn">💬</a>
+          <a href="#" class="social-btn" aria-label="Facebook">📘</a>
+          <a href="#" class="social-btn" aria-label="Instagram">📸</a>
+          <a href="#" class="social-btn" aria-label="WhatsApp">💬</a>
         </div>
       </div>
       <div>
         <div class="fc-h4">Services</div>
-        <ul class="fc-ul"><li><a href="#">Home Cleaning</a></li><li><a href="#">Cooking Help</a></li><li><a href="#">Bartan Saaf</a></li><li><a href="#">Laundry</a></li></ul>
+        <ul class="fc-ul"><li><a href="#services">Home Cleaning</a></li><li><a href="#services">Cooking Help</a></li><li><a href="#services">Bartan Saaf</a></li><li><a href="#services">Laundry</a></li></ul>
       </div>
       <div>
         <div class="fc-h4">Plans</div>
-        <ul class="fc-ul"><li><a href="#">Instant Booking</a></li><li><a href="#">Monthly Plan</a></li><li><a href="#">Annual Plan</a></li></ul>
+        <ul class="fc-ul"><li><a href="#plans">Instant Booking</a></li><li><a href="#plans">Monthly Plan</a></li><li><a href="#plans">Annual Plan</a></li></ul>
       </div>
       <div>
         <div class="fc-h4">Company</div>
-        <ul class="fc-ul"><li><a href="#">About Us</a></li><li><a href="#">Maid Bano</a></li><li><a href="#">Contact</a></li></ul>
+        <ul class="fc-ul"><li><a href="#">About Us</a></li><li><a href="#maid-join">Maid Bano</a></li><li><a href="#">Contact</a></li></ul>
       </div>
     </div>
     <div class="footer-bottom">
@@ -272,5 +330,5 @@
     </div>
   </footer>
 
-  <a href="#" class="wa-float">💬</a>
+  <a href="#" class="wa-float" aria-label="WhatsApp par message karein">💬</a>
 </div>
