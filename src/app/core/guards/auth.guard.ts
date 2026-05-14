@@ -1,8 +1,14 @@
-import { CanActivateFn } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { AuthService } from '@core/services/auth.service';
 
 /**
- * Placeholder functional auth guard. The current build is a UI prototype
- * with no real authentication, so this always allows. Wire it to a real
- * AuthService when backend integration lands.
+ * Blocks `/admin` until a session exists (sessionStorage prototype).
+ * Replace with real tokens + refresh when the API is ready.
  */
-export const authGuard: CanActivateFn = () => true;
+export const authGuard: CanActivateFn = (_route, state): boolean | UrlTree => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (auth.isAuthenticated()) return true;
+  return router.createUrlTree(['/auth'], { queryParams: { returnUrl: state.url } });
+};

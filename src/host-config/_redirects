@@ -1,0 +1,3 @@
+# SPA fallback — copy to host root or use with Netlify.
+# All routes should return index.html with HTTP 200 so Angular PathLocationStrategy works.
+/*    /index.html   200

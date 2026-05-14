@@ -1,0 +1,93 @@
+<div class="adm-page dp-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Live ops</p>
+      <h1 class="adm-title">Dispatch board</h1>
+      <p class="adm-sub">Today’s capacity vs demand — later tie to real-time GPS and job queue.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Raipur · today</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="rebalance()">Suggest rebalance</button>
+    </div>
+  </header>
+
+  <section class="adm-kpi-grid adm-kpi-grid--5" aria-label="Dispatch KPIs">
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">📋</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">84</span>
+        <span class="adm-kpi-lbl">Active jobs</span>
+        <span class="adm-kpi-hint">Live count</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">✅</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">91%</span>
+        <span class="adm-kpi-lbl">On-time start</span>
+        <span class="adm-kpi-hint">Last 4h</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--amber">
+      <span class="adm-kpi-ico" aria-hidden="true">⏱</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">6</span>
+        <span class="adm-kpi-lbl">SLA risk</span>
+        <span class="adm-kpi-hint">Needs assign</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--blue">
+      <span class="adm-kpi-ico" aria-hidden="true">👷</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">42</span>
+        <span class="adm-kpi-lbl">Maids online</span>
+        <span class="adm-kpi-hint">Geo-available</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--muted">
+      <span class="adm-kpi-ico" aria-hidden="true">🚗</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">18m</span>
+        <span class="adm-kpi-lbl">Avg travel</span>
+        <span class="adm-kpi-hint">Rolling</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Slots · demand vs supply</div>
+        <p class="table-hint">Drag-drop assign · Phase 3</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Window</th>
+            <th>Open slots</th>
+            <th>Assigned</th>
+            <th>Heat</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of slots; track s.time) {
+            <tr>
+              <td>{{ s.time }}</td>
+              <td class="adm-num">{{ s.open }}</td>
+              <td class="adm-num">{{ s.assigned }}</td>
+              <td>
+                @switch (s.risk) {
+                  @case ('ok') { <span class="badge badge-green">Stable</span> }
+                  @case ('watch') { <span class="badge badge-amber">Watch</span> }
+                  @default { <span class="badge badge-red">Surge</span> }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

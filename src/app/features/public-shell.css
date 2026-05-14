@@ -1,0 +1,24 @@
+/* Shared minimal shell for /book, /partner, /status */
+.pub-wrap{min-height:100vh;background:var(--cream);color:var(--ink);font-family:'Cabinet Grotesk',system-ui,sans-serif;}
+.pub-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border2);background:rgba(251,248,244,.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;}
+.pub-brand{font-weight:800;font-size:18px;text-decoration:none;color:var(--ink);}
+.pub-links{display:flex;flex-wrap:wrap;gap:10px 16px;}
+.pub-link{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;}
+.pub-link:hover{color:var(--or);}
+.pub-main{max-width:720px;margin:0 auto;padding:32px 20px 48px;}
+.pub-title{font-family:'Clash Display',sans-serif;font-size:clamp(26px,4vw,34px);font-weight:700;margin:0 0 10px;}
+.pub-lead{margin:0 0 24px;color:var(--muted);line-height:1.55;font-size:15px;}
+.pub-card{background:var(--white);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;box-shadow:0 4px 24px -16px rgba(19,17,14,.08);}
+.pub-row{display:grid;gap:10px;margin-bottom:14px;}
+.pub-row label{font-size:12px;font-weight:700;color:var(--muted);}
+.pub-row input,.pub-row select{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border2);font:inherit;}
+.pub-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;}
+.pub-btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:999px;font-weight:700;font-size:14px;border:none;cursor:pointer;font-family:inherit;background:linear-gradient(165deg,#FF7A3D 0%,var(--primary) 48%,#E04A0C 100%);color:#fff;}
+.pub-btn--ghost{background:var(--white);color:var(--ink);border:1.5px solid var(--border2);}
+.status-list{list-style:none;margin:0;padding:0;}
+.status-li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border2);}
+.status-li:last-child{border-bottom:none;}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.status-dot--ok{background:var(--g);}
+.status-dot--degraded{background:#F59E0B;}
+.status-dot--down{background:#EF4444;}

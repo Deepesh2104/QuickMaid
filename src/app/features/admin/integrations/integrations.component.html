@@ -1,0 +1,37 @@
+<div class="adm-page ig-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Platform</p>
+      <h1 class="adm-title">Integrations</h1>
+      <p class="adm-sub">SMS, payments, maps, WhatsApp Business — API keys and webhooks (never commit real keys).</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Vault · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="save()">Save changes</button>
+    </div>
+  </header>
+
+  <div class="form-card form-card--adm">
+    <div class="form-card-title">SMS provider</div>
+    <div class="form-grid">
+      <div class="fg2"><label class="fl2">Provider</label><select class="fs2"><option>MSG91</option><option>Twilio</option></select></div>
+      <div class="fg2"><label class="fl2">Auth key (masked)</label><input class="fi2" type="password" value="••••••••" autocomplete="off" readonly></div>
+    </div>
+  </div>
+
+  <div class="form-card form-card--adm">
+    <div class="form-card-title">Payments</div>
+    <div class="form-grid">
+      <div class="fg2"><label class="fl2">Razorpay key id</label><input class="fi2" value="rzp_live_****" readonly></div>
+      <div class="fg2"><label class="fl2">Webhook secret</label><input class="fi2" type="password" value="whsec_****" readonly></div>
+    </div>
+  </div>
+
+  <div class="form-card form-card--adm">
+    <div class="form-card-title">Maps & location</div>
+    <div class="form-grid">
+      <div class="fg2"><label class="fl2">Google Maps JS key</label><input class="fi2" value="AIza****" readonly></div>
+      <div class="fg2"><label class="fl2">Geofence webhook URL</label><input class="fi2" value="https://api.quickmaid.in/hooks/geo"></div>
+    </div>
+  </div>
+</div>

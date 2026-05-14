@@ -1,0 +1,50 @@
+<div class="adm-page cg-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Growth</p>
+      <h1 class="adm-title">Campaigns</h1>
+      <p class="adm-sub">Coupons, referrals, partner promos — A/B tests and attribution later.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Promos · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="newCampaign()">+ New campaign</button>
+    </div>
+  </header>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Active & draft</div>
+        <p class="table-hint">Redemption caps + fraud rules · Phase 3</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Channel</th>
+            <th>Offer</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows; track r.code) {
+            <tr>
+              <td><span class="adm-zone-tag">{{ r.code }}</span></td>
+              <td>{{ r.channel }}</td>
+              <td>{{ r.discount }}</td>
+              <td>
+                @switch (r.status) {
+                  @case ('live') { <span class="badge badge-green">Live</span> }
+                  @case ('draft') { <span class="badge badge-amber">Draft</span> }
+                  @default { <span class="badge badge-red">Ended</span> }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

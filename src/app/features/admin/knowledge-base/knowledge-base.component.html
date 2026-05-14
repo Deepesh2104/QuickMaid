@@ -1,0 +1,51 @@
+<div class="adm-page kb-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Support</p>
+      <h1 class="adm-title">Knowledge base</h1>
+      <p class="adm-sub">Internal articles for L1/L2 — versioned, searchable, linked from tickets.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">KB · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="publish()">New article</button>
+    </div>
+  </header>
+
+  <div class="form-card form-card--adm">
+    <div class="adm-toolbar adm-toolbar--stack">
+    <div class="adm-search-wrap adm-search-wrap--wide">
+      <span class="adm-search-ico" aria-hidden="true">🔍</span>
+      <input class="adm-search-inp" type="search" placeholder="Search runbooks…" [ngModel]="query()" (ngModelChange)="query.set($event)" autocomplete="off">
+    </div>
+    </div>
+  </div>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Articles</div>
+        <p class="table-hint">Visibility: internal / partner / public help center</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Tags</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of articles; track a.title) {
+            <tr>
+              <td>{{ a.title }}</td>
+              <td>{{ a.tags }}</td>
+              <td>{{ a.updated }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

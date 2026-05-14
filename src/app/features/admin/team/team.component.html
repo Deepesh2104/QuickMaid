@@ -1,0 +1,65 @@
+<div class="adm-page tm-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">People & access</p>
+      <h1 class="adm-title">Team & roles</h1>
+      <p class="adm-sub">Internal staff, invites, role templates — wire-up to Auth API in Phase 3.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">RBAC · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="invite()">+ Invite user</button>
+    </div>
+  </header>
+
+  <section class="adm-kpi-grid" aria-label="Team summary">
+    <article class="adm-kpi adm-kpi--green">
+      <span class="adm-kpi-ico" aria-hidden="true">👥</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">{{ rows.length }}</span>
+        <span class="adm-kpi-lbl">Directory</span>
+        <span class="adm-kpi-hint">Demo rows</span>
+      </div>
+    </article>
+    <article class="adm-kpi adm-kpi--or">
+      <span class="adm-kpi-ico" aria-hidden="true">🔐</span>
+      <div class="adm-kpi-body">
+        <span class="adm-kpi-val">4</span>
+        <span class="adm-kpi-lbl">Role templates</span>
+        <span class="adm-kpi-hint">Admin, Ops, Support, Analyst</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Staff directory</div>
+        <p class="table-hint">Search, filters, and permission matrix · Phase 3</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last active</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows; track r.email) {
+            <tr>
+              <td>{{ r.name }}</td>
+              <td>{{ r.email }}</td>
+              <td>{{ r.role }}</td>
+              <td>{{ r.status }}</td>
+              <td>{{ r.lastActive }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '@core/services/auth.service';
+import { SeoService } from '@core/services/seo.service';
 import { ToastService } from '@core/services/toast.service';
+import { DEFAULT_OG_IMAGE_PATH } from '@core/site.constants';
 
 type AuthTab = 'login' | 'signup';
 type PwType = 'password' | 'text';
@@ -13,9 +24,12 @@ type PwType = 'password' | 'text';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './auth.component.html',
 })
-export class AuthComponent {
+export class AuthComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+  private readonly seo = inject(SeoService);
 
   readonly tab = signal<AuthTab>('login');
   readonly loginPwType = signal<PwType>('password');
@@ -76,6 +90,27 @@ export class AuthComponent {
     this.selectedRole.set(role);
   }
 
+  ngOnInit(): void {
+    if (this.auth.isAuthenticated()) {
+      const next = this.auth.safeAdminReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+      void this.router.navigateByUrl(next ?? '/admin/dashboard');
+      return;
+    }
+    this.seo.setPage({
+      title: 'Staff login | QuickMaid',
+      description: 'Secure staff access for the QuickMaid admin console — login or register (demo).',
+      canonicalPath: '/auth',
+      ogTitle: 'Staff login | QuickMaid',
+      ogDescription: 'QuickMaid staff authentication.',
+      ogImagePath: DEFAULT_OG_IMAGE_PATH,
+      robots: 'noindex, nofollow',
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.seo.resetToDefaults();
+  }
+
   togglePw(which: AuthTab): void {
     const target = which === 'login' ? this.loginPwType : this.signupPwType;
     target.update((t) => (t === 'password' ? 'text' : 'password'));
@@ -96,8 +131,11 @@ export class AuthComponent {
       this.toast.show('Password daalein', '⚠️');
       return;
     }
+    const display = id.includes('@') ? id.split('@')[0] ?? 'User' : id;
+    this.auth.login({ loginId: id, displayName: display, role: 'Admin' });
     this.toast.show('Login successful! Welcome back 👋', '✅');
-    this.router.navigateByUrl('/admin/dashboard');
+    const next = this.auth.safeAdminReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+    void this.router.navigateByUrl(next ?? '/admin/dashboard');
   }
 
   doSignup(): void {
@@ -142,8 +180,20 @@ export class AuthComponent {
       return;
     }
 
-    this.toast.show(`Account ready! Role: ${this.selectedRole()} — abhi demo login 🎉`, '✅');
-    this.router.navigateByUrl('/admin/dashboard');
+    const role = this.signupRoleLabel(this.selectedRole());
+    this.auth.login({
+      loginId: em,
+      displayName: `${fn} ${ln}`.trim(),
+      role,
+    });
+    this.toast.show(`Account ready! Role: ${role} — abhi demo login 🎉`, '✅');
+    const next = this.auth.safeAdminReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+    void this.router.navigateByUrl(next ?? '/admin/dashboard');
+  }
+
+  private signupRoleLabel(key: string): string {
+    const m: Record<string, string> = { admin: 'Admin', manager: 'Manager', analyst: 'Analyst' };
+    return m[key] ?? 'Admin';
   }
 
   private isValidLoginIdentifier(raw: string): boolean {

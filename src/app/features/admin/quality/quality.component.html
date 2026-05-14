@@ -1,0 +1,42 @@
+<div class="adm-page ql-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Quality</p>
+      <h1 class="adm-title">Training & QC</h1>
+      <p class="adm-sub">Maid certification, mystery audits, checklist scores — LMS hooks in Phase 3.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">LMS · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="scheduleAudit()">Schedule field audit</button>
+    </div>
+  </header>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Module completion</div>
+        <p class="table-hint">Per-maid progress + expiry dates</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Roster completion</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows; track r.module) {
+            <tr>
+              <td>{{ r.module }}</td>
+              <td class="adm-amt">{{ r.completionPct }}%</td>
+              <td>{{ r.owner }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

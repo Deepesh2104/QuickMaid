@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Replace with your production origin when you deploy
+Sitemap: https://quickmaid.in/sitemap.xml

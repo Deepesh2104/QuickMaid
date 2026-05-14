@@ -1,0 +1,39 @@
+<div class="adm-page cp-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Trust</p>
+      <h1 class="adm-title">Privacy & compliance</h1>
+      <p class="adm-sub">Consent logs, data retention, customer export (DSAR) — legal review before go-live.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">DPDP-ready · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="requestExport()">Request data export</button>
+    </div>
+  </header>
+
+  <div class="adm-settings-split">
+    <div class="adm-settings-main">
+      <div class="form-card form-card--adm">
+        <div class="form-card-title">Policies</div>
+        <div class="adm-toggle-card">
+          <div class="adm-toggle-copy">
+            <p class="adm-toggle-title">Consent event logging</p>
+            <p class="adm-toggle-sub">Terms + privacy version per user.</p>
+          </div>
+          <div class="toggle-switch" [class.on]="consentLog()" (click)="toggleConsent()" role="switch" [attr.aria-checked]="consentLog()"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="adm-toggle-card">
+          <div class="adm-toggle-copy">
+            <p class="adm-toggle-title">Data minimization (PII masks in exports)</p>
+            <p class="adm-toggle-sub">Support views show last 4 digits only.</p>
+          </div>
+          <div class="toggle-switch" [class.on]="dataMin()" (click)="toggleDataMin()" role="switch" [attr.aria-checked]="dataMin()"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+    </div>
+    <aside class="adm-aside" aria-label="Checklist">
+      <h3 class="adm-aside-title">Checklist</h3>
+      <p class="adm-aside-sub">DPA with vendors, breach playbook, retention schedule.</p>
+    </aside>
+  </div>
+</div>

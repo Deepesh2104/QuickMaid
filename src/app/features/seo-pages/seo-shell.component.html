@@ -1,0 +1,111 @@
+<div
+  class="seo-wrap"
+  [ngClass]="{
+    'seo-wrap--about': heroVariant === 'about',
+    'seo-wrap--legal': heroVariant === 'legal',
+    'seo-wrap--privacy': heroVariant === 'privacy',
+    'seo-wrap--contact': heroVariant === 'contact',
+    'seo-wrap--brand': heroVariant === 'brand',
+  }">
+  <div class="seo-mesh" aria-hidden="true"></div>
+  <div class="seo-glow seo-glow--1" aria-hidden="true"></div>
+  <div class="seo-glow seo-glow--2" aria-hidden="true"></div>
+
+  <header class="seo-top seo-top--bar">
+    <nav class="seo-nav" aria-label="QuickMaid site">
+      <a routerLink="/" class="seo-brand">
+        <span class="seo-brand-ico" aria-hidden="true">🏠</span>
+        <span class="seo-brand-txt">QuickMaid</span>
+      </a>
+      <div class="seo-links">
+        <a routerLink="/about">About</a>
+        <a routerLink="/book" routerLinkActive="is-active">Book</a>
+        <a routerLink="/partner" routerLinkActive="is-active">Partner</a>
+        <a routerLink="/contact">Contact</a>
+        <a routerLink="/terms" routerLinkActive="is-active">Terms</a>
+        <a routerLink="/privacy" routerLinkActive="is-active">Privacy</a>
+        <a routerLink="/status" class="seo-link-muted">Status</a>
+        <a routerLink="/auth" class="seo-nav-cta">Staff →</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Full-bleed hero band -->
+  <div
+    class="seo-hero-band"
+    [ngClass]="{
+      'seo-hero-band--about': heroVariant === 'about',
+      'seo-hero-band--legal': heroVariant === 'legal',
+      'seo-hero-band--privacy': heroVariant === 'privacy',
+      'seo-hero-band--contact': heroVariant === 'contact',
+      'seo-hero-band--brand': heroVariant === 'brand',
+    }">
+    <div class="seo-hero-band-inner">
+      <div class="seo-hero-grid" [class.seo-hero-grid--single]="!showHeroExtras">
+        <div class="seo-hero-main">
+          @if (eyebrow) {
+            <p class="seo-eyebrow">{{ eyebrow }}</p>
+          }
+          <h1 class="seo-h1" itemprop="name">
+            {{ pageTitle }}
+            @if (pageTitleAccent) {
+              <span class="seo-h1-accent">{{ pageTitleAccent }}</span>
+            }
+          </h1>
+          @if (subtitle) {
+            <p class="seo-subtitle">{{ subtitle }}</p>
+          }
+          @if (updated) {
+            <div class="seo-hero-meta">
+              <span class="seo-meta-pill">
+                <span class="seo-meta-dot" aria-hidden="true"></span>
+                Last updated
+                <time itemprop="dateModified" [attr.datetime]="updated">{{ updated }}</time>
+              </span>
+              <span class="seo-meta-hint">Raipur, India</span>
+            </div>
+          }
+        </div>
+        @if (showHeroExtras) {
+          <div class="seo-hero-card" aria-hidden="true">
+            @if (heroVariant === 'contact') {
+              <div class="seo-hero-card-inner">
+                <div class="seo-mini-stat"><span class="seo-mini-val">8–8</span><span class="seo-mini-lbl">IST support</span></div>
+                <div class="seo-mini-stat"><span class="seo-mini-val">&lt;4h</span><span class="seo-mini-lbl">avg reply</span></div>
+                <div class="seo-mini-stat"><span class="seo-mini-val">100%</span><span class="seo-mini-lbl">official</span></div>
+              </div>
+            } @else {
+              <div class="seo-hero-card-inner">
+                <div class="seo-mini-stat"><span class="seo-mini-val">30</span><span class="seo-mini-lbl">min ETA</span></div>
+                <div class="seo-mini-stat"><span class="seo-mini-val">0%</span><span class="seo-mini-lbl">agent fee</span></div>
+                <div class="seo-mini-stat"><span class="seo-mini-val">4.8</span><span class="seo-mini-lbl">rating</span></div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-bleed content band -->
+  <div class="seo-panel-band">
+    <div class="seo-panel-band-inner">
+      <div class="seo-panel">
+        <ng-content />
+      </div>
+    </div>
+  </div>
+
+  <footer class="seo-foot">
+    <div class="seo-foot-inner">
+      <p class="seo-foot-copy">© 2026 QuickMaid · Raipur, Chhattisgarh</p>
+      <nav class="seo-foot-nav" aria-label="Footer">
+        <a routerLink="/about">About</a>
+        <a routerLink="/terms">Terms</a>
+        <a routerLink="/privacy">Privacy</a>
+        <a routerLink="/contact">Contact</a>
+        <a routerLink="/">Home</a>
+      </nav>
+    </div>
+  </footer>
+</div>

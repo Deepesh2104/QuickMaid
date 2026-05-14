@@ -293,8 +293,8 @@
                   [ngModel]="termsAccepted()"
                   (ngModelChange)="termsAccepted.set($event)" />
                 <label for="terms">
-                  Main <a href="#" class="auth-inline-link" (click)="$event.preventDefault()">Terms</a> aur
-                  <a href="#" class="auth-inline-link" (click)="$event.preventDefault()">Privacy Policy</a> se agree karta hun
+                  Main <a routerLink="/terms" class="auth-inline-link">Terms</a> aur
+                  <a routerLink="/privacy" class="auth-inline-link">Privacy Policy</a> se agree karta hun
                   <abbr class="req" title="Zaroori">*</abbr>
                 </label>
               </div>

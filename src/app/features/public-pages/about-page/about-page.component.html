@@ -1,0 +1,92 @@
+<div class="qm-root">
+  <nav class="qm-site-nav" aria-label="QuickMaid public">
+    <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
+    <div class="qm-site-links">
+      <a routerLink="/about" routerLinkActive="qm-is-active" [routerLinkActiveOptions]="{ exact: true }">About</a>
+      <a routerLink="/contact" routerLinkActive="qm-is-active">Contact</a>
+      <a routerLink="/book">Web book</a>
+      <a routerLink="/partner">Partner</a>
+      <a routerLink="/status">Status</a>
+      <a routerLink="/terms">Terms</a>
+      <a routerLink="/privacy">Privacy</a>
+      <a routerLink="/auth">Staff →</a>
+    </div>
+  </nav>
+
+  <main class="qm-site-main">
+    <section class="qm-band qm-band--about" aria-labelledby="qm-about-title">
+      <div class="qm-band-inner">
+        <div class="qm-about-grid">
+          <div class="qm-about-copy">
+            <p class="qm-kicker">About QuickMaid</p>
+            <h1 id="qm-about-title" class="qm-display">
+              Ghar ki safai,<br />
+              <span class="qm-display-accent">bina darr ke</span>
+            </h1>
+            <p class="qm-dek">
+              Raipur-first on-demand network — <strong>verified partners</strong>, <strong>transparent payouts</strong>,
+              aur <strong>WhatsApp-first</strong> booking jo busy families ke liye actually bana hai.
+            </p>
+            <div class="qm-metric-row">
+              <div class="qm-metric"><span class="qm-metric-val">500+</span><span class="qm-metric-lbl">Happy homes</span></div>
+              <div class="qm-metric"><span class="qm-metric-val">4.8★</span><span class="qm-metric-lbl">Avg rating</span></div>
+              <div class="qm-metric"><span class="qm-metric-val">₹0</span><span class="qm-metric-lbl">Agent fee</span></div>
+            </div>
+          </div>
+          <div class="qm-about-visual">
+            <div class="qm-about-frame">
+              <img
+                class="qm-about-img"
+                src="assets/marketing/about-hero-ref.png"
+                width="900"
+                height="560"
+                loading="eager"
+                alt="QuickMaid — booking preview, plans aur verified maid flow" />
+              <div class="qm-about-badge">Live design reference</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="qm-band qm-band--stripe" aria-label="Values">
+      <div class="qm-stripe-flex">
+        <div class="qm-stripe-ico" aria-hidden="true">🤝</div>
+        <p class="qm-stripe-text">
+          <strong>Sabka ghar, sabka respect</strong> — partners, customers, support — ek hi line mein.
+        </p>
+        <a class="qm-stripe-btn" routerLink="/contact">Hamse baat karein →</a>
+      </div>
+    </section>
+
+    <section class="qm-band qm-band--tiles" aria-label="Highlights">
+      <div class="qm-band-inner">
+        <div class="qm-tiles-grid">
+          <article class="qm-tile">
+            <span class="qm-tile-ico" aria-hidden="true">🛡️</span>
+            <h3>Verified stack</h3>
+            <p>Onboarding + field checks — traceable visits.</p>
+          </article>
+          <article class="qm-tile">
+            <span class="qm-tile-ico" aria-hidden="true">⚡</span>
+            <h3>Fast dispatch</h3>
+            <p>Zones + capacity signals se realistic ETAs.</p>
+          </article>
+          <article class="qm-tile">
+            <span class="qm-tile-ico" aria-hidden="true">💬</span>
+            <h3>Hindi-first CX</h3>
+            <p>WhatsApp + voice; web jahan zaroor.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="qm-site-mini-foot">
+    <a routerLink="/">Home</a>
+    <a routerLink="/book">Web booking</a>
+    <a routerLink="/contact">Contact</a>
+    <a routerLink="/terms">Terms</a>
+    <a routerLink="/privacy">Privacy</a>
+  </footer>
+</div>

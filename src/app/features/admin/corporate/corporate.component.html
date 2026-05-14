@@ -1,0 +1,50 @@
+<div class="adm-page cr-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">B2B</p>
+      <h1 class="adm-title">Corporate accounts</h1>
+      <p class="adm-sub">Contracts, invoicing, seat bundles, and GST details — ERP sync in Phase 3.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Accounts · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="addAccount()">+ Add account</button>
+    </div>
+  </header>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Directory</div>
+        <p class="table-hint">PO numbers, billing contacts, SLA addenda</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Seats</th>
+            <th>MRR</th>
+            <th>Pipeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows; track r.company) {
+            <tr>
+              <td>{{ r.company }}</td>
+              <td class="adm-num">{{ r.seats }}</td>
+              <td class="adm-amt">{{ r.mrr }}</td>
+              <td>
+                @switch (r.status) {
+                  @case ('active') { <span class="badge badge-green">Active</span> }
+                  @case ('trial') { <span class="badge badge-amber">Trial</span> }
+                  @default { <span class="badge badge-red">Negotiating</span> }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -6,12 +6,12 @@
       <div class="tb-bc">{{ breadcrumb() }}</div>
     </div>
     <div class="tb-right">
-      <div class="tb-notif" (click)="notify()">🔔<div class="notif-dot"></div></div>
+      <div class="tb-notif" (click)="notify()" title="Alerts" aria-label="Open alerts">🔔<div class="notif-dot"></div></div>
       <div class="tb-user">
         <div class="tb-av">A</div>
         <div>
-          <div class="tb-uname">Admin</div>
-          <div class="tb-urole">Super Admin</div>
+          <div class="tb-uname">{{ auth.displayName() }}</div>
+          <div class="tb-urole">{{ auth.roleLabel() }}</div>
         </div>
       </div>
       <button class="tb-logout" (click)="doLogout()">Logout</button>

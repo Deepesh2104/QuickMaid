@@ -1,0 +1,50 @@
+<div class="adm-page nt-page">
+  <header class="adm-hero">
+    <div class="adm-hero-text">
+      <p class="adm-eyebrow">Operations</p>
+      <h1 class="adm-title">Alert center</h1>
+      <p class="adm-sub">Cross-cutting alerts — later wire to push, email, and PagerDuty webhooks.</p>
+    </div>
+    <div class="adm-hero-aside">
+      <span class="adm-sync-pill" role="status">Inbox · scaffold</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="markAllRead()">Mark all read</button>
+    </div>
+  </header>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Notifications</div>
+        <p class="table-hint">Severity, routing rules · Phase 3</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Severity</th>
+            <th>Message</th>
+            <th>When</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track r.id) {
+            <tr>
+              <td>{{ r.read ? '○' : '●' }}</td>
+              <td>
+                @switch (r.severity) {
+                  @case ('crit') { <span class="badge badge-red">Crit</span> }
+                  @case ('warn') { <span class="badge badge-amber">Warn</span> }
+                  @default { <span class="badge badge-green">Info</span> }
+                }
+              </td>
+              <td>{{ r.title }}</td>
+              <td>{{ r.at }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

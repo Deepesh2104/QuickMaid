@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } fro
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { ToastService } from '@core/services/toast.service';
+import { AuthService } from '@core/services/auth.service';
 import { ADMIN_NAV, BREADCRUMB_LABELS } from './admin-nav.config';
 
 @Component({
@@ -15,6 +16,7 @@ import { ADMIN_NAV, BREADCRUMB_LABELS } from './admin-nav.config';
 export class AdminLayoutComponent {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  readonly auth = inject(AuthService);
 
   readonly nav = ADMIN_NAV;
 
@@ -34,11 +36,12 @@ export class AdminLayoutComponent {
   });
 
   doLogout(): void {
-    this.router.navigateByUrl('/');
+    this.auth.logout();
+    void this.router.navigateByUrl('/');
     this.toast.show('Logged out successfully', '👋');
   }
 
   notify(): void {
-    this.toast.show('3 new booking alerts!', '🔔');
+    void this.router.navigateByUrl('/admin/notifications');
   }
 }

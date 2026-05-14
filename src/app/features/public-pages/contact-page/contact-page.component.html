@@ -1,0 +1,76 @@
+<div class="qm-root">
+  <nav class="qm-site-nav" aria-label="QuickMaid public">
+    <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
+    <div class="qm-site-links">
+      <a routerLink="/about" routerLinkActive="qm-is-active">About</a>
+      <a routerLink="/contact" routerLinkActive="qm-is-active" [routerLinkActiveOptions]="{ exact: true }">Contact</a>
+      <a routerLink="/book">Web book</a>
+      <a routerLink="/partner">Partner</a>
+      <a routerLink="/status">Status</a>
+      <a routerLink="/terms">Terms</a>
+      <a routerLink="/privacy">Privacy</a>
+      <a routerLink="/auth">Staff →</a>
+    </div>
+  </nav>
+
+  <main class="qm-site-main">
+    <section class="qm-band qm-band--contact-intro" aria-labelledby="qm-contact-title">
+      <div class="qm-band-inner">
+        <div class="qm-contact-head">
+          <p class="qm-kicker">Contact</p>
+          <h1 id="qm-contact-title" class="qm-display">Official touchpoints</h1>
+          <p class="qm-dek">Sirf in channels par trust karein — phishing se bachne ke liye.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="qm-band qm-band--contact" aria-label="Contact methods">
+      <div class="qm-band-inner">
+        <div class="qm-contact-grid">
+          <a
+            class="qm-contact-card"
+            [href]="waHref"
+            rel="noopener noreferrer"
+            target="_blank">
+            <span class="qm-cc-ico" aria-hidden="true">💬</span>
+            <div>
+              <h3>WhatsApp</h3>
+              <p>Fastest — bookings &amp; day-of help</p>
+              <span class="qm-cc-link">Open chat →</span>
+            </div>
+          </a>
+          <div class="qm-contact-card qm-contact-card--static">
+            <span class="qm-cc-ico" aria-hidden="true">✉️</span>
+            <div>
+              <h3>Email</h3>
+              <p>Legal, privacy, invoices</p>
+              <a class="qm-cc-link" href="mailto:support@quickmaid.in">support&#64;quickmaid.in</a>
+            </div>
+          </div>
+          <div class="qm-contact-card qm-contact-card--static">
+            <span class="qm-cc-ico" aria-hidden="true">📞</span>
+            <div>
+              <h3>Phone</h3>
+              <p>Mon–Sun · 8–8 IST</p>
+              <a class="qm-cc-link" [href]="telHref">+91 98765 43210</a>
+            </div>
+          </div>
+        </div>
+        <div class="qm-contact-foot">
+          <a routerLink="/book" class="qm-ghost-light">Web booking →</a>
+          <a routerLink="/terms" class="qm-ghost-light">Terms</a>
+          <a routerLink="/privacy" class="qm-ghost-light">Privacy</a>
+          <a routerLink="/about" class="qm-ghost-light">About</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="qm-site-mini-foot">
+    <a routerLink="/">Home</a>
+    <a routerLink="/about">About</a>
+    <a routerLink="/book">Web booking</a>
+    <a routerLink="/terms">Terms</a>
+    <a routerLink="/privacy">Privacy</a>
+  </footer>
+</div>
