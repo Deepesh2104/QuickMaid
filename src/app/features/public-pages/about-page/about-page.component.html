@@ -14,69 +14,280 @@
   </nav>
 
   <main class="qm-site-main">
+    <!-- Hero -->
     <section class="qm-band qm-band--about" aria-labelledby="qm-about-title">
       <div class="qm-band-inner">
         <div class="qm-about-grid">
           <div class="qm-about-copy">
             <p class="qm-kicker">About QuickMaid</p>
             <h1 id="qm-about-title" class="qm-display">
-              Ghar ki safai,<br />
-              <span class="qm-display-accent">bina darr ke</span>
+              Raipur ke gharon ke liye<br />
+              <span class="qm-display-accent">bharosemand safai</span>
             </h1>
             <p class="qm-dek">
-              Raipur-first on-demand network — <strong>verified partners</strong>, <strong>transparent payouts</strong>,
-              aur <strong>WhatsApp-first</strong> booking jo busy families ke liye actually bana hai.
+              Hum ek <strong>Raipur-first</strong> platform hain jo verified home-help ko seedha families se jodta hai —
+              <strong>clear pricing</strong>, <strong>WhatsApp-first booking</strong>, aur <strong>₹0 agent commission</strong>.
+              Busy parents, working couples, aur burzurg care — sab ke liye predictable, respectful service.
             </p>
             <div class="qm-metric-row">
-              <div class="qm-metric"><span class="qm-metric-val">500+</span><span class="qm-metric-lbl">Happy homes</span></div>
-              <div class="qm-metric"><span class="qm-metric-val">4.8★</span><span class="qm-metric-lbl">Avg rating</span></div>
-              <div class="qm-metric"><span class="qm-metric-val">₹0</span><span class="qm-metric-lbl">Agent fee</span></div>
+              <div class="qm-metric">
+                <span class="qm-metric-val">500+</span><span class="qm-metric-lbl">Happy families</span>
+              </div>
+              <div class="qm-metric">
+                <span class="qm-metric-val">4.8 ★</span><span class="qm-metric-lbl">Avg rating</span>
+              </div>
+              <div class="qm-metric">
+                <span class="qm-metric-val">₹0</span><span class="qm-metric-lbl">Agent fee</span>
+              </div>
+            </div>
+            <div class="qm-about-hero-cta">
+              <a class="qm-btn-primary" [href]="waBook" rel="noopener noreferrer" target="_blank">WhatsApp pe book →</a>
+              <a class="qm-btn-ghost" href="/#plans">Plans dekho</a>
+              <a class="qm-btn-ghost" routerLink="/contact">Contact</a>
             </div>
           </div>
-          <div class="qm-about-visual">
-            <div class="qm-about-frame">
-              <img
-                class="qm-about-img"
-                src="assets/marketing/about-hero-ref.png"
-                width="900"
-                height="560"
-                loading="eager"
-                alt="QuickMaid — booking preview, plans aur verified maid flow" />
-              <div class="qm-about-badge">Live design reference</div>
+          <div class="qm-about-visual" aria-hidden="true">
+            <div class="qm-about-hero-art">
+              <div class="qm-ab-float qm-ab-float--a">
+                <span class="qm-ab-float-ico">✅</span>
+                <span>Aadhaar verified</span>
+              </div>
+              <div class="qm-ab-float qm-ab-float--b">
+                <span class="qm-ab-float-ico">⚡</span>
+                <span>30 min zone</span>
+              </div>
+              <div class="qm-ab-phone">
+                <div class="qm-ab-phone-notch"></div>
+                <div class="qm-ab-phone-screen">
+                  <div class="qm-ab-ph-top">
+                    <span class="qm-ab-ph-brand">QuickMaid</span>
+                    <span class="qm-ab-ph-loc">Tatibandh, Raipur</span>
+                  </div>
+                  <div class="qm-ab-ph-banner">
+                    <span class="qm-ab-ph-lbl">Instant booking</span>
+                    <span class="qm-ab-ph-title">Abhi didi bulao</span>
+                    <span class="qm-ab-ph-pill">OTP start · OTP end</span>
+                  </div>
+                  <div class="qm-ab-ph-grid">
+                    <span>🧹 Cleaning</span>
+                    <span>🍳 Cooking</span>
+                    <span>🍽️ Bartan</span>
+                    <span>👔 Laundry</span>
+                  </div>
+                  <div class="qm-ab-ph-foot">
+                    <span class="qm-ab-ph-av">S</span>
+                    <span class="qm-ab-ph-meta">Savita D. · 4.9 ★ · Verified</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- Mission -->
+    <section class="qm-band qm-band--story" aria-labelledby="qm-mission-title">
+      <div class="qm-band-inner qm-story-inner">
+        <div class="qm-story-copy">
+          <p class="qm-kicker">Hamara mission</p>
+          <h2 id="qm-mission-title" class="qm-h2-section">Ghar mein shanti, system mein clarity</h2>
+          <p class="qm-body-lg">
+            Traditional maid hiring aksar <em>phone tag, agent cuts,</em> aur <em>last-minute no-shows</em> par based rehta
+            hai. QuickMaid is flow ko <strong>WhatsApp + light tech</strong> se replace karta hai taaki aapko pata ho —
+            kaun aa rahi hai, kab, aur kitne mein.
+          </p>
+          <p class="qm-body-lg">
+            Hum maids ko bhi <strong>samay par payout</strong> aur <strong>izzat wala match</strong> dena chahte hain —
+            beech mein commission khatam karke zyada earning seedha un tak.
+          </p>
+        </div>
+        <aside class="qm-story-aside" aria-label="Highlights">
+          <div class="qm-story-stat">
+            <span class="qm-story-stat-num">200+</span>
+            <span class="qm-story-stat-lbl">Verified partners onboarded</span>
+          </div>
+          <div class="qm-story-stat">
+            <span class="qm-story-stat-num">₹5K</span>
+            <span class="qm-story-stat-lbl">Damage cover per booking (T&amp;C)</span>
+          </div>
+          <div class="qm-story-quote">
+            <p>“Official line sirf WhatsApp + yahi site — koi random agent nahi.”</p>
+            <span class="qm-story-quote-src">— QuickMaid ops, Raipur</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Bento pillars -->
+    <section class="qm-band qm-band--bento" aria-labelledby="qm-pillars-title">
+      <div class="qm-band-inner">
+        <header class="qm-section-head">
+          <p class="qm-kicker">Kyun QuickMaid</p>
+          <h2 id="qm-pillars-title" class="qm-h2-section">Jo cheezein hum roz improve karte hain</h2>
+          <p class="qm-section-dek">Chhota platform, seedhi baat — lekin har touchpoint par polish.</p>
+        </header>
+        <div class="qm-bento">
+          <article class="qm-bento-card qm-bento-card--span2">
+            <span class="qm-bento-ico" aria-hidden="true">🛡️</span>
+            <h3>Verification stack</h3>
+            <p>
+              Onboarding par identity checks, field references, aur visit traceability — taaki aapko ghar bulane mein
+              kam guesswork ho.
+            </p>
+          </article>
+          <article class="qm-bento-card">
+            <span class="qm-bento-ico" aria-hidden="true">💬</span>
+            <h3>Hindi-first CX</h3>
+            <p>WhatsApp par clear steps; web tab jahan aap comfortable hon.</p>
+          </article>
+          <article class="qm-bento-card">
+            <span class="qm-bento-ico" aria-hidden="true">⚡</span>
+            <h3>Zone-aware dispatch</h3>
+            <p>Raipur zones + capacity signals se realistic ETAs, zyada reliable matching.</p>
+          </article>
+          <article class="qm-bento-card">
+            <span class="qm-bento-ico" aria-hidden="true">📋</span>
+            <h3>Transparent plans</h3>
+            <p>Instant, monthly, annual — jo dikhe wahi logic; hidden “service fee” nahi.</p>
+          </article>
+          <article class="qm-bento-card qm-bento-card--span2">
+            <span class="qm-bento-ico" aria-hidden="true">🤝</span>
+            <h3>Partner respect</h3>
+            <p>
+              Payouts predictable, support official channels par, aur ratings se growth — agent ke bina zyada control
+              unke haath mein.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust dark -->
+    <section class="qm-band qm-band--about-trust" aria-labelledby="qm-trust-title">
+      <div class="qm-band-inner">
+        <header class="qm-section-head qm-section-head--on-dark">
+          <p class="qm-kicker qm-kicker--on-dark">Trust layer</p>
+          <h2 id="qm-trust-title" class="qm-h2-section qm-h2-section--on-dark">Booking ke peeche kya hota hai</h2>
+          <p class="qm-section-dek qm-section-dek--on-dark">Har step short aur auditable — chaos kam, confidence zyada.</p>
+        </header>
+        <ol class="qm-trust-steps">
+          <li>
+            <span class="qm-trust-step-num">1</span>
+            <span class="qm-trust-step-t">Request</span>
+            <span class="qm-trust-step-d">WhatsApp / web — service, slot, pata.</span>
+          </li>
+          <li>
+            <span class="qm-trust-step-num">2</span>
+            <span class="qm-trust-step-t">Match</span>
+            <span class="qm-trust-step-d">Nearest verified partner + profile snapshot.</span>
+          </li>
+          <li>
+            <span class="qm-trust-step-num">3</span>
+            <span class="qm-trust-step-t">OTP start</span>
+            <span class="qm-trust-step-d">Visit tabhi count jab aap confirm karein.</span>
+          </li>
+          <li>
+            <span class="qm-trust-step-num">4</span>
+            <span class="qm-trust-step-t">Pay &amp; rate</span>
+            <span class="qm-trust-step-d">UPI + feedback — next booking smoother.</span>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Dual audience -->
+    <section class="qm-band qm-band--dual" aria-labelledby="qm-audience-title">
+      <div class="qm-band-inner">
+        <header class="qm-section-head">
+          <p class="qm-kicker">Dono taraf</p>
+          <h2 id="qm-audience-title" class="qm-h2-section">Families aur didi — dono ke liye design</h2>
+        </header>
+        <div class="qm-dual-grid">
+          <article class="qm-dual-card">
+            <h3>Parivaar</h3>
+            <ul class="qm-dual-list">
+              <li>Monthly / instant — jo life rhythm ho</li>
+              <li>Same preferred partner jahan possible</li>
+              <li>Official support — phishing se bachne ke liye fixed channels</li>
+            </ul>
+            <a routerLink="/book" class="qm-dual-link">Web booking →</a>
+          </article>
+          <article class="qm-dual-card qm-dual-card--accent">
+            <h3>Partner (maid / helper)</h3>
+            <ul class="qm-dual-list">
+              <li>Agent commission nahi — zyada earning aap tak</li>
+              <li>Schedule flexibility + weekly UPI payouts (policy ke hisaab se)</li>
+              <li>Rating se visibility — achha kaam dikhta hai</li>
+            </ul>
+            <a routerLink="/partner" class="qm-dual-link qm-dual-link--on-accent">Partner join →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="qm-band qm-band--timeline" aria-labelledby="qm-road-title">
+      <div class="qm-band-inner">
+        <header class="qm-section-head">
+          <p class="qm-kicker">Safar</p>
+          <h2 id="qm-road-title" class="qm-h2-section">Ab tak · aage</h2>
+          <p class="qm-section-dek">Chhota timeline — bada focus: Raipur mein depth.</p>
+        </header>
+        <ul class="qm-timeline">
+          <li class="qm-timeline-item">
+            <span class="qm-timeline-dot" aria-hidden="true"></span>
+            <div>
+              <span class="qm-timeline-when">Phase 1</span>
+              <span class="qm-timeline-what">Core booking + verification + WhatsApp ops</span>
+            </div>
+          </li>
+          <li class="qm-timeline-item">
+            <span class="qm-timeline-dot" aria-hidden="true"></span>
+            <div>
+              <span class="qm-timeline-when">Phase 2</span>
+              <span class="qm-timeline-what">Plans, zones, partner payouts polish</span>
+            </div>
+          </li>
+          <li class="qm-timeline-item">
+            <span class="qm-timeline-dot" aria-hidden="true"></span>
+            <div>
+              <span class="qm-timeline-when">Phase 3</span>
+              <span class="qm-timeline-what">Deeper SLAs, backups, aur family dashboards</span>
+            </div>
+          </li>
+          <li class="qm-timeline-item qm-timeline-item--future">
+            <span class="qm-timeline-dot" aria-hidden="true"></span>
+            <div>
+              <span class="qm-timeline-when">Roadmap</span>
+              <span class="qm-timeline-what">Nearby cities — jab Raipur rock-solid ho</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Values stripe -->
     <section class="qm-band qm-band--stripe" aria-label="Values">
       <div class="qm-stripe-flex">
         <div class="qm-stripe-ico" aria-hidden="true">🤝</div>
         <p class="qm-stripe-text">
-          <strong>Sabka ghar, sabka respect</strong> — partners, customers, support — ek hi line mein.
+          <strong>Sabka ghar, sabka izzat</strong> — customer, partner, support team: ek hi line par clarity aur
+          respectful communication.
         </p>
-        <a class="qm-stripe-btn" routerLink="/contact">Hamse baat karein →</a>
+        <a class="qm-stripe-btn" [href]="waAbout" rel="noopener noreferrer" target="_blank">Team se baat →</a>
       </div>
     </section>
 
-    <section class="qm-band qm-band--tiles" aria-label="Highlights">
-      <div class="qm-band-inner">
-        <div class="qm-tiles-grid">
-          <article class="qm-tile">
-            <span class="qm-tile-ico" aria-hidden="true">🛡️</span>
-            <h3>Verified stack</h3>
-            <p>Onboarding + field checks — traceable visits.</p>
-          </article>
-          <article class="qm-tile">
-            <span class="qm-tile-ico" aria-hidden="true">⚡</span>
-            <h3>Fast dispatch</h3>
-            <p>Zones + capacity signals se realistic ETAs.</p>
-          </article>
-          <article class="qm-tile">
-            <span class="qm-tile-ico" aria-hidden="true">💬</span>
-            <h3>Hindi-first CX</h3>
-            <p>WhatsApp + voice; web jahan zaroor.</p>
-          </article>
+    <!-- Final CTA -->
+    <section class="qm-band qm-band--about-cta" aria-labelledby="qm-about-cta-title">
+      <div class="qm-band-inner qm-about-cta-inner">
+        <h2 id="qm-about-cta-title" class="qm-about-cta-title">Ready ho jaiye next clean ke liye</h2>
+        <p class="qm-about-cta-dek">Ek message — slot confirm. Ya pehle official touchpoints check karein.</p>
+        <div class="qm-about-cta-row">
+          <a class="qm-btn-primary qm-btn-primary--lg" [href]="waBook" rel="noopener noreferrer" target="_blank">WhatsApp pe book karein</a>
+          <a class="qm-btn-on-cta" routerLink="/contact">Contact page</a>
+          <a class="qm-btn-on-cta" [href]="telHref">Call</a>
         </div>
       </div>
     </section>

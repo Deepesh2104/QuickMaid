@@ -1,96 +1,140 @@
-<app-seo-shell
-  pageTitle="Terms"
-  pageTitleAccent="& Conditions"
-  eyebrow="Legal"
-  subtitle="Platform rules for customers, service partners, and QuickMaid — bookings, payments, conduct, and liability (India)."
-  heroVariant="legal"
-  [showHeroExtras]="false"
-  updated="2026-05-14">
-  <div class="seo-doc seo-doc--split">
-    <aside class="seo-toc" aria-label="On this page">
-      <div class="seo-toc-h">On this page</div>
-      <nav class="seo-toc-scroll">
-        <a href="#t-intro"><span class="seo-toc-num" aria-hidden="true">—</span> Intro</a>
-        <a href="#t-accept"><span class="seo-toc-num">1</span> Acceptance</a>
-        <a href="#t-service"><span class="seo-toc-num">2</span> Service</a>
-        <a href="#t-book"><span class="seo-toc-num">3</span> Bookings</a>
-        <a href="#t-pay"><span class="seo-toc-num">4</span> Payments</a>
-        <a href="#t-conduct"><span class="seo-toc-num">5</span> Conduct</a>
-        <a href="#t-liab"><span class="seo-toc-num">6</span> Liability</a>
-        <a href="#t-law"><span class="seo-toc-num">7</span> Governing law</a>
-        <a href="#t-contact"><span class="seo-toc-num">8</span> Contact</a>
-      </nav>
-    </aside>
-    <div class="seo-prose">
-      <h2 id="t-intro">Introduction</h2>
-      <p>
-        Ye terms QuickMaid platform aur aapke beech service use ko clarify karte hain. Product evolve hote rahega —
-        material changes par website / WhatsApp par reasonable notice dene ki koshish karenge; major changes par
-        renewed acceptance maang sakte hain.
-      </p>
-
-      <h2 id="t-accept">1. Acceptance</h2>
-      <p>
-        Booking request bhejne, website use karne, ya QuickMaid se communicate karne se aap in terms se agree maante ho.
-        Agar agree nahi, kripya service use na karein.
-      </p>
-
-      <h2 id="t-service">2. Service nature</h2>
-      <p>
-        QuickMaid home cleaning aur related on-demand services facilitate karta hai. Exact deliverables plan, slot,
-        add-ons, aur city norms ke hisaab se confirm hote hain — har visit ka scope booking confirmation / work order
-        par clearly hona chahiye.
-      </p>
-
-      <h2 id="t-book">3. Bookings &amp; cancellations</h2>
-      <ul>
-        <li>Slot confirmation availability aur partner capacity par depend karti hai.</li>
-        <li>Late cancellation / rescheduling / no-show fees agar applicable hon to booking flow ya rate card par disclose kiye jayenge.</li>
-        <li>Force majeure (weather, bandh, network outage) cases mein reschedule priority di ja sakti hai.</li>
-      </ul>
-
-      <h2 id="t-pay">4. Payments</h2>
-      <p>
-        Payments authorized payment partners ke through process ho sakti hain. Taxes (GST) jahan lagoo hon, invoice /
-        receipt rules applicable law ke mutabiq honge. Chargebacks / disputes payment provider + internal review ke
-        through handle ho sakte hain.
-      </p>
-
-      <h2 id="t-conduct">5. Conduct &amp; safety</h2>
-      <p>
-        Customers aur service partners dono se respectful conduct expected hai. Abuse, harassment, illegal activity, ya
-        platform misuse par access terminate ho sakta hai — criminal matters ko authorities ke saath cooperate kiya
-        ja sakta hai jahan law require kare.
-      </p>
-
-      <h2 id="t-liab">6. Limitation of liability</h2>
-      <p>
-        Jitna local law allow kare, QuickMaid ki aggregate liability disputed booking / billing period ke fees paid
-        tak capped ho sakti hai. Consequential / indirect damages exclude kiye ja sakte hain jahan legally permissible
-        ho. Koi bhi clause aapko non-waivable statutory rights se override nahi karti.
-      </p>
-
-      <h2 id="t-law">7. Governing law</h2>
-      <p>
-        Disputes primarily <strong>Raipur, Chhattisgarh, India</strong> ke courts / consumer forums ke subject rahenge,
-        subject to mandatory arbitration / jurisdiction rules jo law impose kare.
-      </p>
-
-      <h2 id="t-contact">8. Contact</h2>
-      <p>Legal / privacy questions ke liye <a routerLink="/contact">Contact</a> page dekhein.</p>
+<div class="qm-root">
+  <nav class="qm-site-nav" aria-label="QuickMaid public">
+    <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
+    <div class="qm-site-links">
+      <a routerLink="/about" routerLinkActive="qm-is-active">About</a>
+      <a routerLink="/contact" routerLinkActive="qm-is-active">Contact</a>
+      <a routerLink="/book">Web book</a>
+      <a routerLink="/partner">Partner</a>
+      <a routerLink="/status">Status</a>
+      <a routerLink="/terms" routerLinkActive="qm-is-active" [routerLinkActiveOptions]="{ exact: true }">Terms</a>
+      <a routerLink="/privacy" routerLinkActive="qm-is-active">Privacy</a>
+      <a routerLink="/auth">Staff →</a>
     </div>
-  </div>
+  </nav>
 
-  <div class="seo-legal-cta" aria-label="Next steps">
-    <div class="seo-cta-band">
-      <div>
-        <h2>Sawaal hain?</h2>
-        <p>Official channels par team se seedha connect karein — WhatsApp ya email, jaldi reply.</p>
+  <main class="qm-site-main">
+    <section class="qm-band qm-band--legal-hero" aria-labelledby="qm-terms-h1">
+      <div class="qm-band-inner qm-legal-hero-inner">
+        <p class="qm-kicker">Legal</p>
+        <h1 id="qm-terms-h1" class="qm-display">
+          Terms <span class="qm-display-accent">&amp; Conditions</span>
+        </h1>
+        <p class="qm-dek qm-legal-hero-dek">
+          Platform rules for customers, service partners, aur QuickMaid — bookings, payments, conduct, liability
+          (India).
+        </p>
+        <div class="qm-legal-meta">
+          <span class="qm-legal-pill">
+            <span class="qm-legal-dot" aria-hidden="true"></span>
+            Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
+          </span>
+          <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
+        </div>
       </div>
-      <div class="seo-cta-btns">
-        <a routerLink="/contact" class="seo-btn seo-btn--primary">Contact page →</a>
-        <a routerLink="/privacy" class="seo-btn seo-btn--ghost">Privacy Policy</a>
+    </section>
+
+    <section class="qm-band qm-band--legal-body" aria-label="Terms content">
+      <div class="qm-band-inner">
+        <div class="qm-legal-doc">
+          <aside class="qm-legal-toc" aria-label="On this page">
+            <div class="qm-legal-toc-h">On this page</div>
+            <nav class="qm-legal-toc-nav">
+              <a href="#t-intro"><span class="qm-legal-toc-num" aria-hidden="true">—</span> Intro</a>
+              <a href="#t-accept"><span class="qm-legal-toc-num">1</span> Acceptance</a>
+              <a href="#t-service"><span class="qm-legal-toc-num">2</span> Service</a>
+              <a href="#t-book"><span class="qm-legal-toc-num">3</span> Bookings</a>
+              <a href="#t-pay"><span class="qm-legal-toc-num">4</span> Payments</a>
+              <a href="#t-conduct"><span class="qm-legal-toc-num">5</span> Conduct</a>
+              <a href="#t-liab"><span class="qm-legal-toc-num">6</span> Liability</a>
+              <a href="#t-law"><span class="qm-legal-toc-num">7</span> Governing law</a>
+              <a href="#t-contact"><span class="qm-legal-toc-num">8</span> Contact</a>
+            </nav>
+          </aside>
+          <div class="qm-legal-prose">
+            <h2 id="t-intro">Introduction</h2>
+            <p>
+              Ye terms QuickMaid platform aur aapke beech service use ko clarify karte hain. Product evolve hote rahega
+              — material changes par website / WhatsApp par reasonable notice dene ki koshish karenge; major changes par
+              renewed acceptance maang sakte hain.
+            </p>
+
+            <h2 id="t-accept">1. Acceptance</h2>
+            <p>
+              Booking request bhejne, website use karne, ya QuickMaid se communicate karne se aap in terms se agree
+              maante ho. Agar agree nahi, kripya service use na karein.
+            </p>
+
+            <h2 id="t-service">2. Service nature</h2>
+            <p>
+              QuickMaid home cleaning aur related on-demand services facilitate karta hai. Exact deliverables plan,
+              slot, add-ons, aur city norms ke hisaab se confirm hote hain — har visit ka scope booking confirmation /
+              work order par clearly hona chahiye.
+            </p>
+
+            <h2 id="t-book">3. Bookings &amp; cancellations</h2>
+            <ul>
+              <li>Slot confirmation availability aur partner capacity par depend karti hai.</li>
+              <li>
+                Late cancellation / rescheduling / no-show fees agar applicable hon to booking flow ya rate card par
+                disclose kiye jayenge.
+              </li>
+              <li>Force majeure (weather, bandh, network outage) cases mein reschedule priority di ja sakti hai.</li>
+            </ul>
+
+            <h2 id="t-pay">4. Payments</h2>
+            <p>
+              Payments authorized payment partners ke through process ho sakti hain. Taxes (GST) jahan lagoo hon,
+              invoice / receipt rules applicable law ke mutabiq honge. Chargebacks / disputes payment provider + internal
+              review ke through handle ho sakte hain.
+            </p>
+
+            <h2 id="t-conduct">5. Conduct &amp; safety</h2>
+            <p>
+              Customers aur service partners dono se respectful conduct expected hai. Abuse, harassment, illegal
+              activity, ya platform misuse par access terminate ho sakta hai — criminal matters ko authorities ke saath
+              cooperate kiya ja sakta hai jahan law require kare.
+            </p>
+
+            <h2 id="t-liab">6. Limitation of liability</h2>
+            <p>
+              Jitna local law allow kare, QuickMaid ki aggregate liability disputed booking / billing period ke fees
+              paid tak capped ho sakti hai. Consequential / indirect damages exclude kiye ja sakte hain jahan legally
+              permissible ho. Koi bhi clause aapko non-waivable statutory rights se override nahi karti.
+            </p>
+
+            <h2 id="t-law">7. Governing law</h2>
+            <p>
+              Disputes primarily <strong>Raipur, Chhattisgarh, India</strong> ke courts / consumer forums ke subject
+              rahenge, subject to mandatory arbitration / jurisdiction rules jo law impose kare.
+            </p>
+
+            <h2 id="t-contact">8. Contact</h2>
+            <p>Legal / privacy questions ke liye <a routerLink="/contact">Contact</a> page dekhein.</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</app-seo-shell>
+    </section>
+
+    <section class="qm-band qm-band--about-cta" aria-labelledby="qm-terms-cta-title">
+      <div class="qm-band-inner qm-about-cta-inner">
+        <h2 id="qm-terms-cta-title" class="qm-about-cta-title">Legal sawaal?</h2>
+        <p class="qm-about-cta-dek">Official channels par team — phishing se bachne ke liye sirf published touchpoints.</p>
+        <div class="qm-about-cta-row">
+          <a class="qm-btn-primary qm-btn-primary--lg" routerLink="/contact">Contact page</a>
+          <a class="qm-btn-on-cta" routerLink="/privacy">Privacy Policy</a>
+          <a class="qm-btn-on-cta" routerLink="/">Home</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="qm-site-mini-foot">
+    <a routerLink="/">Home</a>
+    <a routerLink="/about">About</a>
+    <a routerLink="/book">Web booking</a>
+    <a routerLink="/contact">Contact</a>
+    <a routerLink="/terms">Terms</a>
+    <a routerLink="/privacy">Privacy</a>
+  </footer>
+</div>

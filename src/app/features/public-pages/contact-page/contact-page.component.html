@@ -14,53 +14,172 @@
   </nav>
 
   <main class="qm-site-main">
-    <section class="qm-band qm-band--contact-intro" aria-labelledby="qm-contact-title">
+    <!-- Hero -->
+    <section class="qm-band qm-band--contact-hero" aria-labelledby="qm-contact-title">
       <div class="qm-band-inner">
-        <div class="qm-contact-head">
-          <p class="qm-kicker">Contact</p>
-          <h1 id="qm-contact-title" class="qm-display">Official touchpoints</h1>
-          <p class="qm-dek">Sirf in channels par trust karein — phishing se bachne ke liye.</p>
+        <div class="qm-contact-hero-grid">
+          <div class="qm-contact-hero-copy">
+            <p class="qm-kicker">Contact</p>
+            <h1 id="qm-contact-title" class="qm-display">
+              Official touchpoints<br />
+              <span class="qm-display-accent">ek hi trusted line</span>
+            </h1>
+            <p class="qm-dek">
+              Booking, reschedule, ya complaint — <strong>sabse tez WhatsApp</strong>. Legal / invoice ke liye email,
+              urgent voice ke liye phone. <strong>Random “agent” numbers</strong> par trust mat kariye.
+            </p>
+            <div class="qm-metric-row qm-metric-row--contact">
+              <div class="qm-metric">
+                <span class="qm-metric-val">~15m</span><span class="qm-metric-lbl">Typical WA reply (working hrs)</span>
+              </div>
+              <div class="qm-metric">
+                <span class="qm-metric-val">7</span><span class="qm-metric-lbl">Days open · 8–8 IST</span>
+              </div>
+              <div class="qm-metric">
+                <span class="qm-metric-val">3</span><span class="qm-metric-lbl">Official channels</span>
+              </div>
+            </div>
+            <div class="qm-about-hero-cta">
+              <a class="qm-btn-primary" [href]="waBook" rel="noopener noreferrer" target="_blank">WhatsApp — book →</a>
+              <a class="qm-btn-ghost" [href]="waSupport" rel="noopener noreferrer" target="_blank">Support message</a>
+              <a class="qm-btn-ghost" [href]="telHref">Call desk</a>
+            </div>
+          </div>
+          <div class="qm-contact-hero-visual" aria-hidden="true">
+            <div class="qm-contact-hero-art">
+              <div class="qm-cf-float qm-cf-float--a">
+                <span class="qm-cf-dot" aria-hidden="true"></span>
+                <span>Team online</span>
+              </div>
+              <div class="qm-cf-float qm-cf-float--b">🔒 Official only</div>
+              <div class="qm-cf-phone">
+                <div class="qm-cf-phone-bar">
+                  <span>QuickMaid</span>
+                  <span class="qm-cf-phone-pill">Chat</span>
+                </div>
+                <div class="qm-cf-bubble qm-cf-bubble--them">Namaste! Aaj ka slot?</div>
+                <div class="qm-cf-bubble qm-cf-bubble--us">Haan — 4–6 PM confirm ✅</div>
+                <div class="qm-cf-bubble qm-cf-bubble--them">Address bhej diya 📍</div>
+                <div class="qm-cf-typing"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="qm-band qm-band--contact" aria-label="Contact methods">
+    <!-- Channels (dark) -->
+    <section class="qm-band qm-band--contact" aria-labelledby="qm-channels-title">
       <div class="qm-band-inner">
+        <header class="qm-contact-dark-head">
+          <p class="qm-kicker qm-kicker--on-dark">Channels</p>
+          <h2 id="qm-channels-title" class="qm-h2-section qm-h2-section--on-dark">Seedha team tak</h2>
+          <p class="qm-section-dek qm-section-dek--on-dark">
+            Inhi links / numbers ko save karein — baaki “discount” wale forwards ignore.
+          </p>
+        </header>
         <div class="qm-contact-grid">
-          <a
-            class="qm-contact-card"
-            [href]="waHref"
-            rel="noopener noreferrer"
-            target="_blank">
+          <a class="qm-contact-card qm-contact-card--featured" [href]="waBook" rel="noopener noreferrer" target="_blank">
             <span class="qm-cc-ico" aria-hidden="true">💬</span>
             <div>
-              <h3>WhatsApp</h3>
-              <p>Fastest — bookings &amp; day-of help</p>
-              <span class="qm-cc-link">Open chat →</span>
+              <h3>WhatsApp — primary</h3>
+              <p>New booking, reschedule, visit-day help, aur quick updates — yahi fastest.</p>
+              <span class="qm-cc-link">Booking chat kholiye →</span>
+            </div>
+          </a>
+          <a class="qm-contact-card" [href]="waSupport" rel="noopener noreferrer" target="_blank">
+            <span class="qm-cc-ico" aria-hidden="true">🛟</span>
+            <div>
+              <h3>WhatsApp — support</h3>
+              <p>Issue, complaint, ya clarification — message mein area + short detail.</p>
+              <span class="qm-cc-link">Support line →</span>
             </div>
           </a>
           <div class="qm-contact-card qm-contact-card--static">
             <span class="qm-cc-ico" aria-hidden="true">✉️</span>
             <div>
               <h3>Email</h3>
-              <p>Legal, privacy, invoices</p>
+              <p>Legal, privacy, invoices, media / partnerships (non-urgent).</p>
               <a class="qm-cc-link" href="mailto:support@quickmaid.in">support&#64;quickmaid.in</a>
             </div>
           </div>
           <div class="qm-contact-card qm-contact-card--static">
             <span class="qm-cc-ico" aria-hidden="true">📞</span>
             <div>
-              <h3>Phone</h3>
-              <p>Mon–Sun · 8–8 IST</p>
+              <h3>Phone desk</h3>
+              <p>Mon–Sun · morning 8 se shaam 8 IST — voice clarification.</p>
               <a class="qm-cc-link" [href]="telHref">+91 98765 43210</a>
             </div>
           </div>
         </div>
         <div class="qm-contact-foot">
           <a routerLink="/book" class="qm-ghost-light">Web booking →</a>
+          <a [href]="waPartner" class="qm-ghost-light" rel="noopener noreferrer" target="_blank">Partner WhatsApp</a>
+          <a routerLink="/status" class="qm-ghost-light">System status</a>
           <a routerLink="/terms" class="qm-ghost-light">Terms</a>
           <a routerLink="/privacy" class="qm-ghost-light">Privacy</a>
           <a routerLink="/about" class="qm-ghost-light">About</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Routing guide -->
+    <section class="qm-band qm-band--contact-routing" aria-labelledby="qm-route-title">
+      <div class="qm-band-inner">
+        <header class="qm-section-head">
+          <p class="qm-kicker">Kab kya use karein</p>
+          <h2 id="qm-route-title" class="qm-h2-section">Seedha sa guide</h2>
+          <p class="qm-section-dek">Time bachane ke liye — pehle sahi channel chuno.</p>
+        </header>
+        <div class="qm-route-grid">
+          <article class="qm-route-card">
+            <span class="qm-route-ico" aria-hidden="true">⚡</span>
+            <h3>Abhi book / badlo</h3>
+            <p>WhatsApp booking line — service, date, pata. Web pasand ho to <a routerLink="/book">/book</a>.</p>
+          </article>
+          <article class="qm-route-card">
+            <span class="qm-route-ico" aria-hidden="true">🛡️</span>
+            <h3>Visit ke baad issue</h3>
+            <p>Support WhatsApp — booking ID / time + 1–2 lines issue. Photos attach kar sakte ho.</p>
+          </article>
+          <article class="qm-route-card">
+            <span class="qm-route-ico" aria-hidden="true">📄</span>
+            <h3>Invoice / legal</h3>
+            <p>Email — subject clear rakho: “Invoice”, “Privacy”, “Partnership”. Reply 24–48h typical.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Anti-phishing -->
+    <section class="qm-band qm-band--contact-phish" aria-labelledby="qm-phish-title">
+      <div class="qm-band-inner qm-phish-inner">
+        <div class="qm-phish-copy">
+          <p class="qm-kicker">Safe rahen</p>
+          <h2 id="qm-phish-title" class="qm-h2-section">Phishing se bachne ke 4 rules</h2>
+          <p class="qm-body-lg">
+            Fraudsters kabhi-kabhi “cheap maid” ke naam par <strong>advance UPI</strong> maangte hain random apps par.
+            QuickMaid sirf <strong>official flow</strong> follow karta hai — booking confirm hone ke baad hi pay, jahan policy allow ho.
+          </p>
+        </div>
+        <ol class="qm-phish-list">
+          <li><strong>Sirf yahi page</strong> + inhi WhatsApp / phone / email ko bookmark karo.</li>
+          <li><strong>+91 98765 43210</strong> waale alawa “new company number” par trust mat karo.</li>
+          <li>Team kabhi <strong>OTP / UPI PIN</strong> nahi maangti — kabhi share mat karo.</li>
+          <li>Doubt ho to <strong>yahi number</strong> par call karke verify karo, phir pay karo.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="qm-band qm-band--about-cta" aria-labelledby="qm-contact-cta-title">
+      <div class="qm-band-inner qm-about-cta-inner">
+        <h2 id="qm-contact-cta-title" class="qm-about-cta-title">Abhi message bhejo — team pick karti hai</h2>
+        <p class="qm-about-cta-dek">Ek hi ecosystem: book, support, partner — bas subject clear rakho.</p>
+        <div class="qm-about-cta-row">
+          <a class="qm-btn-primary qm-btn-primary--lg" [href]="waBook" rel="noopener noreferrer" target="_blank">WhatsApp — book</a>
+          <a class="qm-btn-on-cta" [href]="waSupport" rel="noopener noreferrer" target="_blank">Support</a>
+          <a class="qm-btn-on-cta" [href]="telHref">Call</a>
         </div>
       </div>
     </section>
@@ -70,6 +189,7 @@
     <a routerLink="/">Home</a>
     <a routerLink="/about">About</a>
     <a routerLink="/book">Web booking</a>
+    <a routerLink="/contact">Contact</a>
     <a routerLink="/terms">Terms</a>
     <a routerLink="/privacy">Privacy</a>
   </footer>

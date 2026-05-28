@@ -22,17 +22,24 @@ import { DEFAULT_OG_IMAGE_PATH, TEL_HREF, WA_DEFAULT_BOOKING_TEXT, buildWhatsApp
 export class ContactPageComponent implements OnInit, OnDestroy {
   private readonly seo = inject(SeoService);
 
-  readonly waHref = buildWhatsAppHref(WA_DEFAULT_BOOKING_TEXT);
+  readonly waBook = buildWhatsAppHref(WA_DEFAULT_BOOKING_TEXT);
+  readonly waSupport = buildWhatsAppHref(
+    'Hi QuickMaid — support chahiye. Area + booking detail / issue short mein likhein.',
+  );
+  readonly waPartner = buildWhatsAppHref(
+    'Hi QuickMaid — partner / didi onboarding ya payout ke baare mein puchna hai.',
+  );
   readonly telHref = TEL_HREF;
 
   ngOnInit(): void {
     this.seo.setPage({
-      title: 'Contact QuickMaid | Official WhatsApp, email & phone (Raipur)',
+      title: 'Contact QuickMaid | Official WhatsApp, email & phone — Raipur',
       description:
-        'Official QuickMaid touchpoints — WhatsApp, email, and phone for bookings and support in Raipur, India. Phishing se bachne ke liye sirf in channels par trust karein.',
+        'Sirf official channels: WhatsApp booking & support, email for legal/invoices, phone Mon–Sun. Phishing se bachne ke liye random numbers / links par payment na karein.',
       canonicalPath: '/contact',
-      ogTitle: 'Contact QuickMaid',
-      ogDescription: 'Official channels for WhatsApp booking, legal, and support — Raipur, India.',
+      ogTitle: 'Contact QuickMaid — official touchpoints',
+      ogDescription:
+        'WhatsApp-first booking, Hindi support, clear escalation — Raipur, India. Official QuickMaid contact page.',
       ogImagePath: DEFAULT_OG_IMAGE_PATH,
     });
   }

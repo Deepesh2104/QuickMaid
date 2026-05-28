@@ -1,97 +1,146 @@
-<app-seo-shell
-  pageTitle="Privacy"
-  pageTitleAccent=" Policy"
-  eyebrow="Trust &amp; data"
-  subtitle="Kaunsa data kyon collect hota hai, kaise use / share hota hai, aur aapke rights — India privacy regime ke saath align karne ki disha."
-  heroVariant="privacy"
-  [showHeroExtras]="false"
-  updated="2026-05-14">
-  <div class="seo-doc seo-doc--split">
-    <aside class="seo-toc" aria-label="On this page">
-      <div class="seo-toc-h">On this page</div>
-      <nav class="seo-toc-scroll">
-        <a href="#p-intro"><span class="seo-toc-num" aria-hidden="true">—</span> Intro</a>
-        <a href="#p-collect"><span class="seo-toc-num">1</span> Data we collect</a>
-        <a href="#p-use"><span class="seo-toc-num">2</span> Use cases</a>
-        <a href="#p-share"><span class="seo-toc-num">3</span> Sharing</a>
-        <a href="#p-cookies"><span class="seo-toc-num">4</span> Cookies</a>
-        <a href="#p-retain"><span class="seo-toc-num">5</span> Retention</a>
-        <a href="#p-rights"><span class="seo-toc-num">6</span> Your rights</a>
-        <a href="#p-grievance"><span class="seo-toc-num">7</span> Grievance</a>
-      </nav>
-    </aside>
-    <div class="seo-prose">
-      <h2 id="p-intro">Introduction</h2>
-      <p>
-        QuickMaid aapki privacy ka respect karta hai. Ye policy batati hai ki hum kaunsa data kyon lete hain aur
-        kaise protect karte hain — <strong>Information Technology (Reasonable security practices and procedures and
-        sensitive personal data or information) Rules, 2011</strong> aur <strong>Digital Personal Data Protection Act,
-        2023</strong> ke framework ke saath align rehne ki disha mein (implementation details product maturity ke saath
-        update ho sakti hain).
-      </p>
-
-      <h2 id="p-collect">1. Data jo hum collect kar sakte hain</h2>
-      <ul>
-        <li><strong>Identity &amp; contact:</strong> naam, mobile, email, service address / landmark.</li>
-        <li><strong>Booking metadata:</strong> slot, plan type, visit notes (non-sensitive), payment status (processor ke through).</li>
-        <li><strong>Support:</strong> tickets, chat / email transcripts aap humein bhejte ho.</li>
-        <li><strong>Technical:</strong> device/browser type, coarse timestamps, error logs (security + reliability).</li>
-      </ul>
-
-      <h2 id="p-use">2. Use cases</h2>
-      <p>
-        Service deliver karna, routing / dispatch, customer support, fraud prevention, aggregated analytics, product
-        improvement, aur legal compliance (tax, lawful requests).
-      </p>
-
-      <h2 id="p-share">3. Sharing</h2>
-      <p>
-        Data trusted processors (SMS, payments, maps, cloud hosting) ke saath contracts ke under share ho sakta hai.
-        Lawful government / court requests par disclosure ho sakti hai jahan applicable ho.
-        <strong>Hum aapka personal data “sell” nahi karte</strong> mass marketing brokers ko.
-      </p>
-
-      <h2 id="p-cookies">4. Cookies &amp; local storage</h2>
-      <p>
-        Session maintain, preferences, aur anti-abuse signals ke liye browser storage / cookies use ho sakte hain.
-        Non-essential marketing cookies (agar introduce hon) se pehle consent UI add kiya jayega.
-      </p>
-
-      <h2 id="p-retain">5. Retention</h2>
-      <p>
-        Records tax / legal obligations ke liye zaroori period tak retain ho sakti hain; operational logs rotate /
-        minimise kiye jaate hain. Deletion requests jahan law allow karta hai, process <a routerLink="/contact">Contact</a> se initiate ho sakta hai.
-      </p>
-
-      <h2 id="p-rights">6. Your rights</h2>
-      <p>
-        Access / correction / withdrawal of consent (where processing is consent-based) / deletion (subject to legal
-        carve-outs) — requests verifiable identity ke saath handle kiye jayenge.
-      </p>
-
-      <div class="seo-callout">
-        <strong>Security practices:</strong> access control, encryption in transit (HTTPS), vendor reviews — defence in
-        depth approach; detailed infosec posture enterprise customers ke saath NDA ke under share ho sakti hai.
-      </div>
-
-      <h2 id="p-grievance">7. Grievance officer</h2>
-      <p>
-        Name, designation, aur contact window <a routerLink="/contact">Contact</a> page par publish kiye jayenge —
-        grievance acknowledgement + resolution timelines applicable law ke mutabiq maintain karne ki koshish.
-      </p>
+<div class="qm-root qm-root--privacy-doc">
+  <nav class="qm-site-nav" aria-label="QuickMaid public">
+    <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
+    <div class="qm-site-links">
+      <a routerLink="/about" routerLinkActive="qm-is-active">About</a>
+      <a routerLink="/contact" routerLinkActive="qm-is-active">Contact</a>
+      <a routerLink="/book">Web book</a>
+      <a routerLink="/partner">Partner</a>
+      <a routerLink="/status">Status</a>
+      <a routerLink="/terms" routerLinkActive="qm-is-active">Terms</a>
+      <a routerLink="/privacy" routerLinkActive="qm-is-active" [routerLinkActiveOptions]="{ exact: true }">Privacy</a>
+      <a routerLink="/auth">Staff →</a>
     </div>
-  </div>
+  </nav>
 
-  <div class="seo-legal-cta" aria-label="Next steps">
-    <div class="seo-cta-band seo-cta-band--privacy">
-      <div>
-        <h2>Data ke baare mein baat karni hai?</h2>
-        <p>Grievance ya deletion request — verifiable identity ke saath humein likhein; official channels use karein.</p>
+  <main class="qm-site-main">
+    <section class="qm-band qm-band--legal-hero qm-band--privacy-hero" aria-labelledby="qm-privacy-h1">
+      <div class="qm-band-inner qm-legal-hero-inner">
+        <p class="qm-kicker">Trust &amp; data</p>
+        <h1 id="qm-privacy-h1" class="qm-display">
+          Privacy <span class="qm-display-accent qm-display-accent--teal">Policy</span>
+        </h1>
+        <p class="qm-dek qm-legal-hero-dek">
+          Kaunsa data kyon collect hota hai, kaise use / share hota hai, aur aapke rights — India privacy regime ke
+          saath align karne ki disha.
+        </p>
+        <div class="qm-legal-meta">
+          <span class="qm-legal-pill qm-legal-pill--teal">
+            <span class="qm-legal-dot qm-legal-dot--teal" aria-hidden="true"></span>
+            Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
+          </span>
+          <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
+        </div>
       </div>
-      <div class="seo-cta-btns">
-        <a routerLink="/contact" class="seo-btn seo-btn--primary">Contact page →</a>
-        <a routerLink="/terms" class="seo-btn seo-btn--ghost">Terms &amp; Conditions</a>
+    </section>
+
+    <section class="qm-band qm-band--legal-body" aria-label="Privacy content">
+      <div class="qm-band-inner">
+        <div class="qm-legal-doc qm-legal-doc--privacy">
+          <aside class="qm-legal-toc" aria-label="On this page">
+            <div class="qm-legal-toc-h">On this page</div>
+            <nav class="qm-legal-toc-nav">
+              <a href="#p-intro"><span class="qm-legal-toc-num" aria-hidden="true">—</span> Intro</a>
+              <a href="#p-collect"><span class="qm-legal-toc-num">1</span> Data we collect</a>
+              <a href="#p-use"><span class="qm-legal-toc-num">2</span> Use cases</a>
+              <a href="#p-share"><span class="qm-legal-toc-num">3</span> Sharing</a>
+              <a href="#p-cookies"><span class="qm-legal-toc-num">4</span> Cookies</a>
+              <a href="#p-retain"><span class="qm-legal-toc-num">5</span> Retention</a>
+              <a href="#p-rights"><span class="qm-legal-toc-num">6</span> Your rights</a>
+              <a href="#p-grievance"><span class="qm-legal-toc-num">7</span> Grievance</a>
+            </nav>
+          </aside>
+          <div class="qm-legal-prose qm-legal-prose--privacy">
+            <h2 id="p-intro">Introduction</h2>
+            <p>
+              QuickMaid aapki privacy ka respect karta hai. Ye policy batati hai ki hum kaunsa data kyon lete hain aur
+              kaise protect karte hain —
+              <strong>Information Technology (Reasonable security practices and procedures and sensitive personal data or
+                information) Rules, 2011</strong>
+              aur
+              <strong>Digital Personal Data Protection Act, 2023</strong>
+              ke framework ke saath align rehne ki disha mein (implementation details product maturity ke saath update
+              ho sakti hain).
+            </p>
+
+            <h2 id="p-collect">1. Data jo hum collect kar sakte hain</h2>
+            <ul>
+              <li><strong>Identity &amp; contact:</strong> naam, mobile, email, service address / landmark.</li>
+              <li>
+                <strong>Booking metadata:</strong> slot, plan type, visit notes (non-sensitive), payment status (processor
+                ke through).
+              </li>
+              <li><strong>Support:</strong> tickets, chat / email transcripts aap humein bhejte ho.</li>
+              <li><strong>Technical:</strong> device/browser type, coarse timestamps, error logs (security + reliability).</li>
+            </ul>
+
+            <h2 id="p-use">2. Use cases</h2>
+            <p>
+              Service deliver karna, routing / dispatch, customer support, fraud prevention, aggregated analytics, product
+              improvement, aur legal compliance (tax, lawful requests).
+            </p>
+
+            <h2 id="p-share">3. Sharing</h2>
+            <p>
+              Data trusted processors (SMS, payments, maps, cloud hosting) ke saath contracts ke under share ho sakta
+              hai. Lawful government / court requests par disclosure ho sakti hai jahan applicable ho.
+              <strong>Hum aapka personal data “sell” nahi karte</strong> mass marketing brokers ko.
+            </p>
+
+            <h2 id="p-cookies">4. Cookies &amp; local storage</h2>
+            <p>
+              Session maintain, preferences, aur anti-abuse signals ke liye browser storage / cookies use ho sakte hain.
+              Non-essential marketing cookies (agar introduce hon) se pehle consent UI add kiya jayega.
+            </p>
+
+            <h2 id="p-retain">5. Retention</h2>
+            <p>
+              Records tax / legal obligations ke liye zaroori period tak retain ho sakti hain; operational logs rotate /
+              minimise kiye jaate hain. Deletion requests jahan law allow karta hai, process
+              <a routerLink="/contact">Contact</a> se initiate ho sakta hai.
+            </p>
+
+            <h2 id="p-rights">6. Your rights</h2>
+            <p>
+              Access / correction / withdrawal of consent (where processing is consent-based) / deletion (subject to legal
+              carve-outs) — requests verifiable identity ke saath handle kiye jayenge.
+            </p>
+
+            <div class="qm-legal-callout qm-legal-callout--privacy">
+              <strong>Security practices:</strong> access control, encryption in transit (HTTPS), vendor reviews —
+              defence in depth approach; detailed infosec posture enterprise customers ke saath NDA ke under share ho
+              sakti hai.
+            </div>
+
+            <h2 id="p-grievance">7. Grievance officer</h2>
+            <p>
+              Name, designation, aur contact window <a routerLink="/contact">Contact</a> page par publish kiye jayenge
+              — grievance acknowledgement + resolution timelines applicable law ke mutabiq maintain karne ki koshish.
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</app-seo-shell>
+    </section>
+
+    <section class="qm-band qm-band--about-cta qm-band--privacy-cta" aria-labelledby="qm-privacy-cta-title">
+      <div class="qm-band-inner qm-about-cta-inner">
+        <h2 id="qm-privacy-cta-title" class="qm-about-cta-title">Data ke baare mein baat?</h2>
+        <p class="qm-about-cta-dek">Grievance ya deletion request — verifiable identity ke saath; official channels only.</p>
+        <div class="qm-about-cta-row">
+          <a class="qm-btn-primary qm-btn-primary--lg" routerLink="/contact">Contact page</a>
+          <a class="qm-btn-on-cta" routerLink="/terms">Terms &amp; Conditions</a>
+          <a class="qm-btn-on-cta" routerLink="/">Home</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="qm-site-mini-foot">
+    <a routerLink="/">Home</a>
+    <a routerLink="/about">About</a>
+    <a routerLink="/book">Web booking</a>
+    <a routerLink="/contact">Contact</a>
+    <a routerLink="/terms">Terms</a>
+    <a routerLink="/privacy">Privacy</a>
+  </footer>
+</div>

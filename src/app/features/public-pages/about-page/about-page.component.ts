@@ -8,7 +8,12 @@ import {
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SeoService } from '@core/services/seo.service';
-import { DEFAULT_OG_IMAGE_PATH } from '@core/site.constants';
+import {
+  DEFAULT_OG_IMAGE_PATH,
+  TEL_HREF,
+  WA_DEFAULT_BOOKING_TEXT,
+  buildWhatsAppHref,
+} from '@core/site.constants';
 
 @Component({
   selector: 'app-about-page',
@@ -22,15 +27,21 @@ import { DEFAULT_OG_IMAGE_PATH } from '@core/site.constants';
 export class AboutPageComponent implements OnInit, OnDestroy {
   private readonly seo = inject(SeoService);
 
+  readonly telHref = TEL_HREF;
+  readonly waBook = buildWhatsAppHref(WA_DEFAULT_BOOKING_TEXT);
+  readonly waAbout = buildWhatsAppHref(
+    'Hi QuickMaid — aapke baare mein aur jaanna hai. Raipur service & verification ke baare mein batayein.',
+  );
+
   ngOnInit(): void {
     this.seo.setPage({
-      title: 'About QuickMaid | Verified maids & home help in Raipur',
+      title: 'About QuickMaid | Mission, trust & WhatsApp booking in Raipur',
       description:
-        'QuickMaid — Raipur-first verified partner network, transparent payouts, and WhatsApp-first booking for busy families.',
+        'QuickMaid Raipur-first home-help platform hai — Aadhaar-verified partners, transparent pricing, ₹0 agent fee, aur WhatsApp-first booking. Hamara mission, values aur trust stack yahan padhein.',
       canonicalPath: '/about',
-      ogTitle: 'About QuickMaid | Raipur',
+      ogTitle: 'About QuickMaid — verified home help in Raipur',
       ogDescription:
-        'Verified partners, transparent payouts, WhatsApp-first booking — QuickMaid story and values.',
+        'Mission, safety stack, aur families + partners dono ke liye clear promise. Official QuickMaid story.',
       ogImagePath: DEFAULT_OG_IMAGE_PATH,
     });
   }
