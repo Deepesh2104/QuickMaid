@@ -17,7 +17,7 @@ import { DEFAULT_OG_IMAGE_PATH } from '@core/site.constants';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './privacy.component.html',
-  styleUrls: ['../../public-pages/qm-public.css'],
+  styleUrls: ['../../public-pages/qm-public.css', '../../public-pages/qm-legal.css'],
 })
 export class PrivacyComponent implements OnInit, OnDestroy {
   private readonly seo = inject(SeoService);
