@@ -5,7 +5,9 @@
     "ng": "ng",
     "start": "ng serve --open",
     "build": "ng build",
-    "watch": "ng build --watch --configuration development"
+    "watch": "ng build --watch --configuration development",
+    "audit:css": "node scripts/audit-css.mjs",
+    "purge:css": "node scripts/purge-css.mjs"
   },
   "private": true,
   "dependencies": {
