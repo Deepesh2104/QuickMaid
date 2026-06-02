@@ -1,4 +1,4 @@
-<div class="qm-root">
+<div class="qm-root qm-terms-page">
   <nav class="qm-site-nav" aria-label="QuickMaid public">
     <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
     <div class="qm-site-links">
@@ -14,44 +14,79 @@
   </nav>
 
   <main class="qm-site-main">
+    <!-- Hero -->
     <section class="qm-band qm-band--legal-hero" aria-labelledby="qm-terms-h1">
-      <div class="qm-band-inner qm-legal-hero-inner">
+      <div class="qm-band-inner qm-legal-hero-inner qm-reveal">
         <p class="qm-kicker">Legal</p>
         <h1 id="qm-terms-h1" class="qm-display">
           Terms <span class="qm-display-accent">&amp; Conditions</span>
         </h1>
         <p class="qm-dek qm-legal-hero-dek">
           Platform rules for customers, service partners, aur QuickMaid — bookings, payments, conduct, liability
-          (India).
+          (India). Plain-language summary neeche; full text document mein.
         </p>
+        <ul class="qm-tr-hero-pills" aria-label="Document scope">
+          @for (pill of heroPills; track pill) {
+            <li>{{ pill }}</li>
+          }
+        </ul>
         <div class="qm-legal-meta">
           <span class="qm-legal-pill">
             <span class="qm-legal-dot" aria-hidden="true"></span>
             Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
           </span>
           <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
+          <button type="button" class="qm-tr-print-btn" (click)="printPage()">Print / PDF</button>
         </div>
       </div>
     </section>
 
+    <!-- At a glance -->
+    <section class="qm-band qm-band--tr-summary" aria-label="Summary">
+      <div class="qm-band-inner">
+        <header class="qm-tr-summary-head qm-reveal">
+          <p class="qm-kicker">At a glance</p>
+          <h2 class="qm-h2-section">4 cheezein jo sabse zyada matter karti hain</h2>
+          <p class="qm-section-dek">Quick read — detail ke liye full sections scroll karein.</p>
+        </header>
+        <div class="qm-tr-highlights">
+          @for (h of highlights; track h.icon) {
+            <article class="qm-tr-highlight qm-reveal">
+              <span class="qm-tr-highlight-num">{{ h.icon }}</span>
+              <h3>{{ h.title }}</h3>
+              <p>{{ h.body }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Document -->
     <section class="qm-band qm-band--legal-body" aria-label="Terms content">
       <div class="qm-band-inner">
         <div class="qm-legal-doc">
-          <aside class="qm-legal-toc" aria-label="On this page">
+          <aside class="qm-legal-toc qm-reveal" aria-label="On this page">
             <div class="qm-legal-toc-h">On this page</div>
             <nav class="qm-legal-toc-nav">
-              <a href="#t-intro"><span class="qm-legal-toc-num" aria-hidden="true">—</span> Intro</a>
-              <a href="#t-accept"><span class="qm-legal-toc-num">1</span> Acceptance</a>
-              <a href="#t-service"><span class="qm-legal-toc-num">2</span> Service</a>
-              <a href="#t-book"><span class="qm-legal-toc-num">3</span> Bookings</a>
-              <a href="#t-pay"><span class="qm-legal-toc-num">4</span> Payments</a>
-              <a href="#t-conduct"><span class="qm-legal-toc-num">5</span> Conduct</a>
-              <a href="#t-liab"><span class="qm-legal-toc-num">6</span> Liability</a>
-              <a href="#t-law"><span class="qm-legal-toc-num">7</span> Governing law</a>
-              <a href="#t-contact"><span class="qm-legal-toc-num">8</span> Contact</a>
+              @for (item of toc; track item.id) {
+                <a [href]="'#' + item.id">
+                  <span class="qm-legal-toc-num" aria-hidden="true">{{ item.num }}</span>
+                  {{ item.label }}
+                </a>
+              }
             </nav>
+            <div class="qm-tr-toc-foot">
+              <a routerLink="/privacy" class="qm-tr-toc-link">Privacy Policy →</a>
+              <a routerLink="/contact" class="qm-tr-toc-link">Legal contact →</a>
+            </div>
           </aside>
-          <div class="qm-legal-prose">
+
+          <div class="qm-legal-prose qm-reveal">
+            <div class="qm-legal-callout qm-tr-callout-top">
+              <strong>Not legal advice.</strong> Ye operational terms hain — specific situation ke liye qualified counsel
+              consult karein. Hindi summary English legal text ke saath clarity ke liye hai.
+            </div>
+
             <h2 id="t-intro">Introduction</h2>
             <p>
               Ye terms QuickMaid platform aur aapke beech service use ko clarify karte hain. Product evolve hote rahega
@@ -71,6 +106,10 @@
               slot, add-ons, aur city norms ke hisaab se confirm hote hain — har visit ka scope booking confirmation /
               work order par clearly hona chahiye.
             </p>
+            <div class="qm-legal-callout">
+              QuickMaid ek <strong>marketplace / facilitator</strong> hai — on-ground service delivery partners ke
+              through hoti hai, jahan applicable law allow kare.
+            </div>
 
             <h2 id="t-book">3. Bookings &amp; cancellations</h2>
             <ul>
@@ -110,14 +149,43 @@
             </p>
 
             <h2 id="t-contact">8. Contact</h2>
-            <p>Legal / privacy questions ke liye <a routerLink="/contact">Contact</a> page dekhein.</p>
+            <p>
+              Legal / privacy questions ke liye <a routerLink="/contact">Contact</a> page — sirf official channels use
+              karein.
+            </p>
+
+            <div class="qm-tr-related">
+              <span class="qm-tr-related-lbl">Related</span>
+              <a routerLink="/privacy">Privacy Policy</a>
+              <a routerLink="/about">About QuickMaid</a>
+              <a routerLink="/book">Web booking</a>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- FAQ -->
+    <section class="qm-band qm-band--tr-faq" aria-labelledby="qm-tr-faq-title">
+      <div class="qm-band-inner qm-tr-faq-inner">
+        <header class="qm-section-head qm-reveal">
+          <p class="qm-kicker">FAQ</p>
+          <h2 id="qm-tr-faq-title" class="qm-h2-section">Terms — short answers</h2>
+        </header>
+        <div class="qm-tr-faq-list">
+          @for (item of faqs; track item.q) {
+            <details class="qm-tr-faq qm-reveal">
+              <summary>{{ item.q }}</summary>
+              <p>{{ item.a }}</p>
+            </details>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
     <section class="qm-band qm-band--about-cta" aria-labelledby="qm-terms-cta-title">
-      <div class="qm-band-inner qm-about-cta-inner">
+      <div class="qm-band-inner qm-about-cta-inner qm-reveal">
         <h2 id="qm-terms-cta-title" class="qm-about-cta-title">Legal sawaal?</h2>
         <p class="qm-about-cta-dek">Official channels par team — phishing se bachne ke liye sirf published touchpoints.</p>
         <div class="qm-about-cta-row">

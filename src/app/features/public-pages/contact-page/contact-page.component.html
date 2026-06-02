@@ -1,4 +1,4 @@
-<div class="qm-root">
+<div class="qm-root qm-contact-page">
   <nav class="qm-site-nav" aria-label="QuickMaid public">
     <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
     <div class="qm-site-links">
@@ -18,7 +18,7 @@
     <section class="qm-band qm-band--contact-hero" aria-labelledby="qm-contact-title">
       <div class="qm-band-inner">
         <div class="qm-contact-hero-grid">
-          <div class="qm-contact-hero-copy">
+          <div class="qm-contact-hero-copy qm-reveal">
             <p class="qm-kicker">Contact</p>
             <h1 id="qm-contact-title" class="qm-display">
               Official touchpoints<br />
@@ -28,12 +28,17 @@
               Booking, reschedule, ya complaint — <strong>sabse tez WhatsApp</strong>. Legal / invoice ke liye email,
               urgent voice ke liye phone. <strong>Random “agent” numbers</strong> par trust mat kariye.
             </p>
+            <ul class="qm-ct-trust-pills" aria-label="Safety highlights">
+              @for (pill of trustPills; track pill) {
+                <li>{{ pill }}</li>
+              }
+            </ul>
             <div class="qm-metric-row qm-metric-row--contact">
               <div class="qm-metric">
-                <span class="qm-metric-val">~15m</span><span class="qm-metric-lbl">Typical WA reply (working hrs)</span>
+                <span class="qm-metric-val">~15m</span><span class="qm-metric-lbl">Typical WA reply</span>
               </div>
               <div class="qm-metric">
-                <span class="qm-metric-val">7</span><span class="qm-metric-lbl">Days open · 8–8 IST</span>
+                <span class="qm-metric-val">8–8</span><span class="qm-metric-lbl">IST · 7 days</span>
               </div>
               <div class="qm-metric">
                 <span class="qm-metric-val">3</span><span class="qm-metric-lbl">Official channels</span>
@@ -45,21 +50,24 @@
               <a class="qm-btn-ghost" [href]="telHref">Call desk</a>
             </div>
           </div>
-          <div class="qm-contact-hero-visual" aria-hidden="true">
+          <div class="qm-contact-hero-visual qm-reveal" aria-hidden="true">
             <div class="qm-contact-hero-art">
               <div class="qm-cf-float qm-cf-float--a">
                 <span class="qm-cf-dot" aria-hidden="true"></span>
                 <span>Team online</span>
               </div>
-              <div class="qm-cf-float qm-cf-float--b">🔒 Official only</div>
+              <div class="qm-cf-float qm-cf-float--b">
+                <span class="qm-ct-lock" aria-hidden="true">🔒</span>
+                <span>Official only</span>
+              </div>
               <div class="qm-cf-phone">
                 <div class="qm-cf-phone-bar">
                   <span>QuickMaid</span>
-                  <span class="qm-cf-phone-pill">Chat</span>
+                  <span class="qm-cf-phone-pill">Verified</span>
                 </div>
                 <div class="qm-cf-bubble qm-cf-bubble--them">Namaste! Aaj ka slot?</div>
-                <div class="qm-cf-bubble qm-cf-bubble--us">Haan — 4–6 PM confirm ✅</div>
-                <div class="qm-cf-bubble qm-cf-bubble--them">Address bhej diya 📍</div>
+                <div class="qm-cf-bubble qm-cf-bubble--us">Haan — 4–6 PM confirm</div>
+                <div class="qm-cf-bubble qm-cf-bubble--them">Address bhej diya</div>
                 <div class="qm-cf-typing"><span></span><span></span><span></span></div>
               </div>
             </div>
@@ -68,10 +76,25 @@
       </div>
     </section>
 
+    <!-- Hours strip -->
+    <section class="qm-band qm-band--ct-hours" aria-label="Support hours">
+      <div class="qm-band-inner">
+        <div class="qm-ct-hours-grid">
+          @for (h of hours; track h.day) {
+            <article class="qm-ct-hours-card qm-reveal">
+              <span class="qm-ct-hours-day">{{ h.day }}</span>
+              <span class="qm-ct-hours-time">{{ h.time }}</span>
+              <span class="qm-ct-hours-note">{{ h.note }}</span>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
     <!-- Channels (dark) -->
     <section class="qm-band qm-band--contact" aria-labelledby="qm-channels-title">
       <div class="qm-band-inner">
-        <header class="qm-contact-dark-head">
+        <header class="qm-contact-dark-head qm-reveal">
           <p class="qm-kicker qm-kicker--on-dark">Channels</p>
           <h2 id="qm-channels-title" class="qm-h2-section qm-h2-section--on-dark">Seedha team tak</h2>
           <p class="qm-section-dek qm-section-dek--on-dark">
@@ -79,46 +102,83 @@
           </p>
         </header>
         <div class="qm-contact-grid">
-          <a class="qm-contact-card qm-contact-card--featured" [href]="waBook" rel="noopener noreferrer" target="_blank">
-            <span class="qm-cc-ico" aria-hidden="true">💬</span>
+          <a class="qm-contact-card qm-contact-card--featured qm-reveal" [href]="waBook" rel="noopener noreferrer" target="_blank">
+            <span class="qm-ct-channel-ico qm-ct-channel-ico--wa" aria-hidden="true">WA</span>
             <div>
               <h3>WhatsApp — primary</h3>
-              <p>New booking, reschedule, visit-day help, aur quick updates — yahi fastest.</p>
+              <p>New booking, reschedule, visit-day help — yahi fastest.</p>
               <span class="qm-cc-link">Booking chat kholiye →</span>
             </div>
           </a>
-          <a class="qm-contact-card" [href]="waSupport" rel="noopener noreferrer" target="_blank">
-            <span class="qm-cc-ico" aria-hidden="true">🛟</span>
+          <a class="qm-contact-card qm-reveal" [href]="waSupport" rel="noopener noreferrer" target="_blank">
+            <span class="qm-ct-channel-ico qm-ct-channel-ico--sup" aria-hidden="true">S</span>
             <div>
               <h3>WhatsApp — support</h3>
-              <p>Issue, complaint, ya clarification — message mein area + short detail.</p>
+              <p>Issue, complaint, clarification — area + short detail.</p>
               <span class="qm-cc-link">Support line →</span>
             </div>
           </a>
-          <div class="qm-contact-card qm-contact-card--static">
-            <span class="qm-cc-ico" aria-hidden="true">✉️</span>
+          <div class="qm-contact-card qm-contact-card--static qm-reveal">
+            <span class="qm-ct-channel-ico qm-ct-channel-ico--mail" aria-hidden="true">✉</span>
             <div>
               <h3>Email</h3>
-              <p>Legal, privacy, invoices, media / partnerships (non-urgent).</p>
-              <a class="qm-cc-link" href="mailto:support@quickmaid.in">support&#64;quickmaid.in</a>
+              <p>Legal, privacy, invoices, media / partnerships.</p>
+              <a class="qm-cc-link" [href]="'mailto:' + email">{{ email }}</a>
             </div>
           </div>
-          <div class="qm-contact-card qm-contact-card--static">
-            <span class="qm-cc-ico" aria-hidden="true">📞</span>
+          <div class="qm-contact-card qm-contact-card--static qm-reveal">
+            <span class="qm-ct-channel-ico qm-ct-channel-ico--tel" aria-hidden="true">☎</span>
             <div>
               <h3>Phone desk</h3>
-              <p>Mon–Sun · morning 8 se shaam 8 IST — voice clarification.</p>
-              <a class="qm-cc-link" [href]="telHref">+91 98765 43210</a>
+              <p>Mon–Sun · 8 AM – 8 PM IST — voice clarification.</p>
+              <a class="qm-cc-link" [href]="telHref">{{ phoneDisplay }}</a>
             </div>
           </div>
         </div>
-        <div class="qm-contact-foot">
+        <div class="qm-contact-foot qm-reveal">
           <a routerLink="/book" class="qm-ghost-light">Web booking →</a>
           <a [href]="waPartner" class="qm-ghost-light" rel="noopener noreferrer" target="_blank">Partner WhatsApp</a>
           <a routerLink="/status" class="qm-ghost-light">System status</a>
+          <a routerLink="/about" class="qm-ghost-light">About</a>
           <a routerLink="/terms" class="qm-ghost-light">Terms</a>
           <a routerLink="/privacy" class="qm-ghost-light">Privacy</a>
-          <a routerLink="/about" class="qm-ghost-light">About</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Message templates -->
+    <section class="qm-band qm-band--ct-templates" aria-labelledby="qm-templates-title">
+      <div class="qm-band-inner">
+        <header class="qm-section-head qm-reveal">
+          <p class="qm-kicker">Copy &amp; send</p>
+          <h2 id="qm-templates-title" class="qm-h2-section">WhatsApp message starters</h2>
+          <p class="qm-section-dek">Template copy karo — WhatsApp mein paste karke fields bharo.</p>
+        </header>
+        <div class="qm-ct-templates">
+          @for (t of waTemplates; track t.label) {
+            <article class="qm-ct-template qm-reveal">
+              <div class="qm-ct-template-top">
+                <h3>{{ t.label }}</h3>
+                <span class="qm-ct-template-hint">{{ t.hint }}</span>
+              </div>
+              <pre class="qm-ct-template-pre">{{ t.message }}</pre>
+              <div class="qm-ct-template-actions">
+                <button type="button" class="qm-ct-btn-copy" (click)="copyTemplate(t)">
+                  @if (copiedLabel === t.label) {
+                    Copied ✓
+                  } @else {
+                    Copy text
+                  }
+                </button>
+                <a
+                  class="qm-ct-btn-wa"
+                  [href]="waHrefFor(t.message)"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >Open WhatsApp</a>
+              </div>
+            </article>
+          }
         </div>
       </div>
     </section>
@@ -126,27 +186,67 @@
     <!-- Routing guide -->
     <section class="qm-band qm-band--contact-routing" aria-labelledby="qm-route-title">
       <div class="qm-band-inner">
-        <header class="qm-section-head">
+        <header class="qm-section-head qm-reveal">
           <p class="qm-kicker">Kab kya use karein</p>
-          <h2 id="qm-route-title" class="qm-h2-section">Seedha sa guide</h2>
+          <h2 id="qm-route-title" class="qm-h2-section">3-step routing</h2>
           <p class="qm-section-dek">Time bachane ke liye — pehle sahi channel chuno.</p>
         </header>
-        <div class="qm-route-grid">
-          <article class="qm-route-card">
-            <span class="qm-route-ico" aria-hidden="true">⚡</span>
-            <h3>Abhi book / badlo</h3>
-            <p>WhatsApp booking line — service, date, pata. Web pasand ho to <a routerLink="/book">/book</a>.</p>
+        <div class="qm-ct-route-steps">
+          @for (r of routingSteps; track r.step) {
+            <article class="qm-ct-route-step qm-reveal">
+              <span class="qm-ct-route-num">{{ r.step }}</span>
+              <h3>{{ r.title }}</h3>
+              <p>{{ r.body }}</p>
+              @if (r.external) {
+                <a class="qm-ct-route-cta" [href]="r.href" rel="noopener noreferrer" target="_blank">{{ r.cta }} →</a>
+              } @else {
+                <a class="qm-ct-route-cta" [href]="r.href">{{ r.cta }} →</a>
+              }
+            </article>
+          }
+        </div>
+        <div class="qm-route-grid qm-ct-route-cards">
+          <article class="qm-route-card qm-reveal">
+            <span class="qm-ct-route-icon" aria-hidden="true">⚡</span>
+            <h3>Instant / monthly</h3>
+            <p>Plans landing par compare karo, phir WhatsApp ya <a routerLink="/book">/book</a>.</p>
           </article>
-          <article class="qm-route-card">
-            <span class="qm-route-ico" aria-hidden="true">🛡️</span>
-            <h3>Visit ke baad issue</h3>
-            <p>Support WhatsApp — booking ID / time + 1–2 lines issue. Photos attach kar sakte ho.</p>
+          <article class="qm-route-card qm-reveal">
+            <span class="qm-ct-route-icon" aria-hidden="true">🛡</span>
+            <h3>Visit ke baad</h3>
+            <p>Support line — booking time + issue. Photos attach kar sakte ho.</p>
           </article>
-          <article class="qm-route-card">
-            <span class="qm-route-ico" aria-hidden="true">📄</span>
-            <h3>Invoice / legal</h3>
-            <p>Email — subject clear rakho: “Invoice”, “Privacy”, “Partnership”. Reply 24–48h typical.</p>
+          <article class="qm-route-card qm-reveal">
+            <span class="qm-ct-route-icon" aria-hidden="true">🤝</span>
+            <h3>Partner join</h3>
+            <p><a routerLink="/partner">Partner page</a> ya dedicated WhatsApp — agent nahi.</p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Office + map placeholder -->
+    <section class="qm-band qm-band--ct-office" aria-labelledby="qm-office-title">
+      <div class="qm-band-inner qm-ct-office-inner">
+        <div class="qm-ct-office-copy qm-reveal">
+          <p class="qm-kicker">Location</p>
+          <h2 id="qm-office-title" class="qm-h2-section">Raipur hub · remote-first</h2>
+          <p class="qm-body-lg">
+            Ops team <strong>Raipur, Chhattisgarh</strong> se city-wide dispatch karti hai. Walk-in by appointment —
+            pehle WhatsApp ya email se slot fix karein.
+          </p>
+          <address class="qm-ct-address">
+            QuickMaid Operations<br />
+            Raipur, Chhattisgarh · India<br />
+            <a [href]="telHref">{{ phoneDisplay }}</a>
+          </address>
+        </div>
+        <div class="qm-ct-office-card qm-reveal" aria-hidden="true">
+          <div class="qm-ct-map">
+            <span class="qm-ct-map-pin"></span>
+            <span class="qm-ct-map-label">Raipur service area</span>
+            <span class="qm-ct-map-sub">Tatibandh · Civil Lines · Shankar Nagar + more</span>
+          </div>
         </div>
       </div>
     </section>
@@ -154,26 +254,47 @@
     <!-- Anti-phishing -->
     <section class="qm-band qm-band--contact-phish" aria-labelledby="qm-phish-title">
       <div class="qm-band-inner qm-phish-inner">
-        <div class="qm-phish-copy">
+        <div class="qm-phish-copy qm-reveal">
           <p class="qm-kicker">Safe rahen</p>
-          <h2 id="qm-phish-title" class="qm-h2-section">Phishing se bachne ke 4 rules</h2>
+          <h2 id="qm-phish-title" class="qm-h2-section">Phishing se bachne ke rules</h2>
           <p class="qm-body-lg">
             Fraudsters kabhi-kabhi “cheap maid” ke naam par <strong>advance UPI</strong> maangte hain random apps par.
-            QuickMaid sirf <strong>official flow</strong> follow karta hai — booking confirm hone ke baad hi pay, jahan policy allow ho.
+            QuickMaid sirf <strong>official flow</strong> follow karta hai.
           </p>
         </div>
-        <ol class="qm-phish-list">
-          <li><strong>Sirf yahi page</strong> + inhi WhatsApp / phone / email ko bookmark karo.</li>
-          <li><strong>+91 98765 43210</strong> waale alawa “new company number” par trust mat karo.</li>
-          <li>Team kabhi <strong>OTP / UPI PIN</strong> nahi maangti — kabhi share mat karo.</li>
-          <li>Doubt ho to <strong>yahi number</strong> par call karke verify karo, phir pay karo.</li>
-        </ol>
+        <ul class="qm-ct-phish-list qm-reveal">
+          @for (rule of phishRules; track rule) {
+            <li>
+              <span class="qm-ct-phish-check" aria-hidden="true">✓</span>
+              <span>{{ rule }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="qm-band qm-band--ct-faq" aria-labelledby="qm-ct-faq-title">
+      <div class="qm-band-inner qm-ct-faq-inner">
+        <header class="qm-section-head qm-reveal">
+          <p class="qm-kicker">FAQ</p>
+          <h2 id="qm-ct-faq-title" class="qm-h2-section">Contact se related</h2>
+          <p class="qm-section-dek">Aur detail <a routerLink="/about" class="qm-ct-inline-link">About</a> page par.</p>
+        </header>
+        <div class="qm-ct-faq-list">
+          @for (item of faqs; track item.q) {
+            <details class="qm-ct-faq qm-reveal">
+              <summary>{{ item.q }}</summary>
+              <p>{{ item.a }}</p>
+            </details>
+          }
+        </div>
       </div>
     </section>
 
     <!-- CTA -->
     <section class="qm-band qm-band--about-cta" aria-labelledby="qm-contact-cta-title">
-      <div class="qm-band-inner qm-about-cta-inner">
+      <div class="qm-band-inner qm-about-cta-inner qm-reveal">
         <h2 id="qm-contact-cta-title" class="qm-about-cta-title">Abhi message bhejo — team pick karti hai</h2>
         <p class="qm-about-cta-dek">Ek hi ecosystem: book, support, partner — bas subject clear rakho.</p>
         <div class="qm-about-cta-row">
