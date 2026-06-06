@@ -3,19 +3,43 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">B2B</p>
       <h1 class="adm-title">Corporate accounts</h1>
-      <p class="adm-sub">Contracts, invoicing, seat bundles, and GST details — ERP sync in Phase 3.</p>
+      <p class="adm-sub">Contracts, invoicing, GST — ERP webhook hooks (demo UI).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Accounts · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="addAccount()">+ Add account</button>
+      <span class="adm-sync-pill" role="status">ERP · {{ lastErpSync() }}</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openErpSync()">Sync ERP</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openAccount()">+ Add account</button>
     </div>
   </header>
+
+  <div class="form-card form-card--adm cr-erp-card">
+    <div class="form-card-title">ERP integration</div>
+    <div class="cr-erp-row">
+      <div class="adm-toggle-card cr-erp-toggle">
+        <div class="adm-toggle-copy">
+          <p class="adm-toggle-title">Auto invoice push</p>
+          <p class="adm-toggle-sub">Monthly B2B invoices → ERP on close</p>
+        </div>
+        <div class="toggle-switch" [class.on]="erpSyncEnabled()" (click)="toggleErpSync()" role="switch" [attr.aria-checked]="erpSyncEnabled()"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg2">
+        <label class="fl2">Webhook URL</label>
+        <input class="fi2" [ngModel]="erpWebhook()" (ngModelChange)="erpWebhook.set($event)">
+      </div>
+      <div class="fg2">
+        <label class="fl2">API key (masked)</label>
+        <input class="fi2" type="password" [ngModel]="erpApiKey()" (ngModelChange)="erpApiKey.set($event)">
+      </div>
+    </div>
+  </div>
 
   <div class="table-card table-card--adm">
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Directory</div>
-        <p class="table-hint">PO numbers, billing contacts, SLA addenda</p>
+        <p class="table-hint">PO numbers, GSTIN, ERP customer ID</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -25,15 +49,20 @@
             <th>Company</th>
             <th>Seats</th>
             <th>MRR</th>
-            <th>Pipeline</th>
+            <th>GSTIN</th>
+            <th>ERP ID</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          @for (r of rows; track r.company) {
+          @for (r of rows(); track r.id) {
             <tr>
-              <td>{{ r.company }}</td>
+              <td><button type="button" class="cr-name-btn" (click)="openDetail(r)">{{ r.company }}</button></td>
               <td class="adm-num">{{ r.seats }}</td>
               <td class="adm-amt">{{ r.mrr }}</td>
+              <td><code class="cr-code">{{ r.gstin }}</code></td>
+              <td><code class="cr-code">{{ r.erpId }}</code></td>
               <td>
                 @switch (r.status) {
                   @case ('active') { <span class="badge badge-green">Active</span> }
@@ -41,10 +70,106 @@
                   @default { <span class="badge badge-red">Negotiating</span> }
                 }
               </td>
+              <td>
+                <div class="act-btns">
+                  <div class="act-btn" (click)="openDetail(r)" title="View">👁</div>
+                  @if (r.status === 'active' || r.status === 'trial') {
+                    <div class="act-btn" (click)="openInvoice(r)" title="Invoice">📄</div>
+                  }
+                </div>
+              </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="accountOpen()" (click)="closeAccount()" role="presentation">
+  <div class="adm-modal" [class.open]="accountOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cr-add-title">
+    <header class="adm-modal-hdr">
+      <h2 id="cr-add-title" class="adm-modal-title">🏢 Add corporate account</h2>
+      <button type="button" class="adm-modal-close" (click)="closeAccount()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Company name</span>
+        <input class="adm-search-inp" type="text" [ngModel]="formCompany()" (ngModelChange)="formCompany.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Seat bundle</span>
+        <input class="adm-search-inp" type="number" min="1" [ngModel]="formSeats()" (ngModelChange)="formSeats.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>GSTIN</span>
+        <input class="adm-search-inp" type="text" placeholder="22AAAAA0000A1Z5" [ngModel]="formGstin()" (ngModelChange)="formGstin.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Billing contact email</span>
+        <input class="adm-search-inp" type="email" [ngModel]="formContact()" (ngModelChange)="formContact.set($event)">
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="formSaving()" (click)="saveAccount()">
+        {{ formSaving() ? 'Saving…' : 'Create account' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="erpSyncOpen()" (click)="closeErpSync()" role="presentation">
+  <div class="adm-modal" [class.open]="erpSyncOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cr-erp-sync-title">
+    <header class="adm-modal-hdr">
+      <h2 id="cr-erp-sync-title" class="adm-modal-title">🔄 Sync ERP</h2>
+      <button type="button" class="adm-modal-close" (click)="closeErpSync()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="cr-modal-hint">Push pending B2B invoices and seat counts to ERP webhook (demo).</p>
+      <p class="cr-modal-meta">Webhook: <strong>{{ erpWebhook() }}</strong></p>
+      <p class="cr-modal-meta">Auto push: <strong>{{ erpSyncEnabled() ? 'On' : 'Off' }}</strong> · Last: {{ lastErpSync() }}</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="erpSyncRunning()" (click)="confirmErpSync()">
+        {{ erpSyncRunning() ? 'Syncing…' : 'Run ERP sync' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="detailOpen()" (click)="closeDetail()" role="presentation">
+  <div class="adm-modal adm-modal--wide" [class.open]="detailOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cr-detail-title">
+    @if (detailRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="cr-detail-title" class="adm-modal-title">{{ r.company }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeDetail()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <dl class="cr-dl">
+          <div><dt>Account ID</dt><dd>{{ r.id }}</dd></div>
+          <div><dt>Seats</dt><dd>{{ r.seats }}</dd></div>
+          <div><dt>MRR</dt><dd>{{ r.mrr }}</dd></div>
+          <div><dt>GSTIN</dt><dd><code>{{ r.gstin }}</code></dd></div>
+          <div><dt>ERP ID</dt><dd><code>{{ r.erpId }}</code></dd></div>
+          <div><dt>Status</dt><dd>{{ r.status }}</dd></div>
+        </dl>
+        <p class="cr-modal-hint">PO-based billing · NET-15 · dedicated AM for trial+ accounts.</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeDetail()">Close</button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="invoiceOpen()" (click)="closeInvoice()" role="presentation">
+  <div class="adm-modal" [class.open]="invoiceOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cr-inv-title">
+    @if (invoiceRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="cr-inv-title" class="adm-modal-title">📄 Push invoice</h2>
+        <button type="button" class="adm-modal-close" (click)="closeInvoice()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="cr-modal-meta">{{ r.company }} · {{ r.mrr }} · {{ r.seats }} seats</p>
+        <p class="cr-modal-hint">Creates draft invoice in ERP and emails billing contact.</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="invoiceRunning()" (click)="confirmInvoice()">
+          {{ invoiceRunning() ? 'Pushing…' : 'Push to ERP' }}
+        </button>
+      </div>
+    }
   </div>
 </div>

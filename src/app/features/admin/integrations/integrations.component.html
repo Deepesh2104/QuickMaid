@@ -3,35 +3,87 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Platform</p>
       <h1 class="adm-title">Integrations</h1>
-      <p class="adm-sub">SMS, payments, maps, WhatsApp Business — API keys and webhooks (never commit real keys).</p>
+      <p class="adm-sub">SMS, payments, maps, WhatsApp — secrets vault UI (demo, never commit real keys).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Vault · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="save()">Save changes</button>
+      <span class="adm-sync-pill" role="status">Vault · {{ secrets().length }} keys</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="saveAll()">Save changes</button>
     </div>
   </header>
 
   <div class="form-card form-card--adm">
     <div class="form-card-title">SMS provider</div>
     <div class="form-grid">
-      <div class="fg2"><label class="fl2">Provider</label><select class="fs2"><option>MSG91</option><option>Twilio</option></select></div>
-      <div class="fg2"><label class="fl2">Auth key (masked)</label><input class="fi2" type="password" value="••••••••" autocomplete="off" readonly></div>
+      <div class="fg2">
+        <label class="fl2">Provider</label>
+        <select class="fs2" [ngModel]="smsProvider()" (ngModelChange)="smsProvider.set($event)">
+          <option>MSG91</option>
+          <option>Twilio</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Secrets vault</div>
+        <p class="table-hint">Edit ya rotate — values local demo state mein</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>Integration</th>
+            <th>Category</th>
+            <th>Masked value</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of secrets(); track s.id) {
+            <tr>
+              <td>{{ s.label }}</td>
+              <td><span class="ig-cat">{{ s.category }}</span></td>
+              <td><code class="ig-mask">{{ s.masked }}</code></td>
+              <td>
+                <button type="button" class="ig-btn" (click)="openVault(s)">Edit</button>
+                <button type="button" class="ig-btn ig-btn--ghost" (click)="rotateSecret(s.id)">Rotate</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
 
   <div class="form-card form-card--adm">
-    <div class="form-card-title">Payments</div>
+    <div class="form-card-title">Maps &amp; webhooks</div>
     <div class="form-grid">
-      <div class="fg2"><label class="fl2">Razorpay key id</label><input class="fi2" value="rzp_live_****" readonly></div>
-      <div class="fg2"><label class="fl2">Webhook secret</label><input class="fi2" type="password" value="whsec_****" readonly></div>
+      <div class="fg2">
+        <label class="fl2">Geofence webhook URL</label>
+        <input class="fi2" [ngModel]="geoWebhook()" (ngModelChange)="geoWebhook.set($event)">
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="form-card form-card--adm">
-    <div class="form-card-title">Maps & location</div>
-    <div class="form-grid">
-      <div class="fg2"><label class="fl2">Google Maps JS key</label><input class="fi2" value="AIza****" readonly></div>
-      <div class="fg2"><label class="fl2">Geofence webhook URL</label><input class="fi2" value="https://api.quickmaid.in/hooks/geo"></div>
+<div class="adm-modal-backdrop" [class.open]="vaultOpen()" (click)="closeVault()" role="presentation">
+  <div class="adm-modal ig-vault-modal" [class.open]="vaultOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="ig-vault-title">
+    <header class="adm-modal-hdr">
+      <h2 id="ig-vault-title" class="adm-modal-title">🔑 {{ editLabel() }}</h2>
+      <button type="button" class="adm-modal-close" (click)="closeVault()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Secret value</span>
+        <input class="adm-search-inp" type="password" autocomplete="off" [ngModel]="editValue()" (ngModelChange)="editValue.set($event)">
+      </label>
+      <p class="adm-modal-hint">Demo vault — production mein KMS / env vars use karein.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="saving()" (click)="saveSecret()">
+        {{ saving() ? 'Saving…' : 'Update secret' }}
+      </button>
     </div>
   </div>
 </div>

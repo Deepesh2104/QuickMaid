@@ -3,11 +3,11 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Growth</p>
       <h1 class="adm-title">Campaigns</h1>
-      <p class="adm-sub">Coupons, referrals, partner promos — A/B tests and attribution later.</p>
+      <p class="adm-sub">Coupons, referrals, promos — create &amp; track redemptions (demo).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Promos · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="newCampaign()">+ New campaign</button>
+      <span class="adm-sync-pill" role="status">{{ liveCount() }} live</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openCreate()">+ New campaign</button>
     </div>
   </header>
 
@@ -15,7 +15,7 @@
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Active & draft</div>
-        <p class="table-hint">Redemption caps + fraud rules · Phase 3</p>
+        <p class="table-hint">Redemption caps + fraud rules (UI)</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -25,15 +25,21 @@
             <th>Code</th>
             <th>Channel</th>
             <th>Offer</th>
+            <th>Redemptions</th>
             <th>Status</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (r of rows; track r.code) {
+          @for (r of rows(); track r.id) {
             <tr>
-              <td><span class="adm-zone-tag">{{ r.code }}</span></td>
+              <td><button type="button" class="cg-code-btn" (click)="openDetail(r)"><span class="adm-zone-tag">{{ r.code }}</span></button></td>
               <td>{{ r.channel }}</td>
               <td>{{ r.discount }}</td>
+              <td>
+                <span class="cg-redemptions">{{ r.used }} / {{ r.maxRedemptions }}</span>
+                <div class="cg-bar"><div class="cg-bar-fill" [style.width.%]="(r.used / r.maxRedemptions) * 100"></div></div>
+              </td>
               <td>
                 @switch (r.status) {
                   @case ('live') { <span class="badge badge-green">Live</span> }
@@ -41,10 +47,90 @@
                   @default { <span class="badge badge-red">Ended</span> }
                 }
               </td>
+              <td>
+                <div class="act-btns">
+                  <div class="act-btn" (click)="openDetail(r)" title="View">👁</div>
+                  @if (r.status === 'live') {
+                    <div class="act-btn" (click)="endCampaign(r.id)" title="End">⏹️</div>
+                  }
+                </div>
+              </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="createOpen()" (click)="closeCreate()" role="presentation">
+  <div class="adm-modal cg-modal" [class.open]="createOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cg-create-title">
+    <header class="adm-modal-hdr">
+      <h2 id="cg-create-title" class="adm-modal-title">✨ New campaign</h2>
+      <button type="button" class="adm-modal-close" (click)="closeCreate()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Coupon code</span>
+        <input class="adm-search-inp" type="text" placeholder="SUMMER20" [ngModel]="formCode()" (ngModelChange)="formCode.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Channel</span>
+        <select class="assign-select" [ngModel]="formChannel()" (ngModelChange)="formChannel.set($event)">
+          <option>WhatsApp</option>
+          <option>App</option>
+          <option>Sales</option>
+          <option>Email</option>
+        </select>
+      </label>
+      <div class="cg-discount-row">
+        <label class="adm-modal-field">
+          <span>Discount type</span>
+          <select class="assign-select" [ngModel]="formDiscountType()" (ngModelChange)="formDiscountType.set($event)">
+            <option value="percent">Percent %</option>
+            <option value="flat">Flat ₹</option>
+          </select>
+        </label>
+        <label class="adm-modal-field">
+          <span>Value</span>
+          <input class="adm-search-inp" type="number" min="1" [ngModel]="formDiscountValue()" (ngModelChange)="formDiscountValue.set($event)">
+        </label>
+      </div>
+      <label class="adm-modal-field">
+        <span>Max redemptions</span>
+        <input class="adm-search-inp" type="number" min="1" [ngModel]="formMaxRedemptions()" (ngModelChange)="formMaxRedemptions.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Launch as</span>
+        <select class="assign-select" [ngModel]="formStatus()" (ngModelChange)="formStatus.set($event)">
+          <option value="draft">Draft</option>
+          <option value="live">Live immediately</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="formSaving()" (click)="saveCampaign()">
+        {{ formSaving() ? 'Creating…' : 'Create campaign' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="detailOpen()" (click)="closeDetail()" role="presentation">
+  <div class="adm-modal adm-modal--wide" [class.open]="detailOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cg-detail-title">
+    @if (detailRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="cg-detail-title" class="adm-modal-title">{{ r.code }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeDetail()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <dl class="cg-dl">
+          <div><dt>Channel</dt><dd>{{ r.channel }}</dd></div>
+          <div><dt>Offer</dt><dd>{{ r.discount }}</dd></div>
+          <div><dt>Redemptions</dt><dd>{{ r.used }} / {{ r.maxRedemptions }} ({{ ((r.used / r.maxRedemptions) * 100) | number:'1.0-0' }}%)</dd></div>
+          <div><dt>Status</dt><dd>{{ r.status }}</dd></div>
+          <div><dt>Fraud rules</dt><dd>1 per user · new customers only · zone allowlist</dd></div>
+        </dl>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeDetail()">Close</button>
+      </div>
+    }
   </div>
 </div>

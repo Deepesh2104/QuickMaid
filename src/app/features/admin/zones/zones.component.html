@@ -6,9 +6,9 @@
       <p class="adm-sub">Demand vs supply, coverage %, ETAs — chart data table se sync; health filter + search (demo).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Raipur · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Coverage recalculated','📡')">Recalc</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('New zone created!','🗺️')">+ Add zone</button>
+      <span class="adm-sync-pill" role="status">Raipur · recalc {{ lastRecalc() }}</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openRecalc()">Recalc</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openAddZone()">+ Add zone</button>
     </div>
   </header>
 
@@ -106,7 +106,7 @@
               <tbody>
                 @for (z of filteredZones(); track z.name) {
                   <tr>
-                    <td><span class="adm-zone-tag">{{ z.name }}</span></td>
+                    <td><button type="button" class="zn-name-btn" (click)="openDetail(z)">{{ z.name }}</button></td>
                     <td class="adm-num">{{ z.demand }}</td>
                     <td class="adm-num">{{ z.supply }}</td>
                     <td class="adm-amt" [style.color]="covColor(z.coveragePct)">{{ z.coveragePct }}%</td>
@@ -122,8 +122,8 @@
                     </td>
                     <td>
                       <div class="act-btns">
-                        <div class="act-btn" (click)="toast.show('Surge pricing (demo)','⚡')" title="Surge">⚡</div>
-                        <div class="act-btn" (click)="toast.show('Assign maids map','👷')" title="Assign">👷</div>
+                        <div class="act-btn" (click)="openAction('surge', z)" title="Surge">⚡</div>
+                        <div class="act-btn" (click)="openAction('assign', z)" title="Assign">👷</div>
                       </div>
                     </td>
                   </tr>
@@ -162,7 +162,172 @@
           </div>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('Bulk zone policy (demo)','📋')">Open zone policy</button>
+      <button type="button" class="adm-aside-btn" (click)="openPolicy()">Open zone policy</button>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="recalcOpen()" (click)="closeRecalc()" role="presentation">
+  <div class="adm-modal" [class.open]="recalcOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="zn-recalc-title">
+    <header class="adm-modal-hdr">
+      <h2 id="zn-recalc-title" class="adm-modal-title">📡 Recalculate coverage</h2>
+      <button type="button" class="adm-modal-close" (click)="closeRecalc()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Re-run demand/supply model across {{ zoneTotal }} zones using last 7d bookings.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="recalcRunning()" (click)="confirmRecalc()">
+        {{ recalcRunning() ? 'Calculating…' : 'Run recalc' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="addZoneOpen()" (click)="closeAddZone()" role="presentation">
+  <div class="adm-modal" [class.open]="addZoneOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="zn-add-title">
+    <header class="adm-modal-hdr">
+      <h2 id="zn-add-title" class="adm-modal-title">🗺️ Add zone</h2>
+      <button type="button" class="adm-modal-close" (click)="closeAddZone()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Zone name</span>
+        <input class="adm-search-inp" type="text" placeholder="e.g. Naya Raipur" [ngModel]="formZoneName()" (ngModelChange)="formZoneName.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Service radius (km)</span>
+        <input class="adm-search-inp" type="number" [ngModel]="formZoneRadius()" (ngModelChange)="formZoneRadius.set($event)">
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="addRunning()" (click)="confirmAddZone()">
+        {{ addRunning() ? 'Creating…' : 'Create zone' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="policyOpen()" (click)="closePolicy()" role="presentation">
+  <div class="adm-modal" [class.open]="policyOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="zn-policy-title">
+    <header class="adm-modal-hdr">
+      <h2 id="zn-policy-title" class="adm-modal-title">📋 Zone policy</h2>
+      <button type="button" class="adm-modal-close" (click)="closePolicy()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Critical zones auto-surge +15% · under-served triggers maid hiring SMS · optimal keeps 3-maid buffer.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closePolicy()">Save policy (demo)</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="detailOpen()" (click)="closeDetail()" role="presentation">
+  <div class="adm-modal adm-modal--profile" [class.open]="detailOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="zn-detail-title">
+    @if (detailRow(); as z) {
+      @if (detailInfo(); as d) {
+        <header class="prf-hero">
+          <div class="prf-hero-left">
+            <div>
+              <h2 id="zn-detail-title" class="prf-name">{{ z.name }}</h2>
+              <p class="prf-sub">{{ d.radius }} radius · peak {{ d.peakHours }}</p>
+              <div class="prf-badges">
+                <span [class]="healthBadgeClass(z.health)">{{ healthLabel(z.health) }}</span>
+                <span class="adm-service-pill">{{ z.coveragePct }}% coverage</span>
+                @if (d.surgeActive) {
+                  <span class="badge badge-amber">Surge on</span>
+                }
+              </div>
+            </div>
+          </div>
+          <button type="button" class="adm-modal-close" (click)="closeDetail()">×</button>
+        </header>
+        <div class="adm-modal-body prf-body">
+          <div class="prf-stat-grid">
+            <div class="prf-stat"><span class="prf-stat-val">{{ z.demand }}</span><span class="prf-stat-lbl">Demand</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ z.supply }}</span><span class="prf-stat-lbl">Supply</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ z.eta }}</span><span class="prf-stat-lbl">Avg ETA</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.avgRating }}</span><span class="prf-stat-lbl">Avg rating</span></div>
+          </div>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Top services</h3>
+            <div class="prf-tags">
+              @for (s of d.topServices; track s) {
+                <span class="prf-tag">{{ s }}</span>
+              }
+            </div>
+          </section>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Active maids</h3>
+            <div class="prf-table-wrap">
+              <table class="prf-table">
+                <thead><tr><th>Maid</th><th>Jobs today</th><th>Rating</th></tr></thead>
+                <tbody>
+                  @for (m of d.maids; track m.name) {
+                    <tr><td>{{ m.name }}</td><td>{{ m.jobs }}</td><td>{{ m.rating }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Ops notes</h3>
+            <p class="prf-notes">{{ d.notes }}</p>
+          </section>
+          <div class="prf-actions">
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('surge', z); closeDetail()">⚡ Surge</button>
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('assign', z); closeDetail()">👷 Pull maids</button>
+            <button type="button" class="adm-btn adm-btn--primary" (click)="closeDetail()">Close</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="actionOpen()" (click)="closeAction()" role="presentation">
+  <div class="adm-modal" [class.open]="actionOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="zn-action-title">
+    @if (actionRow(); as z) {
+      <header class="adm-modal-hdr">
+        <h2 id="zn-action-title" class="adm-modal-title">{{ actionTitle() }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeAction()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-meta">{{ z.name }} · {{ z.coveragePct }}% · ETA {{ z.eta }}</p>
+        @switch (actionKind()) {
+          @case ('surge') {
+            <label class="adm-modal-field">
+              <span>Surge %</span>
+              <input class="adm-search-inp" type="number" min="5" max="30" [ngModel]="surgePct()" (ngModelChange)="surgePct.set($event)">
+            </label>
+            <label class="adm-modal-field">
+              <span>Duration (hours)</span>
+              <select class="assign-select" [ngModel]="surgeDuration()" (ngModelChange)="surgeDuration.set($event)">
+                <option value="2">2 hours</option>
+                <option value="4">4 hours</option>
+                <option value="8">8 hours</option>
+              </select>
+            </label>
+            <label class="adm-modal-check">
+              <input type="checkbox" [ngModel]="surgeNotify()" (ngModelChange)="surgeNotify.set($event)">
+              <span>Push in-app banner to customers</span>
+            </label>
+          }
+          @case ('assign') {
+            <label class="adm-modal-field">
+              <span>Maids to pull</span>
+              <input class="adm-search-inp" type="number" min="1" max="8" [ngModel]="assignCount()" (ngModelChange)="assignCount.set($event)">
+            </label>
+            <label class="adm-modal-field">
+              <span>Source zone</span>
+              <select class="assign-select" [ngModel]="assignSource()" (ngModelChange)="assignSource.set($event)">
+                @for (sz of sourceZones(); track sz) {
+                  <option [value]="sz">{{ sz }}</option>
+                }
+              </select>
+            </label>
+            <p class="adm-modal-hint">Demand {{ z.demand }} vs supply {{ z.supply }} · auto-notify pulled maids.</p>
+          }
+        }
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="actionRunning()" (click)="confirmAction()">
+          {{ actionRunning() ? 'Applying…' : 'Confirm' }}
+        </button>
+      </div>
+    }
   </div>
 </div>

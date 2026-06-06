@@ -1,0 +1,151 @@
+.pub-main--book {
+  max-width: 560px;
+}
+
+.book-steps {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.book-step {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 8px 4px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: var(--white);
+}
+
+.book-step--active {
+  color: var(--or);
+  border-color: rgba(var(--primary-rgb), 0.35);
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
+.book-step--done {
+  color: var(--g);
+  border-color: rgba(28, 140, 82, 0.25);
+}
+
+.book-step-lead {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.book-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.book-price-preview,
+.book-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border2);
+}
+
+.book-price-preview {
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.book-summary {
+  margin-bottom: 16px;
+  padding: 4px 12px 0;
+  border-radius: 12px;
+  background: var(--cream2);
+  border: 1px solid var(--border2);
+}
+
+.book-summary strong {
+  text-align: right;
+  max-width: 60%;
+}
+
+.book-summary-total {
+  border-bottom: none !important;
+  font-size: 15px;
+  color: var(--g);
+}
+
+.book-pay-methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.book-pay-opt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border2);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--white);
+}
+
+.book-pay-opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.book-pay-opt--sel {
+  border-color: rgba(var(--primary-rgb), 0.4);
+  background: rgba(var(--primary-rgb), 0.08);
+  color: var(--or);
+}
+
+.book-upi-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: var(--cream2);
+  border: 1px dashed var(--border2);
+}
+
+.book-upi-id {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.book-done-card {
+  text-align: center;
+}
+
+.book-done-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.book-done-title {
+  margin: 0 0 8px;
+  font-family: 'Clash Display', sans-serif;
+  font-size: 24px;
+}
+
+.pub-actions--tight {
+  margin-top: 0;
+  margin-bottom: 8px;
+}

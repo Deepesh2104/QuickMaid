@@ -3,20 +3,20 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Support</p>
       <h1 class="adm-title">Knowledge base</h1>
-      <p class="adm-sub">Internal articles for L1/L2 — versioned, searchable, linked from tickets.</p>
+      <p class="adm-sub">Internal articles for L1/L2 — create, edit, search (demo UI).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">KB · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="publish()">New article</button>
+      <span class="adm-sync-pill" role="status">KB · {{ articles().length }} articles</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openNewArticle()">New article</button>
     </div>
   </header>
 
   <div class="form-card form-card--adm">
     <div class="adm-toolbar adm-toolbar--stack">
-    <div class="adm-search-wrap adm-search-wrap--wide">
-      <span class="adm-search-ico" aria-hidden="true">🔍</span>
-      <input class="adm-search-inp" type="search" placeholder="Search runbooks…" [ngModel]="query()" (ngModelChange)="query.set($event)" autocomplete="off">
-    </div>
+      <div class="adm-search-wrap adm-search-wrap--wide">
+        <span class="adm-search-ico" aria-hidden="true">🔍</span>
+        <input class="adm-search-inp" type="search" placeholder="Search runbooks…" [ngModel]="query()" (ngModelChange)="query.set($event)" autocomplete="off">
+      </div>
     </div>
   </div>
 
@@ -24,28 +24,73 @@
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Articles</div>
-        <p class="table-hint">Visibility: internal / partner / public help center</p>
+        <p class="table-hint">Row click → edit · visibility badge</p>
       </div>
     </div>
     <div class="table-scroll">
-      <table class="data-table data-table--adm">
+      <table class="data-table data-table--adm kb-table">
         <thead>
           <tr>
             <th>Title</th>
             <th>Tags</th>
+            <th>Visibility</th>
             <th>Updated</th>
           </tr>
         </thead>
         <tbody>
-          @for (a of articles; track a.title) {
-            <tr>
+          @for (a of filteredArticles(); track a.id) {
+            <tr class="kb-row" tabindex="0" (click)="openEditArticle(a)" (keydown.enter)="openEditArticle(a)">
               <td>{{ a.title }}</td>
               <td>{{ a.tags }}</td>
+              <td><span class="kb-vis" [attr.data-vis]="a.visibility">{{ a.visibility }}</span></td>
               <td>{{ a.updated }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">Koi article nahi mila</td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop kb-editor-backdrop" [class.open]="editorOpen()" (click)="closeEditor()" role="presentation">
+  <div class="adm-modal kb-editor-modal" [class.open]="editorOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="kb-editor-title">
+    <header class="adm-modal-hdr">
+      <h2 id="kb-editor-title" class="adm-modal-title">{{ editingId() ? '✏️ Edit article' : '📝 New article' }}</h2>
+      <button type="button" class="adm-modal-close" (click)="closeEditor()" aria-label="Close">×</button>
+    </header>
+    <div class="adm-modal-body kb-editor-body">
+      <label class="adm-modal-field">
+        <span>Title</span>
+        <input class="adm-search-inp" type="text" [ngModel]="editorTitle()" (ngModelChange)="editorTitle.set($event)">
+      </label>
+      <div class="kb-editor-row">
+        <label class="adm-modal-field kb-editor-field--grow">
+          <span>Tags (comma separated)</span>
+          <input class="adm-search-inp" type="text" placeholder="billing, refunds" [ngModel]="editorTags()" (ngModelChange)="editorTags.set($event)">
+        </label>
+        <label class="adm-modal-field">
+          <span>Visibility</span>
+          <select class="assign-select" [ngModel]="editorVisibility()" (ngModelChange)="editorVisibility.set($event)">
+            <option value="internal">Internal</option>
+            <option value="partner">Partner</option>
+            <option value="public">Public help</option>
+          </select>
+        </label>
+      </div>
+      <label class="adm-modal-field">
+        <span>Body (Markdown)</span>
+        <textarea class="kb-editor-textarea" rows="12" [ngModel]="editorBody()" (ngModelChange)="editorBody.set($event)"></textarea>
+      </label>
+      <div class="kb-editor-actions">
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="closeEditor()">Cancel</button>
+        <button type="button" class="adm-btn adm-btn--primary" [disabled]="editorSaving()" (click)="saveArticle()">
+          {{ editorSaving() ? 'Saving…' : (editingId() ? 'Save changes' : 'Publish') }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

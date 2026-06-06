@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ChartService } from '@core/services/chart.service';
 import { CHART_PALETTE, MONTHS } from '@core/tokens/chart-palette.token';
 import { ToastService } from '@core/services/toast.service';
@@ -15,11 +16,19 @@ export interface ReviewRow {
   flagged: boolean;
 }
 
+export interface ReviewReplyTemplate {
+  id: string;
+  label: string;
+  body: string;
+}
+
 @Component({
   selector: 'app-reviews',
   standalone: true,
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './reviews.component.html',
+  styleUrls: ['./reviews.component.css'],
 })
 export class ReviewsComponent implements AfterViewInit {
   private readonly cs = inject(ChartService);
@@ -31,6 +40,50 @@ export class ReviewsComponent implements AfterViewInit {
 
   readonly bucketFilter = signal<ReviewBucket>('all');
   readonly searchQuery = signal('');
+
+  readonly exportOpen = signal(false);
+  readonly moderateOpen = signal(false);
+  readonly autoReplyOpen = signal(false);
+  readonly replyOpen = signal(false);
+  readonly replyRow = signal<ReviewRow | null>(null);
+  readonly replyChannel = signal<'whatsapp' | 'sms' | 'in_app'>('whatsapp');
+  readonly replyTemplateId = signal('thanks');
+  readonly replyBody = signal('');
+  readonly replySending = signal(false);
+
+  readonly replyTemplates: readonly ReviewReplyTemplate[] = [
+    { id: 'thanks', label: 'Thank you (5★)', body: 'Dhanyawad {{name}}! Aapka feedback humein motivate karta hai. QuickMaid team 🙏' },
+    { id: 'sorry', label: 'Apology (≤3★)', body: 'Maafi chahte hain {{name}}. Hum is issue ko priority par le rahe hain — CX lead 2h mein call karegi.' },
+    { id: 'refund', label: 'Refund update', body: 'Hi {{name}}, aapka refund process ho chuka hai. 24–48h mein UPI par reflect hoga.' },
+    { id: 'followup', label: 'Follow-up', body: 'Hi {{name}}, kya aapki concern resolve ho gayi? Koi aur madad chahiye to reply karein.' },
+    { id: 'custom', label: 'Custom', body: '' },
+  ];
+
+  readonly replyPreview = computed(() => {
+    const r = this.replyRow();
+    if (!r) return '';
+    const first = r.customer.replace(/\.$/, '').split(' ')[0] ?? r.customer;
+    return this.replyBody().replace(/\{\{name\}\}/g, first);
+  });
+
+  readonly actionOpen = signal(false);
+  readonly exportRunning = signal(false);
+  readonly actionRunning = signal(false);
+  readonly exportScope = signal<'filtered' | 'all'>('filtered');
+  readonly actionKind = signal('');
+  readonly actionRow = signal<ReviewRow | null>(null);
+  readonly escalateNote = signal('');
+
+  readonly flaggedCount = computed(() => this.reviewRows.filter((r) => r.flagged).length);
+
+  readonly actionTitle = computed(() => {
+    const titles: Record<string, string> = {
+      escalate: 'Escalate to CX lead',
+      reply: 'Send reply template',
+      helpful: 'Mark helpful',
+    };
+    return titles[this.actionKind()] ?? 'Confirm';
+  });
 
   readonly reviewRows: readonly ReviewRow[] = [
     { id: 'RV-501', customer: 'Neha A.', maid: 'Savita D.', stars: 5, excerpt: 'Spotless kitchen, on time.', date: 'May 9', flagged: false },
@@ -123,5 +176,122 @@ export class ReviewsComponent implements AfterViewInit {
         },
       });
     }, 60);
+  }
+
+  openExport(): void {
+    this.exportOpen.set(true);
+  }
+
+  closeExport(): void {
+    this.exportOpen.set(false);
+  }
+
+  confirmExport(): void {
+    this.exportRunning.set(true);
+    setTimeout(() => {
+      const data = this.exportScope() === 'filtered' ? this.filteredReviews() : [...this.reviewRows];
+      const header = 'id,customer,maid,stars,excerpt,date,flagged';
+      const lines = data.map((r) =>
+        [r.id, r.customer, r.maid, r.stars, `"${r.excerpt}"`, r.date, r.flagged].join(','),
+      );
+      const body = [header, ...lines].join('\n');
+      const blob = new Blob([body], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quickmaid_reviews.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.exportRunning.set(false);
+      this.closeExport();
+      this.toast.show(`Reviews CSV · ${data.length} rows`, '📥');
+    }, 500);
+  }
+
+  openModerate(): void {
+    this.moderateOpen.set(true);
+  }
+
+  closeModerate(): void {
+    this.moderateOpen.set(false);
+  }
+
+  openAutoReply(): void {
+    this.autoReplyOpen.set(true);
+  }
+
+  closeAutoReply(): void {
+    this.autoReplyOpen.set(false);
+  }
+
+  openReply(row: ReviewRow): void {
+    this.replyRow.set(row);
+    this.replyChannel.set(row.stars <= 3 ? 'whatsapp' : 'in_app');
+    const defaultId = row.stars <= 2 ? 'sorry' : row.stars === 5 ? 'thanks' : 'followup';
+    this.replyTemplateId.set(defaultId);
+    const tpl = this.replyTemplates.find((t) => t.id === defaultId) ?? this.replyTemplates[0];
+    const first = row.customer.replace(/\.$/, '').split(' ')[0] ?? row.customer;
+    this.replyBody.set(tpl.body.replace(/\{\{name\}\}/g, first));
+    this.replyOpen.set(true);
+  }
+
+  closeReply(): void {
+    this.replyOpen.set(false);
+  }
+
+  onReplyTemplateChange(id: string): void {
+    this.replyTemplateId.set(id);
+    const r = this.replyRow();
+    if (!r) return;
+    const tpl = this.replyTemplates.find((t) => t.id === id);
+    if (tpl && id !== 'custom') {
+      const first = r.customer.replace(/\.$/, '').split(' ')[0] ?? r.customer;
+      this.replyBody.set(tpl.body.replace(/\{\{name\}\}/g, first));
+    }
+  }
+
+  confirmReply(): void {
+    const r = this.replyRow();
+    if (!r || !this.replyBody().trim()) return;
+    this.replySending.set(true);
+    const ch = this.replyChannel();
+    const via = ch === 'whatsapp' ? 'WhatsApp' : ch === 'sms' ? 'SMS' : 'In-app';
+    window.setTimeout(() => {
+      this.replySending.set(false);
+      this.toast.show(`${via} reply sent · ${r.id}`, '💬');
+      this.closeReply();
+    }, 700);
+  }
+
+  openAction(kind: string, row: ReviewRow): void {
+    if (kind === 'reply') {
+      this.openReply(row);
+      return;
+    }
+    this.actionKind.set(kind);
+    this.actionRow.set(row);
+    this.escalateNote.set('');
+    this.actionOpen.set(true);
+  }
+
+  closeAction(): void {
+    this.actionOpen.set(false);
+  }
+
+  confirmAction(): void {
+    const r = this.actionRow();
+    const kind = this.actionKind();
+    if (!r) return;
+    this.actionRunning.set(true);
+    window.setTimeout(() => {
+      const icons: Record<string, string> = { escalate: '🚨', helpful: '👍' };
+      const msgs: Record<string, string> = {
+        escalate: 'Escalated to CX lead',
+        helpful: 'Marked helpful',
+      };
+      this.actionRunning.set(false);
+      this.closeAction();
+      this.toast.show(`${msgs[kind]} · ${r.id}`, icons[kind] ?? '✓');
+    }, 500);
   }
 }

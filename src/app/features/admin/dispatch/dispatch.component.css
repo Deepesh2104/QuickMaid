@@ -1,0 +1,260 @@
+.dp-board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  min-height: 320px;
+}
+
+.dp-col {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  max-height: 420px;
+}
+
+.dp-col--queue {
+  flex: 0 0 220px;
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.03);
+}
+
+.dp-col-hdr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border2);
+  font-size: 12px;
+}
+
+.dp-col-title {
+  font-weight: 800;
+  flex: 1;
+}
+
+.dp-col-zone {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  width: 100%;
+}
+
+.dp-col-count {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--cream2);
+  color: var(--muted);
+}
+
+.dp-col-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+}
+
+.dp-job {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--cream2);
+  font-size: 11px;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dp-job:active {
+  cursor: grabbing;
+}
+
+.dp-job--dragging {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+.dp-job--assigned {
+  background: rgba(var(--primary-rgb), 0.06);
+  border-color: rgba(var(--primary-rgb), 0.2);
+}
+
+.dp-job strong {
+  font-size: 12px;
+}
+
+.dp-job-meta {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.dp-empty,
+.dp-drop-hint {
+  margin: auto;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 16px 8px;
+}
+
+.dp-col-body:has(.dp-job):hover .dp-drop-hint {
+  display: none;
+}
+
+.dp-cancel-sim {
+  margin-top: 6px;
+  align-self: flex-start;
+  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dp-split {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .dp-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dp-activity-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.dp-activity-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--cream2);
+}
+
+.dp-activity-ico {
+  flex-shrink: 0;
+}
+
+.dp-activity-text {
+  display: block;
+  color: var(--ink2);
+  line-height: 1.45;
+}
+
+.dp-activity-time {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.dp-modal-hint,
+.dp-modal-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.dp-modal-meta {
+  color: var(--ink2);
+}
+
+.adm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(19, 17, 14, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.adm-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.adm-modal {
+  width: min(440px, 100%);
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 64px -24px rgba(19, 17, 14, 0.28);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.adm-modal.open {
+  transform: translateY(0) scale(1);
+}
+
+.adm-modal-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.adm-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.adm-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  background: var(--cream2);
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.adm-modal-body {
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-modal-submit {
+  width: 100%;
+}

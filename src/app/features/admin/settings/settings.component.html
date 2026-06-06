@@ -7,8 +7,8 @@
     </div>
     <div class="adm-hero-aside">
       <span class="adm-sync-pill" role="status">v1 config · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Audit log (demo)','📜')">Audit log</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Settings saved!','⚙️')">Save all</button>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openAudit()">Audit log</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openSave()">Save all</button>
     </div>
   </header>
 
@@ -55,13 +55,6 @@
         <div class="form-card-title">Dispatch &amp; safety</div>
         <div class="adm-toggle-card">
           <div class="adm-toggle-copy">
-            <p class="adm-toggle-title">Auto-assign nearest maid</p>
-            <p class="adm-toggle-sub">Uses zone heatmap + rating weighting.</p>
-          </div>
-          <div class="toggle-switch" [class.on]="autoAssignMaid()" (click)="toggleAutoAssign()" role="switch" [attr.aria-checked]="autoAssignMaid()"><div class="toggle-knob"></div></div>
-        </div>
-        <div class="adm-toggle-card">
-          <div class="adm-toggle-copy">
             <p class="adm-toggle-title">Maintenance mode</p>
             <p class="adm-toggle-sub">Public app shows banner; admins still work.</p>
           </div>
@@ -85,7 +78,7 @@
       </div>
 
       <div class="form-actions" style="margin:0;padding:0;border:none;">
-        <button type="button" class="btn-save" (click)="toast.show('Settings saved!','⚙️')">Save settings</button>
+        <button type="button" class="btn-save" (click)="openSave()">Save settings</button>
       </div>
     </div>
 
@@ -116,7 +109,60 @@
           </div>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('Danger zone (demo) — disabled','🛑')">Reset platform (demo)</button>
+      <button type="button" class="adm-aside-btn" (click)="openReset()">Reset platform (demo)</button>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="saveOpen()" (click)="closeSave()" role="presentation">
+  <div class="adm-modal" [class.open]="saveOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="st-save-title">
+    <header class="adm-modal-hdr">
+      <h2 id="st-save-title" class="adm-modal-title">⚙️ Save settings</h2>
+      <button type="button" class="adm-modal-close" (click)="closeSave()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Apply general, notification, and dispatch toggles to the demo config store.</p>
+      <p class="adm-modal-hint"><strong>Active:</strong> {{ toggleSummary() }}</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="saveRunning()" (click)="confirmSave()">
+        {{ saveRunning() ? 'Saving…' : 'Confirm save' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="auditOpen()" (click)="closeAudit()" role="presentation">
+  <div class="adm-modal" [class.open]="auditOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="st-audit-title">
+    <header class="adm-modal-hdr">
+      <h2 id="st-audit-title" class="adm-modal-title">📜 Recent config changes</h2>
+      <button type="button" class="adm-modal-close" (click)="closeAudit()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <ul class="st-audit-list">
+        <li>2026-05-14 · asha — maintenance_mode=false</li>
+        <li>2026-05-13 · rohit — commission_rate=16%</li>
+        <li>2026-05-12 · asha — auto_assign=true</li>
+      </ul>
+      <div class="st-modal-row">
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="closeAudit()">Close</button>
+        <button type="button" class="adm-btn adm-btn--primary" (click)="goAuditLog()">Full audit log</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="resetOpen()" (click)="closeReset()" role="presentation">
+  <div class="adm-modal" [class.open]="resetOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="st-reset-title">
+    <header class="adm-modal-hdr">
+      <h2 id="st-reset-title" class="adm-modal-title">🛑 Reset platform</h2>
+      <button type="button" class="adm-modal-close" (click)="closeReset()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="st-danger-note">Demo only — wipes seed data, bookings, and maid roster. Cannot be undone.</p>
+      <label class="adm-modal-field">
+        <span>Type RESET to confirm</span>
+        <input class="adm-search-inp" type="text" placeholder="RESET" [ngModel]="resetConfirm()" (ngModelChange)="resetConfirm.set($event)">
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="!resetValid()" (click)="confirmReset()">Reset (demo blocked)</button>
+    </div>
   </div>
 </div>

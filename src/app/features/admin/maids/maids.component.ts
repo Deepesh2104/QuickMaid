@@ -8,9 +8,11 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ChartService } from '@core/services/chart.service';
 import { CHART_PALETTE, MONTHS } from '@core/tokens/chart-palette.token';
+import { AppStateService, PartnerApplication } from '@core/services/app-state.service';
 import { ToastService } from '@core/services/toast.service';
 
 export type MaidAv = 'or' | 'bl' | 'gr' | 'pu' | 're';
@@ -34,17 +36,59 @@ export interface MaidRow {
   upi: string;
 }
 
+export interface MaidJobHistory {
+  id: string;
+  customer: string;
+  date: string;
+  service: string;
+  rating: number | null;
+  amount: string;
+}
+
+export interface MaidPayoutRow {
+  date: string;
+  amount: string;
+  status: string;
+}
+
+export interface MaidDocument {
+  name: string;
+  status: 'verified' | 'pending' | 'missing';
+}
+
+export interface MaidProfileDetail {
+  age: string;
+  aadhaarMasked: string;
+  address: string;
+  emergencyContact: string;
+  joinedDate: string;
+  policeVerified: boolean;
+  onTimePct: number;
+  noShowCount: number;
+  languages: string;
+  documents: MaidDocument[];
+  recentJobs: MaidJobHistory[];
+  payouts: MaidPayoutRow[];
+  notes: string;
+}
+
 @Component({
   selector: 'app-maids',
   standalone: true,
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './maids.component.html',
+  styleUrls: ['./maids.component.css', '../shared/admin-profile.css'],
 })
 export class MaidsComponent implements AfterViewInit {
   private readonly cs = inject(ChartService);
   private readonly palette = inject(CHART_PALETTE);
   readonly toast = inject(ToastService);
   readonly router = inject(Router);
+  private readonly appState = inject(AppStateService);
+
+  readonly partnerApps = this.appState.partnerApps;
+  readonly rosterExtra = signal<MaidRow[]>([]);
 
   @ViewChild('maidTrendChart') trendCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('ratingChart') ratingCanvas!: ElementRef<HTMLCanvasElement>;
@@ -55,6 +99,73 @@ export class MaidsComponent implements AfterViewInit {
   readonly statusFilter = signal<'all' | MaidStatus>('all');
   readonly zoneFilter = signal<string>('all');
   readonly searchQuery = signal('');
+
+  readonly exportOpen = signal(false);
+  readonly bulkOpen = signal(false);
+  readonly exportScope = signal<'filtered' | 'all'>('filtered');
+  readonly exportRunning = signal(false);
+  readonly bulkRunning = signal(false);
+  readonly bulkTarget = signal<'pending' | 'all'>('pending');
+
+  readonly allRows = computed(() => [...this.rosterExtra(), ...this.rows]);
+
+  readonly pendingCount = computed(() => this.allRows().filter((r) => r.status === 'pending').length);
+
+  readonly partnerQueueOpen = signal(false);
+  readonly partnerReview = signal<PartnerApplication | null>(null);
+  readonly partnerRunning = signal(false);
+
+  readonly profileOpen = signal(false);
+  readonly profileRow = signal<MaidRow | null>(null);
+
+  readonly profileDetail = computed((): MaidProfileDetail | null => {
+    const m = this.profileRow();
+    return m ? this.buildProfile(m) : null;
+  });
+
+  readonly actionOpen = signal(false);
+  readonly actionKind = signal('');
+  readonly actionRow = signal<MaidRow | null>(null);
+  readonly actionRunning = signal(false);
+
+  readonly editPhone = signal('');
+  readonly editZone = signal('');
+  readonly editSkills = signal('');
+  readonly editUpi = signal('');
+
+  readonly approveAadhaar = signal(true);
+  readonly approveBank = signal(false);
+  readonly approvePolice = signal(false);
+  readonly approveTraining = signal(false);
+  readonly approveNote = signal('');
+
+  readonly rejectReason = signal('incomplete_docs');
+  readonly rejectNote = signal('');
+
+  readonly payoutAmount = signal('');
+  readonly payoutRef = signal('');
+  readonly payoutNotify = signal(true);
+
+  readonly suspendReason = signal('quality');
+  readonly suspendDays = signal('7');
+
+  readonly reinstateNote = signal('');
+  readonly removeTyped = signal('');
+
+  readonly skillOptions = ['Cleaning', 'Cooking', 'Deep clean', 'Babysit', 'Utensils', 'B2B'] as const;
+
+  readonly actionTitle = computed(() => {
+    const titles: Record<string, string> = {
+      edit: 'Edit worker',
+      approve: 'Approve KYC',
+      reject: 'Reject application',
+      reinstate: 'Reinstate worker',
+      remove: 'Remove from roster',
+      payout: 'Process payout',
+      suspend: 'Suspend worker',
+    };
+    return titles[this.actionKind()] ?? 'Confirm action';
+  });
 
   readonly rows: readonly MaidRow[] = [
     {
@@ -196,7 +307,7 @@ export class MaidsComponent implements AfterViewInit {
   ];
 
   readonly zones = computed(() => {
-    const z = new Set(this.rows.map((r) => r.zone));
+    const z = new Set(this.allRows().map((r) => r.zone));
     return [...z].sort();
   });
 
@@ -204,7 +315,7 @@ export class MaidsComponent implements AfterViewInit {
     const st = this.statusFilter();
     const zf = this.zoneFilter();
     const q = this.searchQuery().trim().toLowerCase();
-    return this.rows.filter((r) => {
+    return this.allRows().filter((r) => {
       if (st !== 'all' && r.status !== st) return false;
       if (zf !== 'all' && r.zone !== zf) return false;
       if (!q) return true;
@@ -220,13 +331,13 @@ export class MaidsComponent implements AfterViewInit {
   });
 
   readonly filteredCount = computed(() => this.filteredRows().length);
-  readonly totalRows = this.rows.length;
+  readonly totalRows = computed(() => this.allRows().length);
 
-  readonly kpiActive = computed(() => this.rows.filter((r) => r.status === 'active').length);
-  readonly kpiPending = computed(() => this.rows.filter((r) => r.status === 'pending').length);
-  readonly kpiSuspended = computed(() => this.rows.filter((r) => r.status === 'suspended').length);
+  readonly kpiActive = computed(() => this.allRows().filter((r) => r.status === 'active').length);
+  readonly kpiPending = computed(() => this.allRows().filter((r) => r.status === 'pending').length);
+  readonly kpiSuspended = computed(() => this.allRows().filter((r) => r.status === 'suspended').length);
   readonly kpiAvgRating = computed(() => {
-    const rated = this.rows.filter((r) => r.rating != null) as (MaidRow & { rating: number })[];
+    const rated = this.allRows().filter((r) => r.rating != null) as (MaidRow & { rating: number })[];
     if (!rated.length) return '—';
     const n = rated.reduce((a, r) => a + r.rating, 0) / rated.length;
     return n.toFixed(1);
@@ -430,5 +541,301 @@ export class MaidsComponent implements AfterViewInit {
         },
       } as any);
     }, 60);
+  }
+
+  openExport(): void {
+    this.exportOpen.set(true);
+  }
+
+  closeExport(): void {
+    this.exportOpen.set(false);
+  }
+
+  confirmExport(): void {
+    this.exportRunning.set(true);
+    setTimeout(() => {
+      const data = this.exportScope() === 'filtered' ? this.filteredRows() : [...this.allRows()];
+      const header = 'id,name,phone,zone,skills,status,rating,earnings';
+      const lines = data.map((r) =>
+        [r.id, r.name, r.phone, r.zone, `"${r.skills}"`, r.status, r.rating ?? '', r.earnings].join(','),
+      );
+      const body = [header, ...lines].join('\n');
+      const blob = new Blob([body], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quickmaid_roster.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.exportRunning.set(false);
+      this.closeExport();
+      this.toast.show(`Roster CSV · ${data.length} rows`, '📥');
+    }, 500);
+  }
+
+  openBulk(): void {
+    this.bulkOpen.set(true);
+  }
+
+  closeBulk(): void {
+    this.bulkOpen.set(false);
+  }
+
+  confirmBulk(): void {
+    this.bulkRunning.set(true);
+    setTimeout(() => {
+      const n = this.bulkTarget() === 'pending' ? this.pendingCount() : this.allRows().length;
+      this.bulkRunning.set(false);
+      this.closeBulk();
+      this.toast.show(`Doc reminder SMS · ${n} maids`, '📣');
+    }, 700);
+  }
+
+  statusBadgeClass(s: MaidStatus): string {
+    if (s === 'active') return 'badge badge-green';
+    if (s === 'pending') return 'badge badge-amber';
+    return 'badge badge-red';
+  }
+
+  statusLabel(s: MaidStatus): string {
+    if (s === 'active') return 'Active';
+    if (s === 'pending') return 'Pending KYC';
+    return 'Suspended';
+  }
+
+  docStatusClass(s: MaidDocument['status']): string {
+    if (s === 'verified') return 'badge badge-green';
+    if (s === 'pending') return 'badge badge-amber';
+    return 'badge badge-red';
+  }
+
+  openProfile(row: MaidRow): void {
+    this.profileRow.set(row);
+    this.profileOpen.set(true);
+  }
+
+  closeProfile(): void {
+    this.profileOpen.set(false);
+  }
+
+  private buildProfile(m: MaidRow): MaidProfileDetail {
+    const customers = ['Neha A.', 'Rahul G.', 'Anjali T.', 'Vijay S.', 'Sana K.'];
+    const n = m.bookings ?? 0;
+    const recentJobs: MaidJobHistory[] = [
+      {
+        id: `BK-${1100 + n}`,
+        customer: customers[n % customers.length],
+        date: m.lastActive.includes('Today') ? 'Today' : 'May 8',
+        service: m.skills.split('·')[0]?.trim() ?? 'Cleaning',
+        rating: m.rating,
+        amount: '₹349',
+      },
+      {
+        id: `BK-${1090 + n}`,
+        customer: customers[(n + 1) % customers.length],
+        date: 'May 6',
+        service: 'Deep clean',
+        rating: m.rating ? m.rating - 0.1 : null,
+        amount: '₹499',
+      },
+      {
+        id: `BK-${1080 + n}`,
+        customer: customers[(n + 2) % customers.length],
+        date: 'May 3',
+        service: 'Kitchen help',
+        rating: m.rating,
+        amount: '₹299',
+      },
+    ];
+    const payouts: MaidPayoutRow[] =
+      m.status === 'pending'
+        ? []
+        : [
+            { date: 'Mar 31', amount: m.earnings, status: m.status === 'suspended' ? 'Held' : 'Paid' },
+            { date: 'Mar 15', amount: '₹4,200', status: 'Paid' },
+            { date: 'Feb 28', amount: '₹3,850', status: 'Paid' },
+          ];
+    const pending = m.status === 'pending';
+    const suspended = m.status === 'suspended';
+    return {
+      age: `${28 + (m.id.charCodeAt(m.id.length - 1) % 12)}`,
+      aadhaarMasked: pending ? 'XXXX-XXXX-9012 (pending)' : `XXXX-XXXX-${m.id.slice(-4)}`,
+      address: `Ward ${40 + n}, ${m.zone}, Raipur, CG`,
+      emergencyContact: `+91 98${m.id.slice(-3)}-11${m.id.slice(-2)}`,
+      joinedDate: pending ? '—' : suspended ? 'Jun 2024' : 'Jan 2025',
+      policeVerified: !pending && m.kycLine.toLowerCase().includes('police'),
+      onTimePct: suspended ? 72 : m.rating && m.rating > 4.5 ? 96 : 89,
+      noShowCount: suspended ? 3 : pending ? 0 : 1,
+      languages: 'Hindi · Chhattisgarhi',
+      documents: [
+        { name: 'Aadhaar', status: pending ? 'pending' : 'verified' },
+        { name: 'Police verification', status: m.kycLine.toLowerCase().includes('police') ? 'verified' : pending ? 'pending' : 'missing' },
+        { name: 'Bank / UPI', status: m.upi.includes('pending') || m.upi === '—' ? 'pending' : 'verified' },
+        { name: 'Training L2', status: m.kycLine.includes('L2') || m.kycLine.includes('training') ? 'verified' : pending ? 'pending' : 'missing' },
+      ],
+      recentJobs: pending ? [] : recentJobs,
+      payouts,
+      notes:
+        suspended
+          ? 'Suspended after policy breach · reinstate only after ops review.'
+          : pending
+            ? 'Onboarding queue · complete video KYC + bank proof.'
+            : `${m.kycLine} · preferred ${m.zone} cluster.`,
+    };
+  }
+
+  private resetActionForms(row: MaidRow, kind: string): void {
+    if (kind === 'edit') {
+      this.editPhone.set(row.phone);
+      this.editZone.set(row.zone);
+      this.editSkills.set(row.skills);
+      this.editUpi.set(row.upi);
+    }
+    if (kind === 'approve') {
+      const p = this.buildProfile(row);
+      const doc = (n: string) => p.documents.find((d) => d.name.includes(n))?.status;
+      this.approveAadhaar.set(doc('Aadhaar') === 'verified' || doc('Aadhaar') === 'pending');
+      this.approveBank.set(doc('Bank') === 'verified' || doc('Bank') === 'pending');
+      this.approvePolice.set(doc('Police') === 'verified');
+      this.approveTraining.set(doc('Training') === 'verified' || doc('Training') === 'pending');
+      this.approveNote.set('');
+    }
+    if (kind === 'reject') {
+      this.rejectReason.set('incomplete_docs');
+      this.rejectNote.set('');
+    }
+    if (kind === 'payout') {
+      this.payoutAmount.set(row.earnings);
+      this.editUpi.set(row.upi);
+      this.payoutRef.set(`PAY-${row.id.slice(-4)}-${Date.now().toString().slice(-4)}`);
+      this.payoutNotify.set(true);
+    }
+    if (kind === 'suspend') {
+      this.suspendReason.set('quality');
+      this.suspendDays.set('7');
+    }
+    if (kind === 'reinstate') {
+      this.reinstateNote.set('');
+    }
+    if (kind === 'remove') {
+      this.removeTyped.set('');
+    }
+  }
+
+  openAction(kind: string, row: MaidRow): void {
+    if (kind === 'profile') {
+      this.openProfile(row);
+      return;
+    }
+    this.actionKind.set(kind);
+    this.actionRow.set(row);
+    this.resetActionForms(row, kind);
+    this.actionOpen.set(true);
+  }
+
+  closeAction(): void {
+    this.actionOpen.set(false);
+  }
+
+  confirmAction(): void {
+    const row = this.actionRow();
+    const kind = this.actionKind();
+    if (!row) return;
+    if (kind === 'remove' && this.removeTyped().trim().toUpperCase() !== 'REMOVE') {
+      this.toast.show('Type REMOVE to confirm', '⚠️');
+      return;
+    }
+    if (kind === 'approve' && !this.approveAadhaar()) {
+      this.toast.show('Aadhaar verification required', '⚠️');
+      return;
+    }
+    this.actionRunning.set(true);
+    const icons: Record<string, string> = {
+      edit: '✏️',
+      approve: '✅',
+      reject: '❌',
+      reinstate: '♻️',
+      remove: '🗑️',
+      payout: '💸',
+      suspend: '⛔',
+    };
+    const messages: Record<string, string> = {
+      edit: `Updated ${row.id} · ${this.editZone()}`,
+      approve: `KYC approved · ${row.name}`,
+      reject: `Rejected · ${row.name}`,
+      reinstate: `Reinstated · ${row.name}`,
+      remove: `Removed · ${row.name}`,
+      payout: `Payout ${this.payoutAmount()} → ${this.editUpi() || row.upi}`,
+      suspend: `Suspended ${row.name} · ${this.suspendDays()}d`,
+    };
+    window.setTimeout(() => {
+      this.actionRunning.set(false);
+      this.toast.show(messages[kind] ?? 'Done', icons[kind] ?? '✓');
+      this.closeAction();
+    }, 650);
+  }
+
+  openPartnerQueue(): void {
+    const apps = this.partnerApps();
+    if (apps.length === 0) return;
+    this.partnerReview.set(apps[0]);
+    this.partnerQueueOpen.set(true);
+  }
+
+  closePartnerQueue(): void {
+    this.partnerQueueOpen.set(false);
+  }
+
+  selectPartnerApp(app: PartnerApplication): void {
+    this.partnerReview.set(app);
+  }
+
+  dismissPartner(): void {
+    const app = this.partnerReview();
+    if (!app) return;
+    this.partnerRunning.set(true);
+    window.setTimeout(() => {
+      this.appState.removePartnerApp(app.id);
+      this.appState.logAudit('partner.dismiss', app.id, 'admin');
+      const next = this.partnerApps()[0] ?? null;
+      this.partnerReview.set(next);
+      this.partnerRunning.set(false);
+      if (!next) this.partnerQueueOpen.set(false);
+      this.toast.show(`Application dismissed · ${app.name}`, '🗑️');
+    }, 450);
+  }
+
+  approvePartner(): void {
+    const app = this.partnerReview();
+    if (!app) return;
+    this.partnerRunning.set(true);
+    window.setTimeout(() => {
+      const init = app.name.trim().charAt(0).toUpperCase() || '?';
+      const row: MaidRow = {
+        id: app.id,
+        name: app.name,
+        init,
+        av: 'bl',
+        phone: app.phone,
+        zone: app.city,
+        skills: app.skills,
+        bookings: null,
+        rating: null,
+        earnings: '—',
+        earningsTone: 'muted',
+        status: 'pending',
+        kycLine: `Bank · ${app.bankHint} · web apply`,
+        lastActive: app.submittedAt,
+        upi: '—',
+      };
+      this.rosterExtra.update((list) => [row, ...list]);
+      this.appState.removePartnerApp(app.id);
+      this.appState.logAudit('partner.approve', app.id, 'admin');
+      const next = this.partnerApps()[0] ?? null;
+      this.partnerReview.set(next);
+      this.partnerRunning.set(false);
+      if (!next) this.partnerQueueOpen.set(false);
+      this.toast.show(`${app.name} added to roster (pending KYC)`, '✅');
+    }, 650);
   }
 }

@@ -30,28 +30,71 @@
     </div>
   </div>
 
+  <!-- EXPORT CHAT MODAL -->
+  <div class="bulk-modal sp-export-modal" [class.open]="exportOpen()">
+    <div class="bulk-modal-inner">
+      <div class="bulk-modal-hdr"><div class="bulk-modal-title">📥 Export chat logs</div><button type="button" class="bulk-modal-close" (click)="closeExportModal()">✕</button></div>
+      <div class="bulk-modal-body">
+        <label class="sp-export-field">
+          <span>Scope</span>
+          <select class="assign-select" [ngModel]="exportScope()" (ngModelChange)="exportScope.set($event)">
+            <option value="active">Active ticket only</option>
+            <option value="all">All inbox tickets</option>
+          </select>
+        </label>
+        <label class="sp-export-field">
+          <span>Format</span>
+          <select class="assign-select" [ngModel]="exportFormat()" (ngModelChange)="exportFormat.set($event)">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+          </select>
+        </label>
+        <p class="sp-export-hint">Download demo file — messages + metadata included.</p>
+        <button type="button" class="bulk-send-btn" [disabled]="exportRunning()" (click)="confirmExport()">
+          {{ exportRunning() ? 'Preparing…' : 'Download export' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- BULK MESSAGE MODAL -->
   <div class="bulk-modal" [class.open]="bulkOpen()">
     <div class="bulk-modal-inner">
-      <div class="bulk-modal-hdr"><div class="bulk-modal-title">📢 Bulk Message — Segment Select</div><button class="bulk-modal-close" (click)="closeBulkModal()">✕</button></div>
+      <div class="bulk-modal-hdr"><div class="bulk-modal-title">📢 Bulk Message — Segment Select</div><button type="button" class="bulk-modal-close" (click)="closeBulkModal()">✕</button></div>
       <div class="bulk-modal-body">
         <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Segment chuno:</div>
         <div class="bulk-seg-grid">
-          @for (seg of [{n:'All Monthly Customers',c:'312 contacts'},{n:'No-Show Last 7 Days',c:'47 contacts'},{n:'Inactive (14+ days)',c:'83 contacts'},{n:'Annual Plan Up for Renewal',c:'28 contacts'}]; track $index; let i = $index) {
+          @for (seg of BULK_SEGMENTS; track seg.name; let i = $index) {
             <div class="bulk-seg-card" [class.sel]="bulkSegmentIdx()===i" (click)="selectBulkSegment(i)">
-              <div class="bulk-seg-name">{{ seg.n }}</div>
-              <div class="bulk-seg-count">{{ seg.c }}</div>
+              <div class="bulk-seg-name">{{ seg.name }}</div>
+              <div class="bulk-seg-count">{{ seg.count }} contacts</div>
             </div>
           }
         </div>
         <div style="font-size:13px;font-weight:600;margin-bottom:8px;margin-top:4px;">Message:</div>
         <textarea class="fta" style="margin-bottom:16px;min-height:80px;" placeholder="Namaskar! QuickMaid ki taraf se..." [ngModel]="bulkMsg()" (ngModelChange)="bulkMsg.set($event)"></textarea>
-        <div style="display:flex;gap:10px;margin-bottom:12px;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;"><input type="radio" name="bulk-channel" checked style="accent-color:var(--or)"> 💬 WhatsApp</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;"><input type="radio" name="bulk-channel" style="accent-color:var(--or)"> 📱 In-App</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;"><input type="radio" name="bulk-channel" style="accent-color:var(--or)"> 📧 Email</label>
+        <div class="sp-bulk-channels">
+          <label class="sp-bulk-ch" [class.sp-bulk-ch--sel]="bulkChannel()==='whatsapp'">
+            <input type="radio" name="bulk-channel" [checked]="bulkChannel()==='whatsapp'" (change)="setBulkChannel('whatsapp')"> 💬 WhatsApp
+          </label>
+          <label class="sp-bulk-ch" [class.sp-bulk-ch--sel]="bulkChannel()==='inapp'">
+            <input type="radio" name="bulk-channel" [checked]="bulkChannel()==='inapp'" (change)="setBulkChannel('inapp')"> 📱 In-App
+          </label>
+          <label class="sp-bulk-ch" [class.sp-bulk-ch--sel]="bulkChannel()==='email'">
+            <input type="radio" name="bulk-channel" [checked]="bulkChannel()==='email'" (change)="setBulkChannel('email')"> 📧 Email
+          </label>
         </div>
-        <button class="bulk-send-btn" (click)="sendBulk()">📢 Send to 312 Contacts</button>
+        @if (bulkSendLog().length) {
+          <div class="sp-bulk-log">
+            <div class="sp-bulk-log-title">Recent sends</div>
+            @for (line of bulkSendLog(); track $index) {
+              <div class="sp-bulk-log-line">{{ line }}</div>
+            }
+          </div>
+        }
+        <button type="button" class="bulk-send-btn" [disabled]="bulkSending()" (click)="sendBulk()">
+          {{ bulkSending() ? 'Sending…' : '📢 Send to ' + bulkContactCount() + ' contacts' }}
+        </button>
       </div>
     </div>
   </div>
@@ -78,6 +121,172 @@
         <button style="background:var(--or-g);color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;" (click)="addCanned()">+ Add</button>
       </div>
     </div>
+  </div>
+
+  <!-- QUICK ACTION MODAL -->
+  <div class="bulk-modal sp-action-modal" [class.open]="quickActionModal()">
+    <div class="bulk-modal-inner sp-action-modal-inner">
+      <div class="bulk-modal-hdr">
+        <div class="bulk-modal-title">{{ quickActionTitle() }}</div>
+        <button type="button" class="bulk-modal-close" (click)="closeQuickAction()">✕</button>
+      </div>
+      <div class="bulk-modal-body sp-action-modal-body">
+        @switch (quickActionModal()) {
+          @case ('backup') {
+            <label class="sp-action-field">
+              <span class="sp-action-label">Backup maid</span>
+              <select class="assign-select" [ngModel]="backupMaid()" (ngModelChange)="backupMaid.set($event)">
+                <option>Kamla Sharma</option>
+                <option>Rekha Mishra</option>
+                <option>Priya Devi</option>
+                <option>Anita Kumari</option>
+              </select>
+            </label>
+            <label class="sp-action-field">
+              <span class="sp-action-label">Slot</span>
+              <select class="assign-select" [ngModel]="backupSlot()" (ngModelChange)="backupSlot.set($event)">
+                <option value="today-6pm">Aaj · 6:00 PM</option>
+                <option value="today-8pm">Aaj · 8:00 PM</option>
+                <option value="tomorrow-8am">Kal · 8:00 AM</option>
+                <option value="tomorrow-6pm">Kal · 6:00 PM</option>
+              </select>
+            </label>
+            <p class="sp-action-hint">Customer ko SMS + app notification bheja jayega.</p>
+          }
+          @case ('refund') {
+            <label class="sp-action-field">
+              <span class="sp-action-label">Refund amount (₹)</span>
+              <input class="sp-search" style="width:100%;padding-left:12px;" type="number" min="1"
+                     [ngModel]="refundAmount()" (ngModelChange)="refundAmount.set($event)">
+            </label>
+            <label class="sp-action-field">
+              <span class="sp-action-label">Reason</span>
+              <select class="assign-select">
+                <option>No-show</option>
+                <option>Service quality</option>
+                <option>Damage guarantee</option>
+                <option>Billing error</option>
+              </select>
+            </label>
+            <p class="sp-action-hint">UPI refund 24–48h. Customer ko SMS alert milega.</p>
+          }
+          @case ('freevisit') {
+            <p class="sp-action-lead">1 complimentary visit customer ke plan mein add hogi.</p>
+            <div class="sp-action-preview">
+              <span>Visit value</span><strong>₹149</strong>
+            </div>
+            <div class="sp-action-preview">
+              <span>Valid till</span><strong>30 days</strong>
+            </div>
+            <p class="sp-action-hint">Annual/VIP customers ke liye auto-approved.</p>
+          }
+          @case ('pause') {
+            <label class="sp-action-field">
+              <span class="sp-action-label">Pause duration (days)</span>
+              <input class="sp-search" style="width:100%;padding-left:12px;" type="number" min="1" max="30"
+                     [ngModel]="pauseDays()" (ngModelChange)="pauseDays.set($event)">
+            </label>
+            <label class="sp-action-field">
+              <span class="sp-action-label">Resume reminder</span>
+              <select class="assign-select">
+                <option>WhatsApp 2 days before</option>
+                <option>Email only</option>
+                <option>No reminder</option>
+              </select>
+            </label>
+          }
+          @case ('wa') {
+            <label class="sp-action-field">
+              <span class="sp-action-label">WhatsApp message preview</span>
+              <textarea class="fta" style="min-height:120px;" [ngModel]="waSummary()" (ngModelChange)="waSummary.set($event)"></textarea>
+            </label>
+            <p class="sp-action-hint">Bhejne par thread mein system log add hoga.</p>
+          }
+        }
+        <button type="button" class="bulk-send-btn sp-action-confirm" (click)="confirmQuickAction()">Confirm &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE PANEL (call / profile / history) -->
+  <div class="sp-slide-overlay" [class.open]="slidePanel()" (click)="closeSlidePanel()" role="presentation">
+    <aside class="sp-slide-panel" [class.open]="slidePanel()" (click)="$event.stopPropagation()" role="dialog"
+           [attr.aria-label]="slidePanel() === 'call' ? 'Call customer' : slidePanel() === 'profile' ? 'Customer profile' : 'Booking history'">
+      @if (ts.activeTicket()) {
+        <header class="sp-slide-hdr">
+          <div>
+            <div class="sp-slide-title">
+              @switch (slidePanel()) {
+                @case ('call') { 📞 Call }
+                @case ('profile') { 👤 Profile }
+                @case ('history') { 📋 Booking History }
+              }
+            </div>
+            <div class="sp-slide-sub">{{ ts.activeTicket()!.name }} · {{ ts.activeTicket()!.phone }}</div>
+          </div>
+          <button type="button" class="sp-slide-close" (click)="closeSlidePanel()" aria-label="Close">×</button>
+        </header>
+        <div class="sp-slide-body">
+          @switch (slidePanel()) {
+            @case ('call') {
+              <div class="sp-call-card">
+                <div class="sp-call-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
+                <div class="sp-call-name">{{ ts.activeTicket()!.name }}</div>
+                <div class="sp-call-phone">{{ ts.activeTicket()!.phone }}</div>
+                <div class="sp-call-status" [class.sp-call-status--ringing]="callPhase()==='ringing'" [class.sp-call-status--live]="callPhase()==='connected'">
+                  @if (callPhase() === 'idle') { Ready to dial }
+                  @else if (callPhase() === 'ringing') { Ringing… }
+                  @else { Connected · 00:42 }
+                </div>
+                <div class="sp-call-actions">
+                  @if (callPhase() === 'idle') {
+                    <button type="button" class="sp-call-btn sp-call-btn--start" (click)="startCall()">Call Now</button>
+                  } @else {
+                    <button type="button" class="sp-call-btn sp-call-btn--end" (click)="endCall()">End Call</button>
+                  }
+                </div>
+                <p class="sp-action-hint">Demo UI — actual telephony Phase 3.</p>
+              </div>
+            }
+            @case ('profile') {
+              <div class="sp-profile-card">
+                <div class="sp-profile-card-row"><span>Customer ID</span><strong>CUST-{{ ts.activeTicket()!.id.slice(2) }}</strong></div>
+                <div class="sp-profile-card-row"><span>Plan</span><strong>{{ ts.activeTicket()!.plan }}</strong></div>
+                <div class="sp-profile-card-row"><span>Zone</span><strong>{{ ts.activeTicket()!.zone }}</strong></div>
+                <div class="sp-profile-card-row"><span>Bookings</span><strong>{{ ts.activeTicket()!.bookings }}</strong></div>
+                <div class="sp-profile-card-row"><span>Lifetime spend</span><strong style="color:var(--g)">{{ ts.activeTicket()!.spent }}</strong></div>
+                <div class="sp-profile-card-row"><span>Assigned agent</span><strong>{{ assignedAgentLabel() }}</strong></div>
+                <div class="sp-profile-card-row"><span>Channel</span><strong>{{ channel() }}</strong></div>
+                <div class="sp-profile-tags-row">
+                  @for (l of activeLabels(); track l.name) {
+                    <span class="tlabel tlabel--pro" [style.background]="l.color + '14'" [style.color]="l.color">{{ l.name }}</span>
+                  }
+                </div>
+              </div>
+            }
+            @case ('history') {
+              @if (bookingHistory().length) {
+                @for (b of bookingHistory(); track b.id) {
+                  <div class="sp-history-row">
+                    <div class="sp-history-top">
+                      <strong>{{ b.id }}</strong>
+                      <span class="sp-history-amt">{{ b.amount }}</span>
+                    </div>
+                    <div class="sp-history-meta">{{ b.date }} · {{ b.service }}</div>
+                    <div class="sp-history-bottom">
+                      <span>Maid: {{ b.maid }}</span>
+                      <span class="sp-history-status" [class.sp-history-status--bad]="b.status==='No-show' || b.status==='Late'" [class.sp-history-status--ok]="b.status==='Completed' || b.status==='Paid'">{{ b.status }}</span>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <p class="sp-action-hint" style="text-align:center;padding:24px 0;">Is contact ke liye booking history demo mein nahi hai.</p>
+              }
+            }
+          }
+        </div>
+      }
+    </aside>
   </div>
 
   <!-- MERGE MODAL -->
@@ -119,7 +328,7 @@
           🔔
           <div class="toggle-switch" [class.on]="soundOn()" (click)="toggleSound()" style="flex-shrink:0;"><div class="toggle-knob"></div></div>
         </div>
-        <button class="export-chat-btn" (click)="toast.show('Chat log exported! 📥 quickmaid_support_log.csv','📥')">📥 Export</button>
+        <button type="button" class="export-chat-btn" (click)="openExportModal()">📥 Export</button>
         <button class="export-chat-btn" (click)="openBulkModal()" style="color:#9333EA;border-color:rgba(147,51,234,.3);">📢 Bulk Msg</button>
         <button class="export-chat-btn" (click)="toggleAnalytics()" style="color:#1D4ED8;border-color:rgba(29,78,216,.3);">📊 Analytics</button>
       </div>
@@ -184,8 +393,11 @@
       </div>
       <div class="ticket-sort-bar">
         <span class="sort-lbl">Sort by:</span>
-        <select class="sort-sel" (change)="toast.show('Sorted by '+$any($event.target).value,'↕️')">
-          <option>Priority</option><option>Newest</option><option>Oldest</option><option>SLA Breach</option>
+        <select class="sort-sel" [ngModel]="facade.ticketSort()" (ngModelChange)="setTicketSort($event)">
+          <option value="priority">Priority</option>
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="sla">SLA Breach</option>
         </select>
       </div>
 
@@ -229,9 +441,10 @@
             <h2 class="sp-chat-zero-title">Conversation</h2>
             <p class="sp-chat-zero-lead">Inbox se ticket select karein — yahan pura thread, SLA context, aur reply tools ek panel mein milenge.</p>
             <ul class="sp-chat-zero-list">
-              <li><span class="sp-chat-zero-k">Search</span> In-thread message search</li>
-              <li><span class="sp-chat-zero-k">Canned</span> Saved replies modal</li>
-              <li><span class="sp-chat-zero-k">Analytics</span> Team overlay (header)</li>
+              <li><span class="sp-chat-zero-k">AI</span> Suggested reply bar</li>
+              <li><span class="sp-chat-zero-k">Notes</span> Internal team notes</li>
+              <li><span class="sp-chat-zero-k">Emoji</span> Quick insert picker</li>
+              <li><span class="sp-chat-zero-k">Attach</span> Photos &amp; files</li>
             </ul>
           </div>
         </div>
@@ -255,13 +468,13 @@
                 <button type="button" class="sp-icon-btn" (click)="toggleMsgSearch()" title="Search in thread" aria-label="Search in thread">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                 </button>
-                <button type="button" class="sp-icon-btn" (click)="toast.show('Calling customer...','📞')" title="Call" aria-label="Call customer">
+                <button type="button" class="sp-icon-btn" [class.sp-icon-btn--active]="slidePanel()==='call'" (click)="openSlidePanel('call')" title="Call" aria-label="Call customer">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                 </button>
-                <button type="button" class="sp-icon-btn" (click)="toast.show('Opening profile','👤')" title="Profile" aria-label="Customer profile">
+                <button type="button" class="sp-icon-btn" [class.sp-icon-btn--active]="slidePanel()==='profile'" (click)="openSlidePanel('profile')" title="Profile" aria-label="Customer profile">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </button>
-                <button type="button" class="sp-icon-btn" (click)="toast.show('Booking history','📋')" title="History" aria-label="Booking history">
+                <button type="button" class="sp-icon-btn" [class.sp-icon-btn--active]="slidePanel()==='history'" (click)="openSlidePanel('history')" title="History" aria-label="Booking history">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                 </button>
               </div>
@@ -313,7 +526,17 @@
               } @else if (item.msg.from === 'agent') {
                 <div class="chat-msg outgoing">
                   <div class="msg-bubble">
-                    <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                    @if (item.msg.attachment && isImageAttachment(item.msg.attachment)) {
+                      <img class="sp-msg-attach-img" [src]="item.msg.attachment.url" [alt]="item.msg.attachment.name" />
+                    } @else if (item.msg.attachment?.type === 'file') {
+                      <a class="sp-msg-attach-file" [href]="item.msg.attachment.url" [download]="item.msg.attachment.name" target="_blank" rel="noopener noreferrer">
+                        <span class="sp-msg-attach-file-ico" aria-hidden="true">📎</span>
+                        <span class="sp-msg-attach-file-name">{{ item.msg.attachment.name }}</span>
+                      </a>
+                    }
+                    @if (item.msg.text) {
+                      <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                    }
                     <span class="msg-meta">{{ item.msg.time }} <span class="msg-status">✓✓</span></span>
                   </div>
                   <div class="msg-av" style="background:var(--or-g);color:#fff">A</div>
@@ -322,8 +545,14 @@
                 <div class="chat-msg incoming">
                   <div class="msg-av tbl-av" [style.background]="colorBg(ts.activeTicket()!.color)" [style.color]="colorFg(ts.activeTicket()!.color)">{{ ts.activeTicket()!.init }}</div>
                   <div class="msg-bubble">
-                    <div class="msg-img">🖼️ Photo</div>
-                    <span class="msg-text">Broken vase photo</span>
+                    @if (item.msg.attachment && isImageAttachment(item.msg.attachment)) {
+                      <img class="sp-msg-attach-img" [src]="item.msg.attachment.url" [alt]="item.msg.attachment.name" />
+                    } @else {
+                      <div class="msg-img">🖼️ Photo</div>
+                    }
+                    @if (item.msg.text) {
+                      <span class="msg-text" [innerHTML]="highlight(item.msg.text)"></span>
+                    }
                     <span class="msg-meta">{{ item.msg.time }}</span>
                   </div>
                 </div>
@@ -348,22 +577,114 @@
         </div>
 
         <footer class="sp-chat-foot sp-chat-foot--minimal">
+          <input #imageInput type="file" class="sp-file-input" accept="image/*" hidden (change)="onImageSelected($event)" />
+          <input #fileInput type="file" class="sp-file-input" hidden (change)="onFileSelected($event)" />
+
+          @if (collisionVisible()) {
+            <div class="sp-compose-banner sp-compose-banner--warn" role="status">
+              <span class="sp-compose-banner-ico" aria-hidden="true">⚠️</span>
+              <span class="sp-compose-banner-text"><strong>Rahul</strong> bhi is ticket par kaam kar rahe hain — collision avoid karein.</span>
+              <button type="button" class="sp-compose-banner-dismiss" (click)="dismissCollision()" aria-label="Dismiss">×</button>
+            </div>
+          }
+
+          @if (showResolveBanner() && ts.activeTicket()!.status !== 'resolved') {
+            <div class="sp-compose-banner sp-compose-banner--resolve" role="status">
+              <span class="sp-compose-banner-ico" aria-hidden="true">✅</span>
+              <span class="sp-compose-banner-text">Issue solve ho gaya? Ticket resolve karke CSAT survey bhej sakte hain.</span>
+              <button type="button" class="sp-compose-banner-action" (click)="resolveTicket()">Resolve</button>
+              <button type="button" class="sp-compose-banner-dismiss" (click)="dismissResolveBanner()" aria-label="Dismiss">×</button>
+            </div>
+          }
+
+          @if (aiBarVisible() && aiSuggestion()) {
+            <div class="sp-ai-bar" role="region" aria-label="AI suggested reply">
+              <span class="sp-ai-bar-badge">✨ AI</span>
+              <p class="sp-ai-bar-text">{{ aiSuggestion() }}</p>
+              <button type="button" class="sp-ai-bar-use" (click)="useAi()">Use reply</button>
+              <button type="button" class="sp-ai-bar-dismiss" (click)="dismissAi()" aria-label="Dismiss suggestion">×</button>
+            </div>
+          }
+
+          <div class="sp-quick-replies" aria-label="Quick replies">
+            @for (qr of QUICK_REPLIES; track qr.label) {
+              <button type="button" class="sp-quick-reply-chip" (click)="insertQuickReply(qr.text)">{{ qr.label }}</button>
+            }
+          </div>
+
           <div class="sp-chat-input-area sp-composer-minimal">
-            <div class="sp-compose-panel sp-compose-panel--minimal">
-              <textarea class="chat-inp sp-compose-textarea sp-compose-textarea--minimal" #chatInp rows="1"
-                        placeholder="Reply likho… Enter bheje, Shift+Enter nayi line"
-                        [ngModel]="inputText()" (ngModelChange)="onInputChange($event)"
-                        (keydown)="handleEnter($event)"></textarea>
-              <div class="sp-compose-minimal-actions">
-                <div class="sp-compose-minimal-tools">
-                  <button type="button" class="sp-compose-tool sp-compose-media" (click)="toast.show('Photo chuno (demo)','🖼️')" title="Gallery" aria-label="Add photo">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  </button>
-                  <button type="button" class="sp-compose-tool sp-compose-files" (click)="toast.show('File attach (max 5MB)','📎')" title="Files" aria-label="Attach file">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                  </button>
+            <div class="sp-compose-panel sp-compose-panel--minimal sp-compose-panel--unified"
+                 [class.sp-compose-panel--note]="noteMode()">
+              @if (noteMode()) {
+                <div class="sp-note-mode-bar">
+                  <span class="sp-note-mode-ico" aria-hidden="true">📝</span>
+                  <span>Internal note — customer ko nahi dikhega</span>
                 </div>
-                <button type="button" class="send-btn send-btn--pro send-btn--minimal" (click)="sendMessage()" title="Send">Send</button>
+              }
+              @if (pendingAttachments().length) {
+                <div class="sp-compose-pending" aria-label="Attachments ready to send">
+                  @for (att of pendingAttachments(); track att.url; let i = $index) {
+                    <div class="sp-compose-pending-item">
+                      @if (att.type === 'image') {
+                        <img class="sp-compose-pending-thumb" [src]="att.url" [alt]="att.name" />
+                      } @else {
+                        <span class="sp-compose-pending-file-ico" aria-hidden="true">📎</span>
+                      }
+                      <div class="sp-compose-pending-meta">
+                        <span class="sp-compose-pending-name">{{ att.name }}</span>
+                        <span class="sp-compose-pending-size">{{ formatFileSize(att.size) }}</span>
+                      </div>
+                      <button type="button" class="sp-compose-pending-remove" (click)="removePendingAttachment(i)" aria-label="Remove attachment">×</button>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="sp-compose-row">
+                <div class="sp-compose-minimal-tools">
+                  <button type="button" class="sp-compose-tool sp-compose-note"
+                          [class.sp-compose-tool--active]="noteMode()"
+                          (click)="toggleNoteMode()"
+                          [title]="noteMode() ? 'Reply mode' : 'Internal note'"
+                          [attr.aria-label]="noteMode() ? 'Switch to reply mode' : 'Switch to internal note'"
+                          [attr.aria-pressed]="noteMode()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                  </button>
+                  <div class="sp-emoji-wrap">
+                    <button type="button" class="sp-compose-tool sp-compose-emoji"
+                            [class.sp-compose-tool--active]="emojiOpen()"
+                            (click)="toggleEmoji()"
+                            title="Emoji"
+                            aria-label="Insert emoji"
+                            [attr.aria-expanded]="emojiOpen()">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                    </button>
+                    @if (emojiOpen()) {
+                      <div class="sp-emoji-picker" role="listbox" aria-label="Emoji picker">
+                        @for (e of EMOJI_LIST; track e) {
+                          <button type="button" class="sp-emoji-btn" (click)="insertEmoji(e)" [attr.aria-label]="e">{{ e }}</button>
+                        }
+                      </div>
+                    }
+                  </div>
+                  @if (!noteMode()) {
+                    <button type="button" class="sp-compose-tool sp-compose-media" (click)="openImagePicker()" title="Gallery" aria-label="Add photo">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                    </button>
+                    <button type="button" class="sp-compose-tool sp-compose-files" (click)="openFilePicker()" title="Files (max 5MB)" aria-label="Attach file">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    </button>
+                  }
+                </div>
+                <textarea class="chat-inp sp-compose-textarea sp-compose-textarea--inline" #chatInp rows="1"
+                          [placeholder]="noteMode() ? 'Internal note likho… team ko dikhega, customer ko nahi' : 'Reply likho… Enter bheje, Shift+Enter nayi line'"
+                          [ngModel]="inputText()" (ngModelChange)="onInputChange($event)"
+                          (keydown)="handleEnter($event)"></textarea>
+                <button type="button" class="send-btn send-btn--pro send-btn--minimal sp-compose-send"
+                        [class.sp-compose-send--note]="noteMode()"
+                        (click)="sendMessage()"
+                        [title]="noteMode() ? 'Save note' : 'Send'">
+                  {{ noteMode() ? 'Note' : 'Send' }}
+                </button>
               </div>
             </div>
           </div>
@@ -405,30 +726,30 @@
         </div>
         <div class="sp-sidebar-section">
           <div class="sp-sidebar-label">Assign To</div>
-          <select class="assign-select" (change)="toast.show('Assigned to '+$any($event.target).value,'👤')">
-            <option>Priya (Support Lead)</option>
-            <option>Rahul (Senior Agent)</option>
-            <option>Anita (Agent)</option>
-            <option>Bot (Auto)</option>
+          <select class="assign-select" [ngModel]="assignedAgentId()" (ngModelChange)="setAssignedAgent($event)">
+            @for (agent of SUPPORT_AGENTS; track agent.id) {
+              <option [value]="agent.id">{{ agent.label }}</option>
+            }
           </select>
-          <div style="display:flex;gap:6px;">
-            <select class="assign-select" style="flex:1;" (change)="toast.show('Priority: '+$any($event.target).value,'🚨')">
-              <option>🔴 High Priority</option>
-              <option>🟡 Medium</option>
-              <option>🟢 Low</option>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <select class="assign-select" style="flex:1;" [ngModel]="assignedPriority()" (ngModelChange)="setAssignedPriority($event)">
+              @for (opt of PRIORITY_OPTIONS; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
             </select>
           </div>
+          <div class="sp-assign-pill">{{ assignedAgentLabel() }}</div>
         </div>
         <div class="sp-sidebar-section">
           <div class="sp-sidebar-label">Quick Actions</div>
           <div class="sp-quick-actions">
-            <button class="sp-action-btn success" (click)="resolveTicket()">✅ Mark as Resolved</button>
-            <button class="sp-action-btn" (click)="toast.show('Backup maid assigned!','🔄')">🔄 Assign Backup Maid</button>
-            <button class="sp-action-btn" (click)="toast.show('Refund ₹149 initiated!','💸')">💸 Issue Refund</button>
-            <button class="sp-action-btn" (click)="toast.show('Free visit credited!','🎁')">🎁 Give Free Visit</button>
-            <button class="sp-action-btn" (click)="toast.show('Plan paused for 7 days','⏸️')">⏸️ Pause Plan</button>
-            <button class="sp-action-btn" (click)="toast.show('Summary sent on WhatsApp','💬')">💬 Send Summary WA</button>
-            <button class="sp-action-btn danger" (click)="escalate()">🚨 Escalate to Manager</button>
+            <button type="button" class="sp-action-btn success" (click)="resolveTicket()">✅ Mark as Resolved</button>
+            <button type="button" class="sp-action-btn" (click)="openQuickAction('backup')">🔄 Assign Backup Maid</button>
+            <button type="button" class="sp-action-btn" (click)="openQuickAction('refund')">💸 Issue Refund</button>
+            <button type="button" class="sp-action-btn" (click)="openQuickAction('freevisit')">🎁 Give Free Visit</button>
+            <button type="button" class="sp-action-btn" (click)="openQuickAction('pause')">⏸️ Pause Plan</button>
+            <button type="button" class="sp-action-btn" (click)="openQuickAction('wa')">💬 Send Summary WA</button>
+            <button type="button" class="sp-action-btn danger" (click)="escalate()">🚨 Escalate to Manager</button>
           </div>
         </div>
         <div class="sp-sidebar-section">
@@ -441,11 +762,22 @@
           <div style="font-size:11px;color:var(--muted);text-align:center;">{{ csatLabel() }}</div>
         </div>
         <div class="sp-sidebar-section">
-          <div class="sp-sidebar-label">Past Tickets (4)</div>
-          <div class="hist-item"><div><div class="hist-issue">Maid late — 45 mins</div><div class="hist-date">Mar 22 · Resolved</div></div><span class="badge badge-green">✓</span></div>
-          <div class="hist-item"><div><div class="hist-issue">Plan pause request</div><div class="hist-date">Feb 14 · Resolved</div></div><span class="badge badge-green">✓</span></div>
-          <div class="hist-item"><div><div class="hist-issue">Refund for missed visit</div><div class="hist-date">Jan 30 · Resolved</div></div><span class="badge badge-green">✓</span></div>
-          <div class="hist-item" style="border-bottom:none"><div><div class="hist-issue">Cooking quality complaint</div><div class="hist-date">Jan 8 · Closed</div></div><span class="badge badge-gray">−</span></div>
+          <div class="sp-sidebar-label">Past Tickets ({{ pastTickets().length }})</div>
+          @if (pastTickets().length) {
+            @for (pt of pastTickets(); track pt.id; let last = $last) {
+              <div class="hist-item" [style.border-bottom]="last ? 'none' : null">
+                <div>
+                  <div class="hist-issue">{{ pt.issue }}</div>
+                  <div class="hist-date">{{ pt.date }} · {{ pt.id }}</div>
+                </div>
+                <span class="badge" [class.badge-green]="pt.status==='resolved'" [class.badge-gray]="pt.status!=='resolved'">
+                  {{ pt.status === 'resolved' ? '✓' : pt.status === 'closed' ? '−' : '○' }}
+                </span>
+              </div>
+            }
+          } @else {
+            <div style="font-size:12px;color:var(--muted);padding:8px 0;">Koi past ticket nahi</div>
+          }
         </div>
       } @else {
         <div class="sp-sidebar-section">

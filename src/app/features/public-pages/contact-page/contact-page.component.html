@@ -327,12 +327,20 @@
             <a [href]="telHref">{{ phoneDisplay }}</a>
           </address>
         </div>
-        <div class="qm-ct-office-card qm-reveal" aria-hidden="true">
-          <div class="qm-ct-map">
-            <span class="qm-ct-map-pin"></span>
-            <span class="qm-ct-map-label">Raipur service area</span>
-            <span class="qm-ct-map-sub">Tatibandh · Civil Lines · Shankar Nagar + more</span>
+        <div class="qm-ct-office-card qm-reveal">
+          <div class="qm-ct-map qm-ct-map--live">
+            <iframe
+              class="qm-ct-map-frame"
+              title="QuickMaid Raipur service area map"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=81.58%2C21.22%2C81.68%2C21.28&amp;layer=mapnik&amp;marker=21.2514%2C81.6296"
+            ></iframe>
+            <a class="qm-ct-map-link" href="https://www.openstreetmap.org/?mlat=21.2514&amp;mlon=81.6296#map=13/21.2514/81.6296" target="_blank" rel="noopener noreferrer">
+              Open in Maps ↗
+            </a>
           </div>
+          <p class="qm-ct-map-caption">Tatibandh · Civil Lines · Shankar Nagar · Pandri + more</p>
         </div>
       </div>
     </section>

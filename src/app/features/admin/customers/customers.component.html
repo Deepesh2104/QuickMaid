@@ -6,9 +6,9 @@
       <p class="adm-sub">LTV, plans, churn risk — filter by plan, health, or search; chart shows acquisition vs churn.</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">CRM snapshot · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Segment sync (demo)','🔄')">Sync segments</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Export queued','📥')">Export</button>
+      <span class="adm-sync-pill" role="status">Segments · {{ lastSegmentSync() }}</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openSync()">Sync segments</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openExport()">Export</button>
     </div>
   </header>
 
@@ -142,10 +142,10 @@
                 <td [style.color]="lastColor(c.lastTone)" class="adm-last">{{ c.lastBooking }}</td>
                 <td>
                   <div class="act-btns">
-                    <div class="act-btn" (click)="toast.show('Profile viewed','👁')" title="Profile">👁</div>
-                    <div class="act-btn" (click)="toast.show('Message sent','💬')" title="Message">💬</div>
+                    <div class="act-btn" (click)="openAction('profile', c)" title="Profile">👁</div>
+                    <div class="act-btn" (click)="openAction('message', c)" title="Message">💬</div>
                     @if (c.health === 'at-risk') {
-                      <div class="act-btn" (click)="toast.show('Win-back sent!','🎁')" title="Win-back">🎁</div>
+                      <div class="act-btn" (click)="openAction('winback', c)" title="Win-back">🎁</div>
                     }
                   </div>
                 </td>
@@ -167,5 +167,325 @@
       </div>
       <div class="chart-canvas-wrap chart-canvas-wrap--adm-line"><canvas #custChart></canvas></div>
     </section>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="syncOpen()" (click)="closeSync()" role="presentation">
+  <div class="adm-modal" [class.open]="syncOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cu-sync-title">
+    <header class="adm-modal-hdr">
+      <h2 id="cu-sync-title" class="adm-modal-title">🔄 Sync segments</h2>
+      <button type="button" class="adm-modal-close" (click)="closeSync()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Recompute health cohorts from booking recency and LTV (demo).</p>
+      <label class="adm-modal-check">
+        <input type="checkbox" [ngModel]="syncVip()" (ngModelChange)="syncVip.set($event)">
+        <span>VIP · high LTV</span>
+      </label>
+      <label class="adm-modal-check">
+        <input type="checkbox" [ngModel]="syncAtRisk()" (ngModelChange)="syncAtRisk.set($event)">
+        <span>At-risk · churn watch</span>
+      </label>
+      <label class="adm-modal-check">
+        <input type="checkbox" [ngModel]="syncActive()" (ngModelChange)="syncActive.set($event)">
+        <span>Active · recent bookings</span>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="syncRunning()" (click)="confirmSync()">
+        {{ syncRunning() ? 'Syncing…' : 'Run sync' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cu-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="cu-export-title" class="adm-modal-title">📥 Export customers</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Scope</span>
+        <select class="assign-select" [ngModel]="exportScope()" (ngModelChange)="exportScope.set($event)">
+          <option value="filtered">Current filters ({{ filteredCount() }} rows)</option>
+          <option value="all">All customers ({{ totalRows }} rows)</option>
+        </select>
+      </label>
+      <label class="adm-modal-check">
+        <input type="checkbox" [ngModel]="exportMaskPii()" (ngModelChange)="exportMaskPii.set($event)">
+        <span>Mask email &amp; phone (GDPR-friendly)</span>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Preparing…' : 'Download CSV' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="profileOpen()" (click)="closeProfile()" role="presentation">
+  <div class="adm-modal adm-modal--profile prf-shell" [class.open]="profileOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cust-profile-title">
+    @if (profileRow(); as c) {
+      @if (profileDetail(); as p) {
+        <header class="prf-head">
+          <div class="prf-head-inner">
+            <div class="prf-avatar-wrap">
+              <div class="tbl-av prf-av" [class.or]="c.av === 'or'" [class.gr]="c.av === 'gr'" [class.bl]="c.av === 'bl'" [class.pu]="c.av === 'pu'">{{ c.init }}</div>
+              <span class="prf-status-dot"
+                [class.prf-status-dot--active]="c.health === 'vip' || c.health === 'active'"
+                [class.prf-status-dot--risk]="c.health === 'at-risk'"></span>
+            </div>
+            <div class="prf-identity-main">
+              <h2 id="cust-profile-title" class="prf-name">{{ c.name }}</h2>
+              <p class="prf-sub">{{ c.email }} · {{ c.phone }}</p>
+              <div class="prf-badges">
+                <span [class]="healthBadgeClass(c.health)">{{ healthLabel(c.health) }}</span>
+                <span class="badge badge-gray">{{ c.planLabel }}</span>
+                <span class="adm-service-pill">{{ c.zone }}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="prf-close" (click)="closeProfile()" aria-label="Close">×</button>
+        </header>
+
+        <div class="prf-metrics">
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ c.bookings }}</span>
+            <span class="prf-metric-lbl">Total bookings</span>
+          </article>
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ c.spent }}</span>
+            <span class="prf-metric-lbl">Lifetime spent</span>
+          </article>
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ p.csat }}/5</span>
+            <span class="prf-metric-lbl">Avg CSAT</span>
+          </article>
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ p.memberSince }}</span>
+            <span class="prf-metric-lbl">Member since</span>
+          </article>
+        </div>
+
+        <div class="prf-scroll">
+          <div class="prf-cards">
+            <article class="prf-card">
+              <header class="prf-card-hdr">
+                <h3>Contact &amp; address</h3>
+              </header>
+              <ul class="prf-kv-list">
+                <li><span class="prf-k">Phone</span><span class="prf-v">{{ c.phone }}</span></li>
+                <li><span class="prf-k">Email</span><span class="prf-v">{{ c.email }}</span></li>
+                <li><span class="prf-k">Zone</span><span class="prf-v">{{ c.zone }}</span></li>
+                <li><span class="prf-k">Address</span><span class="prf-v">{{ p.address }}</span></li>
+                <li><span class="prf-k">Last visit</span><span class="prf-v" [style.color]="lastColor(c.lastTone)">{{ c.lastBooking }}</span></li>
+              </ul>
+            </article>
+
+            <article class="prf-card">
+              <header class="prf-card-hdr">
+                <h3>Plan &amp; billing</h3>
+              </header>
+              <ul class="prf-kv-list">
+                <li><span class="prf-k">Plan</span><span class="prf-v">{{ c.planLabel }}</span></li>
+                <li><span class="prf-k">Payment</span><span class="prf-v">{{ p.paymentMethod }}</span></li>
+                <li><span class="prf-k">Preferred slot</span><span class="prf-v">{{ p.preferredSlot }}</span></li>
+                <li><span class="prf-k">WhatsApp</span><span class="prf-v">{{ p.waOptIn ? 'Opted in' : 'Opted out' }}</span></li>
+              </ul>
+            </article>
+
+            <article class="prf-card prf-card--wide">
+              <header class="prf-card-hdr">
+                <h3>Engagement</h3>
+              </header>
+              <div class="prf-score">
+                <div class="prf-score-top">
+                  <span>Health score</span>
+                  <strong>{{ (p.csat * 20) | number:'1.0-0' }}</strong>
+                </div>
+                <div class="prf-score-bar">
+                  <div class="prf-score-fill" [style.width.%]="p.csat * 20"></div>
+                </div>
+              </div>
+              <ul class="prf-kv-list">
+                <li><span class="prf-k">Favorite maid</span><span class="prf-v">{{ p.favoriteMaid }}</span></li>
+                <li><span class="prf-k">Referrals</span><span class="prf-v">{{ p.referrals }}</span></li>
+                <li><span class="prf-k">Support tickets</span><span class="prf-v">{{ p.supportTickets }}</span></li>
+              </ul>
+              <div class="prf-tags">
+                @for (tag of p.tags; track tag) {
+                  <span class="prf-tag">{{ tag }}</span>
+                }
+              </div>
+            </article>
+          </div>
+
+          <article class="prf-card">
+            <header class="prf-card-hdr">
+              <h3>Recent bookings</h3>
+            </header>
+            <div class="prf-table-wrap">
+              <table class="prf-table">
+                <thead>
+                  <tr><th>ID</th><th>Service</th><th>Date</th><th>Maid</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @for (b of p.recentBookings; track b.id) {
+                    <tr>
+                      <td><span class="adm-id-chip">{{ b.id }}</span></td>
+                      <td>{{ b.service }}</td>
+                      <td>{{ b.date }}</td>
+                      <td>{{ b.maid }}</td>
+                      <td><strong>{{ b.amount }}</strong></td>
+                      <td><span class="badge" [class.badge-green]="b.status === 'Completed'" [class.badge-red]="b.status !== 'Completed'">{{ b.status }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="prf-card">
+            <header class="prf-card-hdr">
+              <h3>Internal notes</h3>
+            </header>
+            <p class="prf-notes">{{ p.notes }}</p>
+          </article>
+        </div>
+
+        <footer class="prf-footer">
+          <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('message', c); closeProfile()">💬 Message</button>
+          @if (c.health === 'at-risk') {
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('winback', c); closeProfile()">🎁 Win-back</button>
+          }
+          <button type="button" class="adm-btn adm-btn--primary" (click)="closeProfile()">Close</button>
+        </footer>
+      }
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="messageOpen()" (click)="closeMessage()" role="presentation">
+  <div class="adm-modal adm-modal--msg" [class.open]="messageOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cust-msg-title">
+    @if (messageRow(); as c) {
+      <header class="adm-modal-hdr">
+        <h2 id="cust-msg-title" class="adm-modal-title">💬 Send message</h2>
+        <button type="button" class="adm-modal-close" (click)="closeMessage()">×</button>
+      </header>
+      <div class="adm-modal-body msg-body">
+        <div class="msg-recipient">
+          <div class="tbl-av msg-av" [class.or]="c.av === 'or'" [class.gr]="c.av === 'gr'" [class.bl]="c.av === 'bl'" [class.pu]="c.av === 'pu'">{{ c.init }}</div>
+          <div class="msg-recipient-text">
+            <span class="msg-recipient-name">{{ c.name }}</span>
+            <span class="msg-recipient-meta">{{ c.phone }} · {{ c.zone }}</span>
+          </div>
+        </div>
+
+        <div class="msg-channel-row">
+          <span class="msg-field-label">Channel</span>
+          <div class="adm-seg adm-seg--compact">
+            <button type="button" class="adm-seg-btn" [class.active]="msgChannel() === 'whatsapp'" (click)="msgChannel.set('whatsapp')">💬 WhatsApp</button>
+            <button type="button" class="adm-seg-btn" [class.active]="msgChannel() === 'sms'" (click)="msgChannel.set('sms')">📱 SMS</button>
+          </div>
+        </div>
+
+        <label class="adm-modal-field">
+          <span>Template</span>
+          <select class="assign-select" [ngModel]="msgTemplateId()" (ngModelChange)="onMsgTemplateChange($event)">
+            @for (t of msgTemplates; track t.id) {
+              <option [value]="t.id">{{ t.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="adm-modal-field">
+          <span>Message</span>
+          <textarea class="msg-textarea" rows="4" placeholder="Type your message…" [ngModel]="msgBody()" (ngModelChange)="msgBody.set($event); msgTemplateId.set('custom')"></textarea>
+          <span class="msg-char-hint">
+            {{ msgCharCount() }} chars
+            @if (msgChannel() === 'sms') {
+              · {{ msgSmsParts() }} SMS part{{ msgSmsParts() > 1 ? 's' : '' }}
+            }
+          </span>
+        </label>
+
+        <div class="msg-preview-wrap">
+          <span class="msg-field-label">Preview</span>
+          <div class="msg-preview" [class.msg-preview--sms]="msgChannel() === 'sms'">
+            <span class="msg-preview-ch">{{ msgChannel() === 'whatsapp' ? 'WhatsApp' : 'SMS' }}</span>
+            <p class="msg-preview-text">{{ msgPreview() || '—' }}</p>
+          </div>
+        </div>
+
+        <label class="adm-modal-check">
+          <input type="checkbox" [ngModel]="msgSchedule()" (ngModelChange)="msgSchedule.set($event)">
+          <span>Schedule for tomorrow 10 AM (demo)</span>
+        </label>
+
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="msgSending() || !msgBody().trim()" (click)="confirmMessage()">
+          {{ msgSending() ? 'Sending…' : (msgSchedule() ? 'Queue message' : 'Send message') }}
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="winbackOpen()" (click)="closeWinback()" role="presentation">
+  <div class="adm-modal adm-modal--msg" [class.open]="winbackOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cust-wb-title">
+    @if (winbackRow(); as c) {
+      <header class="adm-modal-hdr">
+        <h2 id="cust-wb-title" class="adm-modal-title">🎁 Win-back offer</h2>
+        <button type="button" class="adm-modal-close" (click)="closeWinback()">×</button>
+      </header>
+      <div class="adm-modal-body msg-body">
+        <div class="msg-recipient">
+          <div class="tbl-av msg-av" [class.or]="c.av === 'or'" [class.gr]="c.av === 'gr'" [class.bl]="c.av === 'bl'" [class.pu]="c.av === 'pu'">{{ c.init }}</div>
+          <div class="msg-recipient-text">
+            <span class="msg-recipient-name">{{ c.name }}</span>
+            <span class="msg-recipient-meta">At-risk · last visit {{ c.lastBooking }} · {{ c.zone }}</span>
+          </div>
+        </div>
+
+        <div class="wb-amount-row">
+          <label class="adm-modal-field">
+            <span>Credit amount (₹)</span>
+            <input class="adm-search-inp" type="number" min="50" max="500" step="50" [ngModel]="winbackAmount()" (ngModelChange)="onWinbackAmountChange($event)">
+          </label>
+          <label class="adm-modal-field">
+            <span>Valid for (days)</span>
+            <select class="assign-select" [ngModel]="winbackExpiry()" (ngModelChange)="winbackExpiry.set($event); onWinbackAmountChange(winbackAmount())">
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="msg-channel-row">
+          <span class="msg-field-label">Channel</span>
+          <div class="adm-seg adm-seg--compact">
+            <button type="button" class="adm-seg-btn" [class.active]="winbackChannel() === 'whatsapp'" (click)="winbackChannel.set('whatsapp')">💬 WhatsApp</button>
+            <button type="button" class="adm-seg-btn" [class.active]="winbackChannel() === 'sms'" (click)="winbackChannel.set('sms')">📱 SMS</button>
+            <button type="button" class="adm-seg-btn" [class.active]="winbackChannel() === 'both'" (click)="winbackChannel.set('both')">Both</button>
+          </div>
+        </div>
+
+        <label class="adm-modal-field">
+          <span>Message</span>
+          <textarea class="msg-textarea" rows="4" [ngModel]="winbackBody()" (ngModelChange)="winbackBody.set($event)"></textarea>
+        </label>
+
+        <div class="msg-preview-wrap">
+          <span class="msg-field-label">Preview</span>
+          <div class="msg-preview">
+            <span class="msg-preview-ch">Offer</span>
+            <p class="msg-preview-text">{{ winbackPreview() || '—' }}</p>
+          </div>
+        </div>
+
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="winbackSending() || !winbackBody().trim()" (click)="confirmWinback()">
+          {{ winbackSending() ? 'Sending…' : 'Send win-back offer' }}
+        </button>
+      </div>
+    }
   </div>
 </div>

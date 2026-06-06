@@ -77,6 +77,22 @@
                 <p class="field-hint">Registered email ya 10-digit mobile (sirf number, +91 optional).</p>
               </div>
               <div class="fg">
+                <span class="fl" id="login-role-label">Login as <abbr class="req" title="Zaroori">*</abbr></span>
+                <div class="role-grid role-grid--login" role="group" aria-labelledby="login-role-label">
+                  @for (r of LOGIN_ROLES; track r.id) {
+                    <button
+                      type="button"
+                      class="role-card"
+                      [class.sel]="loginRole() === r.id"
+                      [attr.aria-pressed]="loginRole() === r.id"
+                      (click)="selectLoginRole(r.id)">
+                      <span class="role-ico" aria-hidden="true">{{ r.icon }}</span>
+                      <span class="role-nm">{{ r.label }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+              <div class="fg">
                 <label class="fl" for="auth-password">Password <abbr class="req" title="Zaroori">*</abbr></label>
                 <div class="pw-wrap">
                   <input
@@ -101,8 +117,8 @@
               </div>
               <div class="auth-meta-row">
                 <label class="auth-remember">
-                  <input type="checkbox" name="remember" />
-                  <span>Remember me</span>
+                  <input type="checkbox" name="remember" [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)" />
+                  <span>Remember me (30 days demo)</span>
                 </label>
                 <a href="#" class="auth-inline-link" (click)="$event.preventDefault()">Bhool gaye?</a>
               </div>

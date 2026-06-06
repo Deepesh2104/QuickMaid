@@ -3,11 +3,11 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">People & access</p>
       <h1 class="adm-title">Team & roles</h1>
-      <p class="adm-sub">Internal staff, invites, role templates — wire-up to Auth API in Phase 3.</p>
+      <p class="adm-sub">Internal staff, invites, role templates — UI demo (Auth API Phase 3).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">RBAC · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="invite()">+ Invite user</button>
+      <span class="adm-sync-pill" role="status">RBAC · demo</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openInvite()">+ Invite user</button>
     </div>
   </header>
 
@@ -15,15 +15,15 @@
     <article class="adm-kpi adm-kpi--green">
       <span class="adm-kpi-ico" aria-hidden="true">👥</span>
       <div class="adm-kpi-body">
-        <span class="adm-kpi-val">{{ rows.length }}</span>
+        <span class="adm-kpi-val">{{ rows().length }}</span>
         <span class="adm-kpi-lbl">Directory</span>
-        <span class="adm-kpi-hint">Demo rows</span>
+        <span class="adm-kpi-hint">{{ pendingInviteCount() }} pending invite</span>
       </div>
     </article>
     <article class="adm-kpi adm-kpi--or">
       <span class="adm-kpi-ico" aria-hidden="true">🔐</span>
       <div class="adm-kpi-body">
-        <span class="adm-kpi-val">4</span>
+        <span class="adm-kpi-val">{{ ROLE_OPTIONS.length }}</span>
         <span class="adm-kpi-lbl">Role templates</span>
         <span class="adm-kpi-hint">Admin, Ops, Support, Analyst</span>
       </div>
@@ -34,7 +34,7 @@
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Staff directory</div>
-        <p class="table-hint">Search, filters, and permission matrix · Phase 3</p>
+        <p class="table-hint">Invite modal se naye members add ho jaate hain (demo)</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -46,20 +46,126 @@
             <th>Role</th>
             <th>Status</th>
             <th>Last active</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          @for (r of rows; track r.email) {
+          @for (r of rows(); track r.email) {
             <tr>
               <td>{{ r.name }}</td>
               <td>{{ r.email }}</td>
               <td>{{ r.role }}</td>
-              <td>{{ r.status }}</td>
+              <td>
+                <span class="tm-status" [class.tm-status--invited]="r.status==='invited'" [class.tm-status--active]="r.status==='active'">
+                  {{ r.status }}
+                </span>
+              </td>
               <td>{{ r.lastActive }}</td>
+              <td>
+                <div class="act-btns">
+                  <div class="act-btn" (click)="openEdit(r)" title="Edit role">✏️</div>
+                  @if (r.status === 'invited') {
+                    <div class="act-btn" (click)="openResend(r)" title="Resend invite">✉️</div>
+                  }
+                  @if (r.status === 'active') {
+                    <div class="act-btn" (click)="openSuspend(r)" title="Suspend">⛔</div>
+                  }
+                </div>
+              </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="inviteOpen()" (click)="closeInvite()" role="presentation">
+  <div class="adm-modal" [class.open]="inviteOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="tm-invite-title">
+    <header class="adm-modal-hdr">
+      <h2 id="tm-invite-title" class="adm-modal-title">✉️ Invite team member</h2>
+      <button type="button" class="adm-modal-close" (click)="closeInvite()" aria-label="Close">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Full name</span>
+        <input class="adm-search-inp" type="text" placeholder="e.g. Priya Sharma" [ngModel]="inviteName()" (ngModelChange)="inviteName.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Work email</span>
+        <input class="adm-search-inp" type="email" placeholder="name@quickmaid.in" [ngModel]="inviteEmail()" (ngModelChange)="inviteEmail.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Role</span>
+        <select class="assign-select" [ngModel]="inviteRole()" (ngModelChange)="inviteRole.set($event)">
+          @for (role of ROLE_OPTIONS; track role) {
+            <option [value]="role">{{ role }}</option>
+          }
+        </select>
+      </label>
+      <p class="adm-modal-hint">Invite link email par jayega. User pehli login par password set karega (demo).</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="inviteSending()" (click)="sendInvite()">
+        {{ inviteSending() ? 'Sending…' : 'Send invite' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="editOpen()" (click)="closeEdit()" role="presentation">
+  <div class="adm-modal" [class.open]="editOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="tm-edit-title">
+    @if (editRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="tm-edit-title" class="adm-modal-title">✏️ Edit role</h2>
+        <button type="button" class="adm-modal-close" (click)="closeEdit()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-hint">{{ r.name }} · {{ r.email }}</p>
+        <label class="adm-modal-field">
+          <span>Role</span>
+          <select class="assign-select" [ngModel]="editRole()" (ngModelChange)="editRole.set($event)">
+            @for (role of ROLE_OPTIONS; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </label>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="editSaving()" (click)="confirmEdit()">
+          {{ editSaving() ? 'Saving…' : 'Save role' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="suspendOpen()" (click)="closeSuspend()" role="presentation">
+  <div class="adm-modal" [class.open]="suspendOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="tm-sus-title">
+    @if (suspendRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="tm-sus-title" class="adm-modal-title">⛔ Suspend access</h2>
+        <button type="button" class="adm-modal-close" (click)="closeSuspend()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-hint">{{ r.name }} will lose admin access immediately. Sessions revoked (demo).</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="suspendRunning()" (click)="confirmSuspend()">
+          {{ suspendRunning() ? 'Suspending…' : 'Confirm suspend' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="resendOpen()" (click)="closeResend()" role="presentation">
+  <div class="adm-modal" [class.open]="resendOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="tm-resend-title">
+    @if (resendRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="tm-resend-title" class="adm-modal-title">✉️ Resend invite</h2>
+        <button type="button" class="adm-modal-close" (click)="closeResend()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-hint">New magic link to <strong>{{ r.email }}</strong> · expires in 7 days.</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="resendRunning()" (click)="confirmResend()">
+          {{ resendRunning() ? 'Sending…' : 'Resend invite' }}
+        </button>
+      </div>
+    }
   </div>
 </div>

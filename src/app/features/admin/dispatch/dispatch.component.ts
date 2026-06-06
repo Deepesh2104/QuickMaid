@@ -1,31 +1,86 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  DispatchEngineService,
+  DispatchJob,
+} from '@core/services/dispatch-engine.service';
 import { ToastService } from '@core/services/toast.service';
-
-export interface DispatchSlot {
-  time: string;
-  open: number;
-  assigned: number;
-  risk: 'ok' | 'watch' | 'hot';
-}
 
 @Component({
   selector: 'app-dispatch',
   standalone: true,
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dispatch.component.html',
+  styleUrls: ['./dispatch.component.css'],
 })
 export class DispatchComponent {
+  readonly engine = inject(DispatchEngineService);
   readonly toast = inject(ToastService);
 
-  readonly slots: readonly DispatchSlot[] = [
-    { time: '08:00–10:00', open: 4, assigned: 18, risk: 'ok' },
-    { time: '10:00–12:00', open: 9, assigned: 22, risk: 'watch' },
-    { time: '12:00–14:00', open: 2, assigned: 14, risk: 'ok' },
-    { time: '16:00–18:00', open: 14, assigned: 11, risk: 'hot' },
-    { time: '18:00–20:00', open: 7, assigned: 19, risk: 'watch' },
-  ];
+  readonly draggingJobId = signal<string | null>(null);
+  readonly rebalanceOpen = signal(false);
+  readonly rebalanceRunning = signal(false);
 
-  rebalance(): void {
-    this.toast.show('Auto-rebalance (demo)', '🎯');
+  readonly unassigned = this.engine.unassigned;
+  readonly maids = this.engine.maids;
+  readonly slots = this.engine.slots;
+  readonly unassignedCount = this.engine.unassignedCount;
+  readonly assignedCount = this.engine.assignedCount;
+  readonly activityLog = this.engine.activityLog;
+  readonly lastAutoRun = this.engine.lastAutoRun;
+
+  onDragStart(jobId: string): void {
+    this.draggingJobId.set(jobId);
+  }
+
+  onDragEnd(): void {
+    this.draggingJobId.set(null);
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  dropOnMaid(maidId: string): void {
+    const jobId = this.draggingJobId();
+    if (!jobId) return;
+    if (this.engine.moveJobToMaid(jobId, maidId, 'manual')) {
+      const maid = this.engine.maids().find((m) => m.id === maidId);
+      this.toast.show(`Assigned ${jobId} → ${maid?.name}`, '✅');
+    }
+    this.draggingJobId.set(null);
+  }
+
+  dropOnUnassigned(): void {
+    const jobId = this.draggingJobId();
+    if (!jobId) return;
+    this.engine.unassignJob(jobId);
+    this.draggingJobId.set(null);
+  }
+
+  openRebalance(): void {
+    this.rebalanceOpen.set(true);
+  }
+
+  closeRebalance(): void {
+    this.rebalanceOpen.set(false);
+  }
+
+  confirmRebalance(): void {
+    this.rebalanceRunning.set(true);
+    setTimeout(() => {
+      this.engine.rebalanceAll();
+      this.rebalanceRunning.set(false);
+      this.closeRebalance();
+    }, 600);
+  }
+
+  runAutoAssignQueue(): void {
+    this.engine.autoAssignAll(true);
+  }
+
+  simulateCancel(job: DispatchJob): void {
+    this.engine.simulateMaidCancel(job.id);
   }
 }

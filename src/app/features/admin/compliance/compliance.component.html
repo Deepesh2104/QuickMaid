@@ -3,11 +3,11 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Trust</p>
       <h1 class="adm-title">Privacy & compliance</h1>
-      <p class="adm-sub">Consent logs, data retention, customer export (DSAR) — legal review before go-live.</p>
+      <p class="adm-sub">Consent logs, data retention, DSAR queue — demo UI.</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">DPDP-ready · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="requestExport()">Request data export</button>
+      <span class="adm-sync-pill" role="status">{{ dsarQueue().length }} DSAR requests</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openDsar()">Request data export</button>
     </div>
   </header>
 
@@ -30,10 +30,114 @@
           <div class="toggle-switch" [class.on]="dataMin()" (click)="toggleDataMin()" role="switch" [attr.aria-checked]="dataMin()"><div class="toggle-knob"></div></div>
         </div>
       </div>
+
+      <div class="table-card table-card--adm">
+        <div class="table-hdr table-hdr--adm">
+          <div class="table-hdr-text">
+            <div class="table-title">DSAR queue</div>
+            <p class="table-hint">Export / erasure requests</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table data-table--adm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Requested</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of dsarQueue(); track d.id) {
+                <tr>
+                  <td>{{ d.id }}</td>
+                  <td>{{ d.email }}</td>
+                  <td><span class="cp-type" [attr.data-type]="d.type">{{ d.type }}</span></td>
+                  <td>
+                    <span class="badge" [class.badge-green]="d.status==='completed'" [class.badge-amber]="d.status==='processing'" [class.badge-gray]="d.status==='queued'">{{ d.status }}</span>
+                  </td>
+                  <td>{{ d.requestedAt }}</td>
+                  <td>
+                    @if (d.status !== 'completed') {
+                      <button type="button" class="adm-btn adm-btn--ghost cp-process-btn" (click)="openProcess(d)">
+                        {{ d.status === 'queued' ? 'Start' : 'Complete' }}
+                      </button>
+                    } @else {
+                      <span class="cp-done">Done</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
     <aside class="adm-aside" aria-label="Checklist">
       <h3 class="adm-aside-title">Checklist</h3>
       <p class="adm-aside-sub">DPA with vendors, breach playbook, retention schedule.</p>
+      <ul class="cp-checklist">
+        <li>✓ Privacy policy v2.1 published</li>
+        <li>✓ Vendor DPA signed (MSG91, Razorpay)</li>
+        <li>○ Annual penetration test scheduled</li>
+      </ul>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="dsarOpen()" (click)="closeDsar()" role="presentation">
+  <div class="adm-modal" [class.open]="dsarOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cp-dsar-title">
+    <header class="adm-modal-hdr">
+      <h2 id="cp-dsar-title" class="adm-modal-title">📤 DSAR request</h2>
+      <button type="button" class="adm-modal-close" (click)="closeDsar()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Customer email</span>
+        <input class="adm-search-inp" type="email" placeholder="customer@email.com" [ngModel]="dsarEmail()" (ngModelChange)="dsarEmail.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Request type</span>
+        <select class="assign-select" [ngModel]="dsarType()" (ngModelChange)="dsarType.set($event)">
+          <option value="export">Data export (portability)</option>
+          <option value="delete">Account erasure</option>
+        </select>
+      </label>
+      <label class="adm-modal-field">
+        <span>Notes / legal reference</span>
+        <textarea class="cp-textarea" rows="3" placeholder="Ticket ID, court order, etc." [ngModel]="dsarReason()" (ngModelChange)="dsarReason.set($event)"></textarea>
+      </label>
+      <p class="adm-modal-hint">SLA: export 30 days · erasure 45 days (demo queue only).</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="dsarSubmitting()" (click)="submitDsar()">
+        {{ dsarSubmitting() ? 'Submitting…' : 'Submit request' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="processOpen()" (click)="closeProcess()" role="presentation">
+  <div class="adm-modal" [class.open]="processOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cp-proc-title">
+    @if (processRow(); as d) {
+      <header class="adm-modal-hdr">
+        <h2 id="cp-proc-title" class="adm-modal-title">{{ d.status === 'queued' ? 'Start DSAR' : 'Complete DSAR' }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeProcess()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-hint"><strong>{{ d.id }}</strong> · {{ d.email }} · {{ d.type }}</p>
+        <p class="adm-modal-hint">
+          @if (d.status === 'queued') {
+            Queued request will move to processing and notify legal (demo).
+          } @else {
+            Mark complete after secure delivery / erasure certificate issued.
+          }
+        </p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="processRunning()" (click)="confirmProcess()">
+          {{ processRunning() ? 'Updating…' : (d.status === 'queued' ? 'Start processing' : 'Mark completed') }}
+        </button>
+      </div>
+    }
   </div>
 </div>

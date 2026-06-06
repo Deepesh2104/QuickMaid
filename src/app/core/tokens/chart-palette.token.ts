@@ -20,8 +20,8 @@ export const CHART_PALETTE = new InjectionToken<ChartPalette>('CHART_PALETTE', {
   providedIn: 'root',
   factory: () =>
     ({
-      get OR() { return readVar('--primary', '#FF5C1A'); },
-      get OR_RGB() { return readVar('--primary-rgb', '255,92,26'); },
+      get OR() { return readVar('--primary', '#0D9488'); },
+      get OR_RGB() { return readVar('--primary-rgb', '13,148,136'); },
       GR: '#1C8C52',
       BL: '#1D4ED8',
       AM: '#B45309',

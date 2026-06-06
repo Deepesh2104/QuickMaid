@@ -9,7 +9,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastService } from '@core/services/toast.service';
-import { Ticket } from './models/ticket.model';
+import { ChatAttachment, Ticket } from './models/ticket.model';
 import { SupportFacade } from './data/support-facade.service';
 
 @Component({
@@ -19,6 +19,7 @@ import { SupportFacade } from './data/support-facade.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [SupportFacade],
   templateUrl: './support.component.html',
+  styleUrls: ['./support.component.css'],
 })
 export class SupportComponent implements AfterViewInit {
   readonly facade = inject(SupportFacade);
@@ -42,6 +43,7 @@ export class SupportComponent implements AfterViewInit {
   get analyticsOpen() { return this.facade.analyticsOpen; }
   get mergeOpen() { return this.facade.mergeOpen; }
   get inputText() { return this.facade.inputText; }
+  get pendingAttachments() { return this.facade.pendingAttachments; }
   get csatRating() { return this.facade.csatRating; }
   get csatLabel() { return this.facade.csatLabel; }
   get slaDisplay() { return this.facade.slaDisplay; }
@@ -64,6 +66,38 @@ export class SupportComponent implements AfterViewInit {
   get mergeCandidates() { return this.facade.mergeCandidates; }
   get AGENT_STATUSES() { return this.facade.AGENT_STATUSES; }
   get LABEL_PRESETS() { return this.facade.LABEL_PRESETS; }
+  get noteMode() { return this.facade.noteMode; }
+  get emojiOpen() { return this.facade.emojiOpen; }
+  get aiBarVisible() { return this.facade.aiBarVisible; }
+  get aiSuggestion() { return this.facade.aiSuggestion; }
+  get showResolveBanner() { return this.facade.showResolveBanner; }
+  get autoCloseBanner() { return this.facade.autoCloseBanner; }
+  get EMOJI_LIST() { return this.facade.EMOJI_LIST; }
+  get QUICK_REPLIES() { return this.facade.QUICK_REPLIES; }
+  get BULK_SEGMENTS() { return this.facade.BULK_SEGMENTS; }
+  get bulkChannel() { return this.facade.bulkChannel; }
+  get bulkSending() { return this.facade.bulkSending; }
+  get bulkContactCount() { return this.facade.bulkContactCount; }
+  get bulkSendLog() { return this.facade.bulkSendLog; }
+  get exportOpen() { return this.facade.exportOpen; }
+  get exportFormat() { return this.facade.exportFormat; }
+  get exportScope() { return this.facade.exportScope; }
+  get exportRunning() { return this.facade.exportRunning; }
+  get SUPPORT_AGENTS() { return this.facade.SUPPORT_AGENTS; }
+  get PRIORITY_OPTIONS() { return this.facade.PRIORITY_OPTIONS; }
+  get assignedAgentId() { return this.facade.assignedAgentId; }
+  get assignedPriority() { return this.facade.assignedPriority; }
+  get assignedAgentLabel() { return this.facade.assignedAgentLabel; }
+  get quickActionModal() { return this.facade.quickActionModal; }
+  get refundAmount() { return this.facade.refundAmount; }
+  get pauseDays() { return this.facade.pauseDays; }
+  get backupSlot() { return this.facade.backupSlot; }
+  get backupMaid() { return this.facade.backupMaid; }
+  get waSummary() { return this.facade.waSummary; }
+  get slidePanel() { return this.facade.slidePanel; }
+  get callPhase() { return this.facade.callPhase; }
+  get pastTickets() { return this.facade.pastTickets; }
+  get bookingHistory() { return this.facade.bookingHistory; }
 
   // View refs (chat scroller + textarea + analytics canvases) ---------------
   @ViewChild('anTicketChart') anTicket!: ElementRef<HTMLCanvasElement>;
@@ -71,6 +105,8 @@ export class SupportComponent implements AfterViewInit {
   @ViewChild('anHourChart') anHour!: ElementRef<HTMLCanvasElement>;
   @ViewChild('chatBody') chatBody!: ElementRef<HTMLDivElement>;
   @ViewChild('chatInp') chatInp!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   ngAfterViewInit(): void {
     this.facade.startTimers();
@@ -123,6 +159,45 @@ export class SupportComponent implements AfterViewInit {
     }
   }
 
+  openImagePicker(): void {
+    this.imageInput?.nativeElement?.click();
+  }
+
+  openFilePicker(): void {
+    this.fileInput?.nativeElement?.click();
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.facade.addAttachment(file);
+    input.value = '';
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.facade.addAttachment(file);
+    input.value = '';
+  }
+
+  removePendingAttachment(index: number): void {
+    this.facade.removePendingAttachment(index);
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  isImageAttachment(att: ChatAttachment): boolean {
+    if (att.type === 'image') return true;
+    const ext = att.name.split('.').pop()?.toLowerCase() ?? '';
+    return ['jpg', 'jpeg', 'jfif', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif'].includes(ext);
+  }
+
   toggleSound(): void { this.facade.toggleSound(); }
 
   cycleStatus(): void { this.facade.cycleStatus(); }
@@ -150,6 +225,10 @@ export class SupportComponent implements AfterViewInit {
   closeBulkModal(): void { this.facade.closeBulkModal(); }
   selectBulkSegment(idx: number): void { this.facade.selectBulkSegment(idx); }
   sendBulk(): void { this.facade.sendBulk(); }
+  setBulkChannel(ch: 'whatsapp' | 'inapp' | 'email'): void { this.facade.setBulkChannel(ch); }
+  openExportModal(): void { this.facade.openExportModal(); }
+  closeExportModal(): void { this.facade.closeExportModal(); }
+  confirmExport(): void { this.facade.confirmExport(); }
 
   openCannedModal(): void { this.facade.openCannedModal(); }
   closeCannedModal(): void { this.facade.closeCannedModal(); }
@@ -159,6 +238,37 @@ export class SupportComponent implements AfterViewInit {
     setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
   }
   addCanned(): void { this.facade.addCanned(); }
+
+  toggleNoteMode(): void { this.facade.toggleNoteMode(); }
+  toggleEmoji(): void { this.facade.toggleEmoji(); }
+  closeEmoji(): void { this.facade.closeEmoji(); }
+  insertEmoji(e: string): void {
+    this.facade.insertEmoji(e);
+    setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
+  }
+  useAi(): void {
+    this.facade.useAi();
+    setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
+  }
+  dismissAi(): void { this.facade.dismissAi(); }
+  dismissResolveBanner(): void { this.facade.dismissResolveBanner(); }
+  dismissCollision(): void { this.facade.dismissCollision(); }
+  insertQuickReply(text: string): void {
+    this.facade.insertQuickReply(text);
+    setTimeout(() => this.chatInp?.nativeElement?.focus(), 0);
+  }
+
+  setAssignedAgent(id: string): void { this.facade.setAssignedAgent(id); }
+  setAssignedPriority(priority: 'high' | 'med' | 'low'): void { this.facade.setAssignedPriority(priority); }
+  setTicketSort(key: 'priority' | 'newest' | 'oldest' | 'sla'): void { this.facade.setTicketSort(key); }
+  openQuickAction(type: 'backup' | 'refund' | 'freevisit' | 'pause' | 'wa'): void { this.facade.openQuickAction(type); }
+  closeQuickAction(): void { this.facade.closeQuickAction(); }
+  confirmQuickAction(): void { this.facade.confirmQuickAction(); }
+  quickActionTitle(): string { return this.facade.quickActionTitle(); }
+  openSlidePanel(panel: 'call' | 'profile' | 'history'): void { this.facade.openSlidePanel(panel); }
+  closeSlidePanel(): void { this.facade.closeSlidePanel(); }
+  startCall(): void { this.facade.startCall(); }
+  endCall(): void { this.facade.endCall(); }
 
   toggleAnalytics(): void {
     this.facade.toggleAnalytics(() => setTimeout(() => this.renderAnalytics(), 80));

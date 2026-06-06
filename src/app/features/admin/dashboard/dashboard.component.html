@@ -6,9 +6,9 @@
       <p class="page-sub dash-sub">{{ todayLabel() }} · Raipur &amp; nearby hubs · blended GMV + ops</p>
     </div>
     <div class="dash-header-actions">
-      <span class="dash-sync-pill" title="Demo status">Live sync · 2m ago</span>
-      <button type="button" class="dash-btn dash-btn--ghost" (click)="refreshBoard()">Refresh</button>
-      <button type="button" class="dash-btn dash-btn--primary" (click)="exportSnapshot()">Export snapshot</button>
+      <span class="dash-sync-pill" title="Demo status">Live sync · {{ lastSync() }}</span>
+      <button type="button" class="dash-btn dash-btn--ghost" (click)="openRefresh()">Refresh</button>
+      <button type="button" class="dash-btn dash-btn--primary" (click)="openExport()">Export snapshot</button>
     </div>
   </header>
 
@@ -522,5 +522,83 @@
         </div>
       </div>
     </section>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="refreshOpen()" (click)="closeRefresh()" role="presentation">
+  <div class="adm-modal" [class.open]="refreshOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="dash-refresh-title">
+    <header class="adm-modal-hdr">
+      <h2 id="dash-refresh-title" class="adm-modal-title">↻ Refresh board</h2>
+      <button type="button" class="adm-modal-close" (click)="closeRefresh()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="dash-modal-hint">Pull latest GMV, bookings, zone heatmaps, and ops KPIs from the demo warehouse.</p>
+      <p class="dash-modal-meta">Last sync: <strong>{{ lastSync() }}</strong> · Range: <strong>{{ rangeLabel() }}</strong></p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="refreshRunning()" (click)="confirmRefresh()">
+        {{ refreshRunning() ? 'Refreshing…' : 'Refresh now' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="capacityOpen()" (click)="closeCapacity()" role="presentation">
+  <div class="adm-modal" [class.open]="capacityOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="dash-capacity-title">
+    <header class="adm-modal-hdr">
+      <h2 id="dash-capacity-title" class="adm-modal-title">📅 Capacity planner</h2>
+      <button type="button" class="adm-modal-close" (click)="closeCapacity()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="dash-modal-hint">Peak 10AM–2PM window — Tatibandh + Civil Lines par extra maid pull plan karein.</p>
+      <label class="adm-modal-field">
+        <span>Priority zone</span>
+        <select class="assign-select" [ngModel]="capacityZone()" (ngModelChange)="capacityZone.set($event)">
+          <option>Tatibandh</option>
+          <option>Civil Lines</option>
+          <option>Shankar Nagar</option>
+          <option>Telibandha</option>
+        </select>
+      </label>
+      <label class="adm-modal-field">
+        <span>Extra maids to schedule</span>
+        <select class="assign-select" [ngModel]="capacityMaids()" (ngModelChange)="capacityMaids.set($event)">
+          <option value="2">+2 maids</option>
+          <option value="4">+4 maids</option>
+          <option value="6">+6 maids</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="capacityRunning()" (click)="confirmCapacity()">
+        {{ capacityRunning() ? 'Scheduling…' : 'Apply capacity plan' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="dash-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="dash-export-title" class="adm-modal-title">📥 Export snapshot</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="dash-modal-hint">Download the current chart range as a file — demo only, no server round-trip.</p>
+      <label class="adm-modal-field">
+        <span>Date range</span>
+        <select class="assign-select" [ngModel]="range()" (ngModelChange)="setRange($event)">
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+        </select>
+      </label>
+      <label class="adm-modal-field">
+        <span>Format</span>
+        <select class="assign-select" [ngModel]="exportFormat()" (ngModelChange)="exportFormat.set($event)">
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Preparing…' : 'Download' }}
+      </button>
+    </div>
   </div>
 </div>

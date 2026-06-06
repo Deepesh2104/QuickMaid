@@ -1,0 +1,133 @@
+.cp-type {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--or);
+}
+
+.cp-type[data-type='delete'] {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.cp-checklist {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.cp-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border2);
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.adm-modal-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.adm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(19, 17, 14, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.adm-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.adm-modal {
+  width: min(440px, 100%);
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 64px -24px rgba(19, 17, 14, 0.28);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.adm-modal.open {
+  transform: translateY(0) scale(1);
+}
+
+.adm-modal-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.adm-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.adm-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  background: var(--cream2);
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.adm-modal-body {
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.adm-modal-field .adm-search-inp {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.adm-modal-submit {
+  width: 100%;
+}
+
+.cp-process-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+.cp-done {
+  font-size: 11px;
+  color: var(--muted);
+}

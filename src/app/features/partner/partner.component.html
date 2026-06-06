@@ -4,23 +4,134 @@
     <div class="pub-links">
       <a routerLink="/about" class="pub-link">About</a>
       <a routerLink="/contact" class="pub-link">Contact</a>
-      <a routerLink="/terms" class="pub-link">Terms</a>
       <a routerLink="/book" class="pub-link">Web book</a>
       <a routerLink="/partner" class="pub-link">Partner</a>
       <a routerLink="/status" class="pub-link">Status</a>
       <a routerLink="/auth" class="pub-link">Staff login</a>
     </div>
   </nav>
-  <main class="pub-main">
+  <main class="pub-main pub-main--partner">
     <h1 class="pub-title">Partner hub</h1>
-    <p class="pub-lead">Maids &amp; vendors — jobs, documents, payouts summary. Full app in Phase 3.</p>
+    <p class="pub-lead">Maids &amp; helpers — jobs, onboarding, payouts. Demo UI (no backend).</p>
 
-    <div class="pub-card">
-      <p class="pub-lead"><strong>Today</strong> — 3 jobs · ₹1,840 estimated · KYC verified</p>
-      <div class="pub-actions">
-        <button type="button" class="pub-btn" (click)="openEarnings()">View earnings</button>
-        <a routerLink="/" class="pub-btn pub-btn--ghost">Back home</a>
-      </div>
+    @if (onboardComplete()) {
+      <div class="pt-verified">✅ KYC submitted — verification pending</div>
+    }
+
+    <nav class="pt-tabs" aria-label="Partner sections">
+      <button type="button" class="pt-tab" [class.pt-tab--active]="tab()==='dashboard'" (click)="setTab('dashboard')">Today</button>
+      <button type="button" class="pt-tab" [class.pt-tab--active]="tab()==='onboarding'" (click)="setTab('onboarding')">Onboarding</button>
+      <button type="button" class="pt-tab" [class.pt-tab--active]="tab()==='earnings'" (click)="setTab('earnings')">Earnings</button>
+    </nav>
+
+    @switch (tab()) {
+      @case ('dashboard') {
+        <div class="pub-card">
+          <div class="pt-kpi-row">
+            <div class="pt-kpi"><span class="pt-kpi-val">{{ todayJobs.length }}</span><span class="pt-kpi-lbl">Jobs today</span></div>
+            <div class="pt-kpi"><span class="pt-kpi-val">₹{{ todayTotal() }}</span><span class="pt-kpi-lbl">Estimated</span></div>
+            <div class="pt-kpi"><span class="pt-kpi-val">4.8★</span><span class="pt-kpi-lbl">Rating</span></div>
+          </div>
+          <h2 class="pt-section-title">Today's schedule</h2>
+          <ul class="pt-job-list">
+            @for (j of todayJobs; track j.id) {
+              <li class="pt-job" [class.pt-job--done]="j.status==='done'">
+                <div>
+                  <strong>{{ j.time }} · {{ j.area }}</strong>
+                  <span>{{ j.service }} · {{ j.id }}</span>
+                </div>
+                <div class="pt-job-end">
+                  <span class="pt-job-pay">₹{{ j.pay }}</span>
+                  <span class="pt-job-status">{{ j.status === 'done' ? 'Done' : 'Upcoming' }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+      @case ('onboarding') {
+        <ol class="pt-onboard-steps">
+          <li [class.pt-onboard-step--active]="onboardStep()==='profile'" [class.pt-onboard-step--done]="onboardStepIndex() > 1">Profile</li>
+          <li [class.pt-onboard-step--active]="onboardStep()==='documents'" [class.pt-onboard-step--done]="onboardStepIndex() > 2">Docs</li>
+          <li [class.pt-onboard-step--active]="onboardStep()==='bank'" [class.pt-onboard-step--done]="onboardStepIndex() > 3">Bank</li>
+          <li [class.pt-onboard-step--active]="onboardStep()==='review'">Review</li>
+        </ol>
+        <div class="pub-card">
+          @switch (onboardStep()) {
+            @case ('profile') {
+              <div class="pub-row"><label>Full name</label><input type="text" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" placeholder="Savita Devi"></div>
+              <div class="pub-row"><label>Mobile</label><input type="tel" maxlength="10" [ngModel]="phone()" (ngModelChange)="phone.set($event)" placeholder="9876543210"></div>
+              <div class="pub-row"><label>City</label><input type="text" [ngModel]="city()" (ngModelChange)="city.set($event)"></div>
+              <div class="pub-row"><label>Skills</label>
+                <select [ngModel]="skills()" (ngModelChange)="skills.set($event)">
+                  <option>Cleaning</option>
+                  <option>Cooking</option>
+                  <option>Cleaning + Cooking</option>
+                </select>
+              </div>
+            }
+            @case ('documents') {
+              <p class="pt-hint">Aadhaar + selfie upload karein. Demo — button se mark hota hai.</p>
+              <div class="pt-upload-row">
+                <button type="button" class="pt-upload-btn" [class.pt-upload-btn--done]="aadhaarUploaded()" (click)="uploadDoc('aadhaar')">
+                  {{ aadhaarUploaded() ? '✓ Aadhaar uploaded' : '📄 Upload Aadhaar' }}
+                </button>
+                <button type="button" class="pt-upload-btn" [class.pt-upload-btn--done]="photoUploaded()" (click)="uploadDoc('photo')">
+                  {{ photoUploaded() ? '✓ Photo uploaded' : '📷 Upload selfie' }}
+                </button>
+              </div>
+            }
+            @case ('bank') {
+              <div class="pub-row"><label>Bank name</label><input type="text" [ngModel]="bankName()" (ngModelChange)="bankName.set($event)" placeholder="SBI"></div>
+              <div class="pub-row"><label>Account number</label><input type="text" [ngModel]="accountNo()" (ngModelChange)="accountNo.set($event)"></div>
+              <div class="pub-row"><label>IFSC</label><input type="text" [ngModel]="ifsc()" (ngModelChange)="ifsc.set($event)" placeholder="SBIN0001234"></div>
+            }
+            @case ('review') {
+              <div class="pt-review">
+                <div><span>Name</span><strong>{{ fullName() || '—' }}</strong></div>
+                <div><span>Phone</span><strong>+91 {{ phone() || '—' }}</strong></div>
+                <div><span>Skills</span><strong>{{ skills() }}</strong></div>
+                <div><span>Documents</span><strong>{{ aadhaarUploaded() && photoUploaded() ? 'Complete' : 'Pending' }}</strong></div>
+                <div><span>Bank</span><strong>{{ bankName() || '—' }} · {{ ifsc() || '—' }}</strong></div>
+              </div>
+            }
+          }
+          <div class="pub-actions">
+            @if (onboardStep() !== 'profile') {
+              <button type="button" class="pub-btn pub-btn--ghost" (click)="prevOnboard()">← Back</button>
+            }
+            <button type="button" class="pub-btn" (click)="nextOnboard()">
+              {{ onboardStep() === 'review' ? 'Submit KYC' : 'Continue →' }}
+            </button>
+          </div>
+        </div>
+      }
+      @case ('earnings') {
+        <div class="pub-card">
+          <h2 class="pt-section-title">Weekly payouts</h2>
+          <table class="pt-earn-table">
+            <thead>
+              <tr><th>Week</th><th>Jobs</th><th>Gross</th><th>Bonus</th><th>Net</th></tr>
+            </thead>
+            <tbody>
+              @for (e of earnings; track e.week) {
+                <tr>
+                  <td>{{ e.week }}</td>
+                  <td>{{ e.jobs }}</td>
+                  <td>₹{{ e.gross }}</td>
+                  <td>{{ e.bonus ? '₹' + e.bonus : '—' }}</td>
+                  <td><strong>₹{{ e.gross + e.bonus }}</strong></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <p class="pt-hint">Payout T+2 business days · UPI / bank transfer</p>
+        </div>
+      }
+    }
+
+    <div class="pub-actions" style="margin-top:16px;">
+      <a routerLink="/" class="pub-btn pub-btn--ghost">Back home</a>
     </div>
   </main>
 </div>

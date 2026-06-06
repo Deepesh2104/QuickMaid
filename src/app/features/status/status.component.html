@@ -4,36 +4,67 @@
     <div class="pub-links">
       <a routerLink="/about" class="pub-link">About</a>
       <a routerLink="/contact" class="pub-link">Contact</a>
-      <a routerLink="/terms" class="pub-link">Terms</a>
       <a routerLink="/book" class="pub-link">Web book</a>
       <a routerLink="/partner" class="pub-link">Partner</a>
       <a routerLink="/status" class="pub-link">Status</a>
       <a routerLink="/auth" class="pub-link">Staff login</a>
     </div>
   </nav>
-  <main class="pub-main">
+  <main class="pub-main pub-main--status">
     <h1 class="pub-title">System status</h1>
-    <p class="pub-lead">Public uptime view — connect to status provider or health checks in Phase 3.</p>
+    <p class="pub-lead">Public uptime view — demo data, subscribe for incident emails.</p>
+
+    <div class="st-banner" [class.st-banner--ok]="overallStatus()==='operational'" [class.st-banner--warn]="overallStatus()==='degraded'" [class.st-banner--bad]="overallStatus()==='outage'">
+      <span class="st-banner-dot" aria-hidden="true"></span>
+      <strong>{{ overallLabel() }}</strong>
+      <span class="st-banner-sub">Last checked · just now</span>
+    </div>
 
     <div class="pub-card">
-      <ul class="status-list">
-        <li class="status-li">
-          <span><span class="status-dot status-dot--ok" aria-hidden="true"></span> Booking API</span>
-          <span>Operational</span>
-        </li>
-        <li class="status-li">
-          <span><span class="status-dot status-dot--ok" aria-hidden="true"></span> Payments (Razorpay)</span>
-          <span>Operational</span>
-        </li>
-        <li class="status-li">
-          <span><span class="status-dot status-dot--degraded" aria-hidden="true"></span> SMS OTP</span>
-          <span>Degraded</span>
-        </li>
-        <li class="status-li">
-          <span><span class="status-dot status-dot--ok" aria-hidden="true"></span> Partner app</span>
-          <span>Operational</span>
-        </li>
+      <h2 class="st-section-title">Services</h2>
+      <ul class="status-list st-service-list">
+        @for (s of services; track s.id) {
+          <li class="status-li st-service-li">
+            <span>
+              <span class="status-dot" [class.status-dot--ok]="s.status==='operational'" [class.status-dot--degraded]="s.status==='degraded'" [class.status-dot--down]="s.status==='outage'" aria-hidden="true"></span>
+              {{ s.name }}
+            </span>
+            <span class="st-service-end">
+              <span class="st-service-detail">{{ s.detail }}</span>
+              <span class="st-service-status">{{ statusLabel(s.status) }}</span>
+            </span>
+          </li>
+        }
       </ul>
+    </div>
+
+    <div class="pub-card">
+      <h2 class="st-section-title">Incident history</h2>
+      <ol class="st-timeline">
+        @for (inc of incidents; track inc.id) {
+          <li class="st-incident" [attr.data-status]="inc.status">
+            <div class="st-incident-meta">
+              <span class="st-incident-badge">{{ incidentStatusLabel(inc.status) }}</span>
+              <time>{{ inc.when }}</time>
+            </div>
+            <h3 class="st-incident-title">{{ inc.title }}</h3>
+            <p class="st-incident-body">{{ inc.body }}</p>
+          </li>
+        }
+      </ol>
+    </div>
+
+    <div class="pub-card st-subscribe-card">
+      <h2 class="st-section-title">Subscribe to updates</h2>
+      @if (subscribed()) {
+        <p class="st-subscribed-msg">✅ {{ subscribeEmail() }} — incident emails on (demo)</p>
+      } @else {
+        <p class="st-hint">Downtime aur maintenance alerts email par (demo — no real send).</p>
+        <div class="st-subscribe-row">
+          <input type="email" class="st-email-inp" placeholder="you@email.com" [ngModel]="subscribeEmail()" (ngModelChange)="subscribeEmail.set($event)">
+          <button type="button" class="pub-btn" (click)="subscribe()">Subscribe</button>
+        </div>
+      }
     </div>
   </main>
 </div>

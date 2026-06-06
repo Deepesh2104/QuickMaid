@@ -3,11 +3,11 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Trust</p>
       <h1 class="adm-title">Audit log</h1>
-      <p class="adm-sub">Immutable trail of sensitive actions — retention policy + SIEM export later.</p>
+      <p class="adm-sub">Immutable trail of sensitive actions — export with filters (demo).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">90d · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="export()">Export CSV</button>
+      <span class="adm-sync-pill" role="status">{{ rows().length }} events · 90d</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openExport()">Export CSV</button>
     </div>
   </header>
 
@@ -15,7 +15,7 @@
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Recent events</div>
-        <p class="table-hint">Actor, verb, resource — demo data</p>
+        <p class="table-hint">Actor, verb, resource</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -26,19 +26,76 @@
             <th>Actor</th>
             <th>Action</th>
             <th>Target</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (r of rows; track r.at + r.action) {
+          @for (r of rows(); track r.at + r.action) {
             <tr>
               <td>{{ r.at }}</td>
               <td>{{ r.actor }}</td>
-              <td><code style="font-size:11px">{{ r.action }}</code></td>
+              <td><code class="au-code">{{ r.action }}</code></td>
               <td>{{ r.target }}</td>
+              <td><button type="button" class="act-btn" (click)="openDetail(r)" title="Detail">👁</button></td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="au-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="au-export-title" class="adm-modal-title">📥 Export audit log</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <div class="au-export-row">
+        <label class="adm-modal-field">
+          <span>From</span>
+          <input class="adm-search-inp" type="date" [ngModel]="exportFrom()" (ngModelChange)="exportFrom.set($event)">
+        </label>
+        <label class="adm-modal-field">
+          <span>To</span>
+          <input class="adm-search-inp" type="date" [ngModel]="exportTo()" (ngModelChange)="exportTo.set($event)">
+        </label>
+      </div>
+      <label class="adm-modal-field">
+        <span>Actor filter</span>
+        <select class="assign-select" [ngModel]="exportActor()" (ngModelChange)="exportActor.set($event)">
+          <option value="all">All actors</option>
+          <option value="asha">asha&#64;quickmaid.in</option>
+          <option value="rohit">rohit&#64;quickmaid.in</option>
+          <option value="system">system</option>
+        </select>
+      </label>
+      <p class="au-hint">Demo export includes visible table rows as CSV.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Exporting…' : 'Download CSV' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="detailOpen()" (click)="closeDetail()" role="presentation">
+  <div class="adm-modal" [class.open]="detailOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="au-detail-title">
+    @if (detailRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="au-detail-title" class="adm-modal-title">Audit event</h2>
+        <button type="button" class="adm-modal-close" (click)="closeDetail()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <dl class="au-dl">
+          <div><dt>Timestamp</dt><dd>{{ r.at }}</dd></div>
+          <div><dt>Actor</dt><dd>{{ r.actor }}</dd></div>
+          <div><dt>Action</dt><dd><code>{{ r.action }}</code></dd></div>
+          <div><dt>Target</dt><dd>{{ r.target }}</dd></div>
+        </dl>
+        <p class="au-hint">Immutable log entry — demo retention 90 days.</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeDetail()">Close</button>
+      </div>
+    }
   </div>
 </div>

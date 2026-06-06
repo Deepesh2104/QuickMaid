@@ -38,6 +38,15 @@ export class AuthComponent implements OnInit, OnDestroy {
   /** Login: email ya 10-digit mobile (India) */
   readonly loginId = signal('');
   readonly loginPw = signal('');
+  readonly loginRole = signal('admin');
+  readonly rememberMe = signal(false);
+
+  readonly LOGIN_ROLES = [
+    { id: 'admin', label: 'Admin', icon: '🖥️' },
+    { id: 'manager', label: 'Manager', icon: '👷' },
+    { id: 'analyst', label: 'Analyst', icon: '📊' },
+    { id: 'support', label: 'Support', icon: '🎧' },
+  ] as const;
 
   /** Signup */
   readonly selectedRole = signal('admin');
@@ -90,6 +99,10 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.selectedRole.set(role);
   }
 
+  selectLoginRole(role: string): void {
+    this.loginRole.set(role);
+  }
+
   ngOnInit(): void {
     if (this.auth.isAuthenticated()) {
       const next = this.auth.safeAdminReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
@@ -132,8 +145,15 @@ export class AuthComponent implements OnInit, OnDestroy {
       return;
     }
     const display = id.includes('@') ? id.split('@')[0] ?? 'User' : id;
-    this.auth.login({ loginId: id, displayName: display, role: 'Admin' });
-    this.toast.show('Login successful! Welcome back 👋', '✅');
+    const role = this.loginRoleLabel(this.loginRole());
+    this.auth.login(
+      { loginId: id, displayName: display, role },
+      { remember: this.rememberMe() },
+    );
+    this.toast.show(
+      this.rememberMe() ? 'Login successful — session saved 👋' : 'Login successful! Welcome back 👋',
+      '✅',
+    );
     const next = this.auth.safeAdminReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
     void this.router.navigateByUrl(next ?? '/admin/dashboard');
   }
@@ -192,7 +212,16 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
 
   private signupRoleLabel(key: string): string {
-    const m: Record<string, string> = { admin: 'Admin', manager: 'Manager', analyst: 'Analyst' };
+    return this.loginRoleLabel(key);
+  }
+
+  private loginRoleLabel(key: string): string {
+    const m: Record<string, string> = {
+      admin: 'Admin',
+      manager: 'Manager',
+      analyst: 'Analyst',
+      support: 'Support L1',
+    };
     return m[key] ?? 'Admin';
   }
 

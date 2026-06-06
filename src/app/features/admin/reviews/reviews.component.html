@@ -7,8 +7,8 @@
     </div>
     <div class="adm-hero-aside">
       <span class="adm-sync-pill" role="status">Last 6 periods</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('CSV of reviews (demo)','📥')">Export</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Moderation queue opened','🛡️')">Moderate</button>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openExport()">Export</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openModerate()">Moderate</button>
     </div>
   </header>
 
@@ -103,10 +103,10 @@
                   <td>
                     <div class="act-btns">
                       @if (r.flagged) {
-                        <div class="act-btn" (click)="toast.show('Escalated to CX lead','🚨')" title="Escalate">🚨</div>
+                        <div class="act-btn" (click)="openAction('escalate', r)" title="Escalate">🚨</div>
                       }
-                      <div class="act-btn" (click)="toast.show('Reply template sent','💬')" title="Reply">💬</div>
-                      <div class="act-btn" (click)="toast.show('Marked helpful','👍')" title="Helpful">👍</div>
+                      <div class="act-btn" (click)="openAction('reply', r)" title="Reply">💬</div>
+                      <div class="act-btn" (click)="openAction('helpful', r)" title="Helpful">👍</div>
                     </div>
                   </td>
                 </tr>
@@ -144,7 +144,7 @@
           <span class="adm-queue-pill adm-queue-pill--soft">On</span>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('Auto-reply rules (demo)','🤖')">Edit auto-replies</button>
+      <button type="button" class="adm-aside-btn" (click)="openAutoReply()">Edit auto-replies</button>
     </aside>
   </div>
 
@@ -167,5 +167,137 @@
       </div>
       <div class="chart-canvas-wrap chart-canvas-wrap--adm-line" style="min-height:200px"><canvas #starChart></canvas></div>
     </section>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rv-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rv-export-title" class="adm-modal-title">📥 Export reviews</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Scope</span>
+        <select class="assign-select" [ngModel]="exportScope()" (ngModelChange)="exportScope.set($event)">
+          <option value="filtered">Current filters ({{ revCount() }} rows)</option>
+          <option value="all">All reviews ({{ revTotal }} rows)</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Preparing…' : 'Download CSV' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="moderateOpen()" (click)="closeModerate()" role="presentation">
+  <div class="adm-modal" [class.open]="moderateOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rv-mod-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rv-mod-title" class="adm-modal-title">🛡️ Moderation queue</h2>
+      <button type="button" class="adm-modal-close" (click)="closeModerate()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint"><strong>{{ flaggedCount() }}</strong> flagged reviews need response within 4h SLA.</p>
+      <ul class="rv-queue-mini">
+        @for (r of reviewRows; track r.id) {
+          @if (r.flagged) {
+            <li>{{ r.id }} · {{ r.stars }}★ · {{ r.excerpt }}</li>
+          }
+        }
+      </ul>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeModerate()">Open inbox</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="autoReplyOpen()" (click)="closeAutoReply()" role="presentation">
+  <div class="adm-modal" [class.open]="autoReplyOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rv-auto-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rv-auto-title" class="adm-modal-title">🤖 Auto-reply rules</h2>
+      <button type="button" class="adm-modal-close" (click)="closeAutoReply()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">5★ → thank-you SMS · 1–2★ → CX callback ticket · B2B → account manager ping.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeAutoReply()">Save rules (demo)</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="replyOpen()" (click)="closeReply()" role="presentation">
+  <div class="adm-modal adm-modal--msg" [class.open]="replyOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rv-reply-title">
+    @if (replyRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="rv-reply-title" class="adm-modal-title">💬 Reply to review</h2>
+        <button type="button" class="adm-modal-close" (click)="closeReply()">×</button>
+      </header>
+      <div class="adm-modal-body msg-body">
+        <div class="msg-recipient rv-reply-context">
+          <div>
+            <span class="msg-recipient-name">{{ r.customer }} · {{ r.id }}</span>
+            <span class="msg-recipient-meta">{{ starStr(r.stars) }} · {{ r.maid }} · "{{ r.excerpt }}"</span>
+          </div>
+        </div>
+
+        <div class="msg-channel-row">
+          <span class="msg-field-label">Channel</span>
+          <div class="adm-seg adm-seg--compact">
+            <button type="button" class="adm-seg-btn" [class.active]="replyChannel() === 'whatsapp'" (click)="replyChannel.set('whatsapp')">💬 WhatsApp</button>
+            <button type="button" class="adm-seg-btn" [class.active]="replyChannel() === 'sms'" (click)="replyChannel.set('sms')">📱 SMS</button>
+            <button type="button" class="adm-seg-btn" [class.active]="replyChannel() === 'in_app'" (click)="replyChannel.set('in_app')">📲 In-app</button>
+          </div>
+        </div>
+
+        <label class="adm-modal-field">
+          <span>Template</span>
+          <select class="assign-select" [ngModel]="replyTemplateId()" (ngModelChange)="onReplyTemplateChange($event)">
+            @for (t of replyTemplates; track t.id) {
+              <option [value]="t.id">{{ t.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="adm-modal-field">
+          <span>Reply</span>
+          <textarea class="msg-textarea" rows="4" [ngModel]="replyBody()" (ngModelChange)="replyBody.set($event); replyTemplateId.set('custom')"></textarea>
+        </label>
+
+        <div class="msg-preview-wrap">
+          <span class="msg-field-label">Preview</span>
+          <div class="msg-preview">
+            <span class="msg-preview-ch">Customer sees</span>
+            <p class="msg-preview-text">{{ replyPreview() || '—' }}</p>
+          </div>
+        </div>
+
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="replySending() || !replyBody().trim()" (click)="confirmReply()">
+          {{ replySending() ? 'Sending…' : 'Send reply' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="actionOpen()" (click)="closeAction()" role="presentation">
+  <div class="adm-modal" [class.open]="actionOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rv-action-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rv-action-title" class="adm-modal-title">{{ actionTitle() }}</h2>
+      <button type="button" class="adm-modal-close" (click)="closeAction()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      @if (actionRow(); as r) {
+        <p class="adm-modal-meta">{{ r.id }} · {{ r.customer }} → {{ r.maid }} · {{ starStr(r.stars) }}</p>
+        <p class="adm-modal-hint">"{{ r.excerpt }}"</p>
+        @if (actionKind() === 'escalate') {
+          <label class="adm-modal-field">
+            <span>Escalation note</span>
+            <textarea class="msg-textarea" rows="3" placeholder="Ops context for CX lead…" [ngModel]="escalateNote()" (ngModelChange)="escalateNote.set($event)"></textarea>
+          </label>
+        }
+      }
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="actionRunning()" (click)="confirmAction()">
+        {{ actionRunning() ? 'Sending…' : 'Confirm' }}
+      </button>
+    </div>
   </div>
 </div>

@@ -3,31 +3,50 @@
 <div class="form-card">
   <div class="form-card-title">Personal Information</div>
   <div class="form-grid">
-    <div class="fg2"><label class="fl2">Full Name</label><input class="fi2" placeholder="Savita Devi"></div>
-    <div class="fg2"><label class="fl2">Phone Number</label><input class="fi2" placeholder="+91 98765 43210"></div>
-    <div class="fg2"><label class="fl2">Aadhaar Number</label><input class="fi2" placeholder="1234 5678 9012"></div>
-    <div class="fg2"><label class="fl2">Age</label><input class="fi2" placeholder="32"></div>
-    <div class="fg2"><label class="fl2">Zone / Area</label><select class="fs2"><option>Tatibandh</option><option>Civil Lines</option><option>Shankar Nagar</option><option>Pandri</option></select></div>
-    <div class="fg2"><label class="fl2">Service Type</label><select class="fs2"><option>Cleaning</option><option>Cooking</option><option>Bartan</option><option>All Services</option></select></div>
+    <div class="fg2"><label class="fl2">Full Name</label><input class="fi2" placeholder="Savita Devi" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)"></div>
+    <div class="fg2"><label class="fl2">Phone Number</label><input class="fi2" placeholder="+91 98765 43210" [ngModel]="phone()" (ngModelChange)="phone.set($event)"></div>
+    <div class="fg2"><label class="fl2">Aadhaar Number</label><input class="fi2" placeholder="1234 5678 9012" [ngModel]="aadhaar()" (ngModelChange)="aadhaar.set($event)"></div>
+    <div class="fg2"><label class="fl2">Age</label><input class="fi2" placeholder="32" [ngModel]="age()" (ngModelChange)="age.set($event)"></div>
+    <div class="fg2"><label class="fl2">Zone / Area</label><select class="fs2" [ngModel]="zone()" (ngModelChange)="zone.set($event)"><option>Tatibandh</option><option>Civil Lines</option><option>Shankar Nagar</option><option>Pandri</option></select></div>
+    <div class="fg2"><label class="fl2">Service Type</label><select class="fs2" [ngModel]="service()" (ngModelChange)="service.set($event)"><option>Cleaning</option><option>Cooking</option><option>Bartan</option><option>All Services</option></select></div>
   </div>
 </div>
 
 <div class="form-card">
   <div class="form-card-title">Bank / UPI Details</div>
   <div class="form-grid">
-    <div class="fg2"><label class="fl2">UPI ID</label><input class="fi2" placeholder="savita&#64;phonepe"></div>
-    <div class="fg2"><label class="fl2">Bank Account</label><input class="fi2" placeholder="Account number"></div>
-    <div class="fg2"><label class="fl2">IFSC Code</label><input class="fi2" placeholder="SBIN0001234"></div>
-    <div class="fg2"><label class="fl2">Emergency Contact</label><input class="fi2" placeholder="+91 98765 11111"></div>
+    <div class="fg2"><label class="fl2">UPI ID</label><input class="fi2" placeholder="savita&#64;phonepe" [ngModel]="upi()" (ngModelChange)="upi.set($event)"></div>
+    <div class="fg2"><label class="fl2">Bank Account</label><input class="fi2" placeholder="Account number" [ngModel]="bank()" (ngModelChange)="bank.set($event)"></div>
+    <div class="fg2"><label class="fl2">IFSC Code</label><input class="fi2" placeholder="SBIN0001234" [ngModel]="ifsc()" (ngModelChange)="ifsc.set($event)"></div>
+    <div class="fg2"><label class="fl2">Emergency Contact</label><input class="fi2" placeholder="+91 98765 11111" [ngModel]="emergency()" (ngModelChange)="emergency.set($event)"></div>
   </div>
 </div>
 
 <div class="form-card">
   <div class="form-card-title">Notes</div>
-  <textarea class="fta" placeholder="Koi special skills ya notes..."></textarea>
+  <textarea class="fta" placeholder="Koi special skills ya notes..." [ngModel]="notes()" (ngModelChange)="notes.set($event)"></textarea>
 </div>
 
 <div class="form-actions">
-  <button class="btn-save" (click)="toast.show('Maid added successfully! ✅','👩')">Save & Verify</button>
-  <button class="btn-cancel" (click)="router.navigateByUrl('/admin/maids')">Cancel</button>
+  <button type="button" class="btn-save" (click)="openSave()">Save &amp; Verify</button>
+  <button type="button" class="btn-cancel" (click)="router.navigateByUrl('/admin/maids')">Cancel</button>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="saveOpen()" (click)="closeSave()" role="presentation">
+  <div class="adm-modal" [class.open]="saveOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="am-save-title">
+    <header class="adm-modal-hdr">
+      <h2 id="am-save-title" class="adm-modal-title">👩 Save &amp; verify</h2>
+      <button type="button" class="adm-modal-close" (click)="closeSave()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-meta">{{ summaryLine() }}</p>
+      <p class="adm-modal-hint">Worker roster mein add hoga; Aadhaar + police verification queue mein jayega (demo).</p>
+      @if (upi()) {
+        <p class="adm-modal-hint">Payout rail: {{ upi() }}</p>
+      }
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="saving()" (click)="confirmSave()">
+        {{ saving() ? 'Saving…' : 'Confirm &amp; verify' }}
+      </button>
+    </div>
+  </div>
 </div>

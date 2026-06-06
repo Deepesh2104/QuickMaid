@@ -1,0 +1,172 @@
+.nt-row--off {
+  opacity: 0.55;
+}
+
+.nt-rule-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--or);
+  cursor: pointer;
+  text-align: left;
+}
+
+.nt-recipients {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--cream2);
+}
+
+.nt-del-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.nt-del-btn:hover {
+  color: #dc2626;
+}
+
+.nt-unread td:nth-child(3) {
+  font-weight: 700;
+}
+
+.toggle-switch--sm {
+  transform: scale(0.85);
+  transform-origin: left center;
+}
+
+.nt-form-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nt-form-row .adm-modal-field {
+  flex: 1;
+  min-width: 140px;
+}
+
+.nt-enable-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.adm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(19, 17, 14, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.adm-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.adm-modal {
+  width: min(480px, 100%);
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 64px -24px rgba(19, 17, 14, 0.28);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.adm-modal.open {
+  transform: translateY(0) scale(1);
+}
+
+.adm-modal-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.adm-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.adm-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  background: var(--cream2);
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.adm-modal-body {
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.adm-modal-field .adm-search-inp {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.adm-modal-submit {
+  width: 100%;
+}
+
+.nt-inbox-row {
+  cursor: pointer;
+}
+
+.nt-inbox-row:hover td {
+  background: var(--cream2);
+}
+
+.nt-alert-sev {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.nt-alert-time {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.nt-alert-body {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  line-height: 1.45;
+}

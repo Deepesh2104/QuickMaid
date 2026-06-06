@@ -7,8 +7,8 @@
     </div>
     <div class="adm-hero-aside">
       <span class="adm-sync-pill" role="status">T+2 cycle · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Reconciled with ledger','📒')">Reconcile</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Batch payout initiated!','💸')">Pay all pending</button>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openReconcile()">Reconcile</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openBatch()">Pay all pending</button>
     </div>
   </header>
 
@@ -119,9 +119,9 @@
                   <td>
                     <div class="act-btns" style="flex-wrap:wrap">
                       @if (r.status === 'held') {
-                        <button type="button" class="btn-sm" (click)="toast.show('KYC desk opened (demo)','📎')">Fix KYC</button>
+                        <button type="button" class="btn-sm" (click)="openKyc(r)">Fix KYC</button>
                       } @else {
-                        <button type="button" class="btn-sm primary" (click)="payRow(r)">Pay now</button>
+                        <button type="button" class="btn-sm primary" (click)="openPay(r)">Pay now</button>
                       }
                     </div>
                   </td>
@@ -156,12 +156,95 @@
           <span class="adm-queue-dot"></span>
           <div class="adm-queue-body">
             <span class="adm-queue-name">Ledger sync</span>
-            <span class="adm-queue-meta">Last run · 12 min ago</span>
+            <span class="adm-queue-meta">Last run · {{ lastReconcile() }}</span>
           </div>
           <span class="adm-queue-pill adm-queue-pill--soft">OK</span>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('Slack #payouts pinged','📣')">Notify finance</button>
+      <button type="button" class="adm-aside-btn" (click)="openNotify()">Notify finance</button>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="reconcileOpen()" (click)="closeReconcile()" role="presentation">
+  <div class="adm-modal" [class.open]="reconcileOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="po-reconcile-title">
+    <header class="adm-modal-hdr">
+      <h2 id="po-reconcile-title" class="adm-modal-title">📒 Reconcile ledger</h2>
+      <button type="button" class="adm-modal-close" (click)="closeReconcile()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Match payout queue against GL entries and UPI settlement refs.</p>
+      <p class="adm-modal-meta">Last reconcile: <strong>{{ lastReconcile() }}</strong></p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="reconcileRunning()" (click)="confirmReconcile()">
+        {{ reconcileRunning() ? 'Reconciling…' : 'Run reconcile' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="batchOpen()" (click)="closeBatch()" role="presentation">
+  <div class="adm-modal" [class.open]="batchOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="po-batch-title">
+    <header class="adm-modal-hdr">
+      <h2 id="po-batch-title" class="adm-modal-title">💸 Pay all pending</h2>
+      <button type="button" class="adm-modal-close" (click)="closeBatch()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Initiate UPI batch for ready + pending workers (held rows excluded).</p>
+      <p class="adm-modal-meta"><strong>{{ pendingPayCount() }}</strong> workers · est. <strong>{{ pendingTotal() }}</strong></p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="batchRunning()" (click)="confirmBatch()">
+        {{ batchRunning() ? 'Processing…' : 'Confirm batch payout' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="notifyOpen()" (click)="closeNotify()" role="presentation">
+  <div class="adm-modal" [class.open]="notifyOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="po-notify-title">
+    <header class="adm-modal-hdr">
+      <h2 id="po-notify-title" class="adm-modal-title">📣 Notify finance</h2>
+      <button type="button" class="adm-modal-close" (click)="closeNotify()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Ping Slack #payouts with held-worker summary and Friday batch ETA.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="notifyRunning()" (click)="confirmNotify()">
+        {{ notifyRunning() ? 'Sending…' : 'Send Slack ping' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="kycOpen()" (click)="closeKyc()" role="presentation">
+  <div class="adm-modal" [class.open]="kycOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="po-kyc-title">
+    <header class="adm-modal-hdr">
+      <h2 id="po-kyc-title" class="adm-modal-title">📎 Fix KYC hold</h2>
+      <button type="button" class="adm-modal-close" (click)="closeKyc()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      @if (actionRow(); as r) {
+        <p class="adm-modal-meta">{{ r.name }} · {{ r.id }} · {{ r.riskNote }}</p>
+        <p class="adm-modal-hint">Open KYC desk to verify documents and release payout hold.</p>
+      }
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="actionRunning()" (click)="confirmKyc()">
+        {{ actionRunning() ? 'Opening…' : 'Open KYC desk' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="payOpen()" (click)="closePay()" role="presentation">
+  <div class="adm-modal" [class.open]="payOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="po-pay-title">
+    <header class="adm-modal-hdr">
+      <h2 id="po-pay-title" class="adm-modal-title">✅ Pay worker</h2>
+      <button type="button" class="adm-modal-close" (click)="closePay()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      @if (actionRow(); as r) {
+        <p class="adm-modal-meta">{{ r.amount }} → {{ r.upi }}</p>
+        <p class="adm-modal-hint">{{ r.name }} · {{ r.bookings }} bookings since last pay</p>
+      }
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="actionRunning()" (click)="confirmPay()">
+        {{ actionRunning() ? 'Queuing…' : 'Confirm payout' }}
+      </button>
+    </div>
   </div>
 </div>

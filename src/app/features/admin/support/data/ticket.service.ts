@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { ChatMsg, InboxFilter, Ticket, TicketStatus } from '../models/ticket.model';
+import { ChatMsg, InboxFilter, Ticket, TicketPriority, TicketStatus } from '../models/ticket.model';
 
 const SEED_TICKETS: Ticket[] = [
   {
@@ -118,6 +118,14 @@ export class TicketService {
     t.unread = false;
     this._activeTicket.set({ ...t });
     this._tickets.update((arr) => [...arr]);
+  }
+
+  updatePriority(priority: TicketPriority): void {
+    const t = this._activeTicket();
+    if (!t) return;
+    t.priority = priority;
+    this._activeTicket.set({ ...t });
+    this._tickets.update((arr) => arr.map((x) => (x.id === t.id ? { ...t } : x)));
   }
 
   prepend(t: Ticket): void {

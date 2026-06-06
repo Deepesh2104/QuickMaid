@@ -282,6 +282,39 @@
     </div>
   </section>
 
+  <section class="section cities-section" id="cities">
+    <div class="sec-center reveal">
+      <div class="sec-tag">Cities</div>
+      <h2 class="sec-title">Raipur se shuru — aur cities jald</h2>
+      <p class="sec-desc">Abhi live hubs par book karein; baaki cities par notify list join karein</p>
+    </div>
+    <div class="cities-grid reveal">
+      @for (city of liveCities(); track city.name) {
+        <article class="city-card city-card--live">
+          <div class="city-card-top">
+            <span class="city-badge city-badge--live">Live</span>
+            <span class="city-card-name">{{ city.name }}</span>
+          </div>
+          <p class="city-card-blurb">{{ city.blurb }}</p>
+          <a [href]="waBook" rel="noopener noreferrer" target="_blank" class="city-card-cta">Book in {{ city.name }}</a>
+        </article>
+      }
+      @for (city of soonCities(); track city.name) {
+        <article class="city-card city-card--soon">
+          <div class="city-card-top">
+            <span class="city-badge city-badge--soon">Coming soon</span>
+            @if (city.eta) {
+              <span class="city-card-eta">{{ city.eta }}</span>
+            }
+          </div>
+          <span class="city-card-name">{{ city.name }}</span>
+          <p class="city-card-blurb">{{ city.blurb }}</p>
+          <button type="button" class="city-card-notify" (click)="openNotify(city.name)">Notify me</button>
+        </article>
+      }
+    </div>
+  </section>
+
   <section class="section">
     <div class="sec-center reveal">
       <div class="sec-tag">FAQ</div>
@@ -354,13 +387,32 @@
         <a routerLink="/about">About</a>
       </div>
       <div class="footer-cities">
-        <span class="city-tag">Raipur</span>
-        <span class="city-tag">Bhilai</span>
-        <span class="city-tag">Durg</span>
-        <span class="city-tag">Coming Soon →</span>
+        @for (city of liveCities(); track city.name) {
+          <span class="city-tag">{{ city.name }}</span>
+        }
+        @for (city of soonCities(); track city.name) {
+          <button type="button" class="city-tag city-tag--soon" (click)="openNotify(city.name)">{{ city.name }} · soon</button>
+        }
       </div>
     </div>
   </footer>
 
   <a [href]="waBook" rel="noopener noreferrer" target="_blank" class="wa-float" aria-label="WhatsApp par message karein">💬</a>
+
+  <div class="qm-notify-backdrop" [class.open]="notifyOpen()" (click)="closeNotify()" role="presentation">
+    <div class="qm-notify-modal" [class.open]="notifyOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="notify-title">
+      <header class="qm-notify-hdr">
+        <h2 id="notify-title" class="qm-notify-title">📍 {{ notifyCity() }} — notify list</h2>
+        <button type="button" class="qm-notify-close" (click)="closeNotify()">×</button>
+      </header>
+      <div class="qm-notify-body">
+        <p class="qm-notify-copy">Launch hone par pehle aapko email milega. Koi spam nahi — sirf city go-live update.</p>
+        <label class="qm-notify-field">
+          <span>Email</span>
+          <input class="qm-notify-inp" type="email" placeholder="you@example.com" [ngModel]="notifyEmail()" (ngModelChange)="notifyEmail.set($event)">
+        </label>
+        <button type="button" class="btn-wt qm-notify-submit" (click)="submitNotify()">Join waitlist</button>
+      </div>
+    </div>
+  </div>
 </div>

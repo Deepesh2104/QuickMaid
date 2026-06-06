@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ChartService } from '@core/services/chart.service';
 import { CHART_PALETTE } from '@core/tokens/chart-palette.token';
 import { ToastService } from '@core/services/toast.service';
@@ -18,11 +19,31 @@ export interface PlanSubscriberRow {
   status: PlanAcctStatus;
 }
 
+export interface PlanBillingEvent {
+  date: string;
+  event: string;
+  amount: string;
+}
+
+export interface PlanDetail {
+  started: string;
+  visitsIncluded: string;
+  paymentMethod: string;
+  autoRenew: boolean;
+  totalSpent: string;
+  nextInvoice: string;
+  zone: string;
+  billingHistory: PlanBillingEvent[];
+  perks: string[];
+}
+
 @Component({
   selector: 'app-plans',
   standalone: true,
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './plans.component.html',
+  styleUrls: ['./plans.component.css'],
 })
 export class PlansComponent implements AfterViewInit {
   private readonly cs = inject(ChartService);
@@ -35,6 +56,34 @@ export class PlansComponent implements AfterViewInit {
   readonly planFilter = signal<'all' | PlanKind>('all');
   readonly statusFilter = signal<'all' | PlanAcctStatus>('all');
   readonly searchQuery = signal('');
+
+  readonly priceRulesOpen = signal(false);
+  readonly newPlanOpen = signal(false);
+  readonly planSaving = signal(false);
+  readonly formPlanName = signal('');
+  readonly formPlanKind = signal<PlanKind>('monthly');
+  readonly formPlanPrice = signal('799');
+
+  readonly detailOpen = signal(false);
+  readonly detailRow = signal<PlanSubscriberRow | null>(null);
+
+  readonly detailInfo = computed((): PlanDetail | null => {
+    const s = this.detailRow();
+    return s ? this.buildDetail(s) : null;
+  });
+
+  readonly lifecycleOpen = signal(false);
+  readonly lifecycleRow = signal<PlanSubscriberRow | null>(null);
+  readonly lifecycleReason = signal('customer_request');
+  readonly lifecycleNotify = signal(true);
+  readonly lifecycleRunning = signal(false);
+
+  readonly priceRules = [
+    { plan: 'Instant', base: '₹149/hr', surge: '+20% weekends' },
+    { plan: 'Monthly', base: '₹799/mo', surge: '—' },
+    { plan: 'Annual', base: '₹6,999/yr', surge: '2 mo free' },
+    { plan: 'B2B', base: 'Custom SLA', surge: 'Per seat' },
+  ] as const;
 
   readonly subscribers: readonly PlanSubscriberRow[] = [
     { id: 'SUB-901', customer: 'Neha Agarwal', init: 'N', av: 'or', plan: 'monthly', planLabel: 'Monthly', renews: 'May 14', mrr: '₹799', status: 'active' },
@@ -109,5 +158,119 @@ export class PlansComponent implements AfterViewInit {
         } as any,
       });
     }, 60);
+  }
+
+  openPriceRules(): void {
+    this.priceRulesOpen.set(true);
+  }
+
+  closePriceRules(): void {
+    this.priceRulesOpen.set(false);
+  }
+
+  openNewPlan(): void {
+    this.formPlanName.set('');
+    this.formPlanKind.set('monthly');
+    this.formPlanPrice.set('799');
+    this.newPlanOpen.set(true);
+  }
+
+  closeNewPlan(): void {
+    this.newPlanOpen.set(false);
+  }
+
+  confirmNewPlan(): void {
+    const name = this.formPlanName().trim();
+    if (!name) {
+      this.toast.show('Plan name required', '⚠️');
+      return;
+    }
+    this.planSaving.set(true);
+    setTimeout(() => {
+      this.planSaving.set(false);
+      this.closeNewPlan();
+      this.toast.show(`Plan draft saved · ${name}`, '📦');
+    }, 600);
+  }
+
+  statusBadgeClass(s: PlanAcctStatus): string {
+    if (s === 'active') return 'badge badge-green';
+    if (s === 'paused') return 'badge badge-gray';
+    return 'badge badge-amber';
+  }
+
+  statusLabel(s: PlanAcctStatus): string {
+    if (s === 'active') return 'Active';
+    if (s === 'paused') return 'Paused';
+    return 'Renewal due';
+  }
+
+  private buildDetail(s: PlanSubscriberRow): PlanDetail {
+    const perks =
+      s.plan === 'b2b'
+        ? ['Dedicated account mgr', 'SLA 4h', 'Invoice NET-15']
+        : s.plan === 'annual'
+          ? ['2 months free', 'Priority maid', 'Free deep clean / quarter']
+          : s.plan === 'monthly'
+            ? ['4 visits / month', 'Free reschedule', 'Same maid preference']
+            : ['Pay per visit', 'No lock-in'];
+    return {
+      started: s.plan === 'instant' ? 'Mar 2026' : 'Aug 2024',
+      visitsIncluded: s.plan === 'instant' ? '—' : s.plan === 'b2b' ? 'Custom SLA' : s.plan === 'annual' ? '48 / yr' : '4 / mo',
+      paymentMethod: s.plan === 'b2b' ? 'Bank transfer · PO' : 'UPI auto-debit',
+      autoRenew: s.status !== 'paused',
+      totalSpent: s.plan === 'b2b' ? '₹2,88,000' : s.plan === 'annual' ? '₹28,000' : s.plan === 'monthly' ? '₹9,520' : '₹447',
+      nextInvoice: s.renews === '—' ? '—' : s.renews + ' 2026',
+      zone: s.customer.includes('Office') || s.customer.includes('Homes') ? 'Multi-site' : 'Tatibandh',
+      billingHistory: [
+        { date: 'May 1', event: s.status === 'renewal' ? 'Renewal reminder sent' : 'Invoice paid', amount: s.mrr },
+        { date: 'Apr 1', event: 'Invoice paid', amount: s.mrr },
+        { date: 'Mar 1', event: 'Invoice paid', amount: s.mrr },
+      ],
+      perks,
+    };
+  }
+
+  openDetail(row: PlanSubscriberRow): void {
+    this.detailRow.set(row);
+    this.detailOpen.set(true);
+  }
+
+  closeDetail(): void {
+    this.detailOpen.set(false);
+  }
+
+  openLifecycle(row: PlanSubscriberRow): void {
+    this.lifecycleRow.set(row);
+    this.lifecycleReason.set('customer_request');
+    this.lifecycleNotify.set(true);
+    this.lifecycleOpen.set(true);
+  }
+
+  closeLifecycle(): void {
+    this.lifecycleOpen.set(false);
+  }
+
+  confirmLifecycle(): void {
+    const s = this.lifecycleRow();
+    if (!s) return;
+    this.lifecycleRunning.set(true);
+    const action = s.status === 'paused' ? 'Resumed' : 'Paused';
+    window.setTimeout(() => {
+      this.lifecycleRunning.set(false);
+      this.toast.show(`${action} · ${s.customer}`, s.status === 'paused' ? '▶️' : '⏸️');
+      this.closeLifecycle();
+    }, 600);
+  }
+
+  openAction(kind: string, row: PlanSubscriberRow): void {
+    if (kind === 'view') {
+      this.openDetail(row);
+      return;
+    }
+    if (kind === 'lifecycle') {
+      this.openLifecycle(row);
+      return;
+    }
   }
 }

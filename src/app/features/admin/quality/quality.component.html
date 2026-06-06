@@ -3,40 +3,132 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Quality</p>
       <h1 class="adm-title">Training & QC</h1>
-      <p class="adm-sub">Maid certification, mystery audits, checklist scores — LMS hooks in Phase 3.</p>
+      <p class="adm-sub">Maid certification checklist + LMS modules — demo UI.</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">LMS · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="scheduleAudit()">Schedule field audit</button>
+      <span class="adm-sync-pill" role="status">{{ certifiedCount() }}/{{ maids().length }} certified</span>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openAudit()">Schedule field audit</button>
     </div>
   </header>
 
-  <div class="table-card table-card--adm">
-    <div class="table-hdr table-hdr--adm">
-      <div class="table-hdr-text">
-        <div class="table-title">Module completion</div>
-        <p class="table-hint">Per-maid progress + expiry dates</p>
+  <div class="ql-layout">
+    <div class="ql-main">
+      <div class="table-card table-card--adm">
+        <div class="table-hdr table-hdr--adm">
+          <div class="table-hdr-text">
+            <div class="table-title">Module completion</div>
+            <p class="table-hint">Roster-wide LMS progress</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table data-table--adm">
+            <thead>
+              <tr>
+                <th>Module</th>
+                <th>Progress</th>
+                <th>Owner</th>
+                <th>Expiry</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of rows(); track r.id) {
+                <tr>
+                  <td>{{ r.module }}</td>
+                  <td>
+                    <div class="ql-progress-cell">
+                      <span>{{ r.completionPct }}%</span>
+                      <div class="ql-bar"><div class="ql-bar-fill" [style.width.%]="r.completionPct"></div></div>
+                    </div>
+                  </td>
+                  <td>{{ r.owner }}</td>
+                  <td>{{ r.expiry }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card table-card--adm">
+        <div class="table-hdr table-hdr--adm">
+          <div class="table-hdr-text">
+            <div class="table-title">Maid roster</div>
+            <p class="table-hint">Select → checklist update</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table data-table--adm ql-maid-table">
+            <thead>
+              <tr><th>Name</th><th>Zone</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              @for (m of maids(); track m.id) {
+                <tr class="ql-maid-row" [class.ql-maid-row--sel]="selectedMaidId()===m.id" (click)="selectMaid(m.id)">
+                  <td>{{ m.name }}</td>
+                  <td>{{ m.zone }}</td>
+                  <td>
+                    <span class="badge" [class.badge-green]="m.status==='certified'" [class.badge-amber]="m.status==='pending'" [class.badge-red]="m.status==='expired'">{{ m.status }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div class="table-scroll">
-      <table class="data-table data-table--adm">
-        <thead>
-          <tr>
-            <th>Module</th>
-            <th>Roster completion</th>
-            <th>Owner</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of rows; track r.module) {
-            <tr>
-              <td>{{ r.module }}</td>
-              <td class="adm-amt">{{ r.completionPct }}%</td>
-              <td>{{ r.owner }}</td>
-            </tr>
+
+    @if (selectedMaid(); as maid) {
+      <aside class="ql-checklist-card">
+        <h3 class="ql-checklist-title">{{ maid.name }}</h3>
+        <p class="ql-checklist-sub">{{ maid.zone }} · {{ checklistProgress() }}% required done</p>
+        <ul class="ql-checklist">
+          @for (item of maid.checklist; track item.id) {
+            <li>
+              <label class="ql-check-item">
+                <input type="checkbox" [checked]="item.checked" (change)="toggleCheck(maid.id, item.id)">
+                <span [class.ql-check-required]="item.required">{{ item.label }}</span>
+                @if (item.required) { <span class="ql-req-tag">req</span> }
+              </label>
+            </li>
           }
-        </tbody>
-      </table>
+        </ul>
+        <button type="button" class="adm-btn adm-btn--primary ql-cert-btn" (click)="certifyMaid()">Mark certified</button>
+      </aside>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="auditOpen()" (click)="closeAudit()" role="presentation">
+  <div class="adm-modal" [class.open]="auditOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="ql-audit-title">
+    <header class="adm-modal-hdr">
+      <h2 id="ql-audit-title" class="adm-modal-title">📋 Schedule field audit</h2>
+      <button type="button" class="adm-modal-close" (click)="closeAudit()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Maid</span>
+        <select class="assign-select" [ngModel]="auditMaidId()" (ngModelChange)="auditMaidId.set($event)">
+          @for (m of maids(); track m.id) {
+            <option [value]="m.id">{{ m.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-modal-field">
+        <span>Date</span>
+        <input class="adm-search-inp" type="date" [ngModel]="auditDate()" (ngModelChange)="auditDate.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Zone</span>
+        <select class="assign-select" [ngModel]="auditZone()" (ngModelChange)="auditZone.set($event)">
+          <option>Pandri</option>
+          <option>Civil Lines</option>
+          <option>Tatibandh</option>
+          <option>Shankar Nagar</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="auditSaving()" (click)="scheduleAudit()">
+        {{ auditSaving() ? 'Scheduling…' : 'Schedule audit' }}
+      </button>
     </div>
   </div>
 </div>

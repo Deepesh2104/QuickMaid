@@ -566,59 +566,46 @@
   max-width: 400px;
   aspect-ratio: 4 / 3;
   border-radius: 24px;
-  background:
-    radial-gradient(circle at 50% 45%, rgba(var(--primary-rgb), 0.2) 0%, transparent 45%),
-    linear-gradient(165deg, #1e293b 0%, #0f172a 50%, #1a1714 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 60px rgba(19, 17, 14, 0.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px;
-  text-align: center;
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 60px rgba(19, 17, 14, 0.12);
   position: relative;
   overflow: hidden;
+  background: var(--cream2);
 }
 
-.qm-ct-map::before {
-  content: '';
+.qm-ct-map-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.qm-ct-map-link {
   position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
-  opacity: 0.6;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border2);
+  box-shadow: 0 4px 16px rgba(19, 17, 14, 0.12);
 }
 
-.qm-ct-map-pin {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--or);
-  box-shadow: 0 0 0 8px rgba(var(--primary-rgb), 0.35);
-  position: relative;
-  z-index: 1;
+.qm-ct-map-link:hover {
+  color: var(--or);
 }
 
-.qm-ct-map-label {
-  font-family: 'Clash Display', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  position: relative;
-  z-index: 1;
-}
-
-.qm-ct-map-sub {
+.qm-ct-map-caption {
+  margin: 10px 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: rgba(248, 250, 252, 0.72);
-  max-width: 28ch;
-  position: relative;
-  z-index: 1;
+  color: var(--muted);
+  text-align: center;
 }
 
 /* Phishing list */

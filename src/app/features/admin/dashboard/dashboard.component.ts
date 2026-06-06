@@ -8,6 +8,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Chart } from 'chart.js';
 import { ChartService } from '@core/services/chart.service';
 import { ToastService } from '@core/services/toast.service';
@@ -39,8 +40,10 @@ function bizMarginSeries(r: DateRange): { labels: readonly string[]; gmvK: numbe
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements AfterViewInit {
   /** Demo intraday shape for demand-signal spark strip */
@@ -65,6 +68,16 @@ export class DashboardComponent implements AfterViewInit {
   @ViewChild('bizMarginChart') bizMarginCanvas!: ElementRef<HTMLCanvasElement>;
 
   readonly range = signal<DateRange>('7d');
+  readonly lastSync = signal('2m ago');
+  readonly refreshOpen = signal(false);
+  readonly exportOpen = signal(false);
+  readonly exportFormat = signal<'csv' | 'json'>('csv');
+  readonly refreshRunning = signal(false);
+  readonly exportRunning = signal(false);
+  readonly capacityOpen = signal(false);
+  readonly capacityRunning = signal(false);
+  readonly capacityZone = signal('Tatibandh');
+  readonly capacityMaids = signal('4');
   private mainChart: Chart | null = null;
   private bizMarginChart: Chart | null = null;
 
@@ -657,15 +670,82 @@ export class DashboardComponent implements AfterViewInit {
     this.updateBizMarginChartData(r);
   }
 
-  exportSnapshot(): void {
-    this.toast.show('CSV export queued (demo) — Reports → Downloads', '📥');
+  openRefresh(): void {
+    this.refreshOpen.set(true);
   }
 
-  refreshBoard(): void {
-    this.toast.show('Dashboard metrics refreshed', '✨');
+  closeRefresh(): void {
+    this.refreshOpen.set(false);
+  }
+
+  confirmRefresh(): void {
+    this.refreshRunning.set(true);
+    setTimeout(() => {
+      this.lastSync.set('Just now');
+      this.refreshRunning.set(false);
+      this.closeRefresh();
+      this.toast.show('Dashboard metrics refreshed', '✨');
+    }, 700);
+  }
+
+  openExport(): void {
+    this.exportOpen.set(true);
+  }
+
+  closeExport(): void {
+    this.exportOpen.set(false);
+  }
+
+  confirmExport(): void {
+    this.exportRunning.set(true);
+    setTimeout(() => {
+      const r = this.range();
+      const d = RANGES[r];
+      const fmt = this.exportFormat();
+      let body: string;
+      let mime: string;
+      let ext: string;
+      if (fmt === 'json') {
+        body = JSON.stringify({ range: r, exportedAt: new Date().toISOString(), series: d }, null, 2);
+        mime = 'application/json';
+        ext = 'json';
+      } else {
+        const header = 'period,revenue_inr,bookings';
+        const lines = d.labels.map((label, i) => `${label},${d.rev[i]},${d.book[i]}`);
+        body = [header, ...lines].join('\n');
+        mime = 'text/csv';
+        ext = 'csv';
+      }
+      const blob = new Blob([body], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `quickmaid_dashboard_${r}.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      this.exportRunning.set(false);
+      this.closeExport();
+      this.toast.show(`Snapshot exported (${fmt.toUpperCase()})`, '📥');
+    }, 600);
   }
 
   openCapacityView(): void {
-    this.toast.show('Capacity planner (demo) — tie to Ops → Zones', '📅');
+    this.capacityOpen.set(true);
+  }
+
+  closeCapacity(): void {
+    this.capacityOpen.set(false);
+  }
+
+  confirmCapacity(): void {
+    this.capacityRunning.set(true);
+    setTimeout(() => {
+      this.capacityRunning.set(false);
+      this.closeCapacity();
+      this.toast.show(
+        `Capacity plan · +${this.capacityMaids()} maids → ${this.capacityZone()}`,
+        '📅',
+      );
+    }, 700);
   }
 }

@@ -11,31 +11,138 @@
       <a routerLink="/auth" class="pub-link">Staff login</a>
     </div>
   </nav>
-  <main class="pub-main">
+  <main class="pub-main pub-main--book">
     <h1 class="pub-title">Book a visit</h1>
-    <p class="pub-lead">Customer self-serve flow — payment + slot lock when backend is ready.</p>
+    <p class="pub-lead">4-step demo flow — details, OTP verify, payment, confirmation.</p>
 
-    <div class="pub-card">
-      <div class="pub-row">
-        <label for="svc">Service</label>
-        <select id="svc" [value]="service()" (change)="service.set(($any($event.target).value))">
-          <option>Deep clean</option>
-          <option>Regular</option>
-          <option>Kitchen focus</option>
-        </select>
-      </div>
-      <div class="pub-row">
-        <label for="when">Preferred date</label>
-        <input id="when" type="date" [min]="minDate" [value]="when()" (input)="when.set(($any($event.target).value))">
-      </div>
-      <div class="pub-row">
-        <label for="addr">Address / landmark</label>
-        <input id="addr" type="text" placeholder="Sector, street, flat…" [value]="address()" (input)="address.set(($any($event.target).value))">
-      </div>
-      <div class="pub-actions">
-        <button type="button" class="pub-btn" (click)="submit()">Request slot</button>
-        <a routerLink="/" class="pub-btn pub-btn--ghost">Back home</a>
-      </div>
-    </div>
+    <ol class="book-steps" aria-label="Booking progress">
+      <li class="book-step" [class.book-step--active]="step()==='details'" [class.book-step--done]="stepIndex() > 1">Details</li>
+      <li class="book-step" [class.book-step--active]="step()==='otp'" [class.book-step--done]="stepIndex() > 2">OTP</li>
+      <li class="book-step" [class.book-step--active]="step()==='payment'" [class.book-step--done]="stepIndex() > 3">Pay</li>
+      <li class="book-step" [class.book-step--active]="step()==='done'">Done</li>
+    </ol>
+
+    @switch (step()) {
+      @case ('details') {
+        <div class="pub-card">
+          <div class="pub-row">
+            <label for="svc">Service</label>
+            <select id="svc" [ngModel]="service()" (ngModelChange)="service.set($event)">
+              <option>Deep clean</option>
+              <option>Regular</option>
+              <option>Kitchen focus</option>
+            </select>
+          </div>
+          <div class="pub-row">
+            <label for="when">Preferred date</label>
+            <input id="when" type="date" [min]="minDate" [ngModel]="when()" (ngModelChange)="when.set($event)">
+          </div>
+          <div class="pub-row">
+            <label for="slot">Time slot</label>
+            <select id="slot" [ngModel]="slot()" (ngModelChange)="slot.set($event)">
+              <option>8:00 AM – 10:00 AM</option>
+              <option>10:00 AM – 12:00 PM</option>
+              <option>4:00 PM – 6:00 PM</option>
+              <option>6:00 PM – 8:00 PM</option>
+            </select>
+          </div>
+          <div class="pub-row">
+            <label for="addr">Address / landmark</label>
+            <input id="addr" type="text" placeholder="Sector, street, flat…" [ngModel]="address()" (ngModelChange)="address.set($event)">
+          </div>
+          <div class="book-price-preview">
+            <span>Estimated</span>
+            <strong>₹{{ price() }}</strong>
+          </div>
+          <div class="pub-actions">
+            <button type="button" class="pub-btn" (click)="continueFromDetails()">Continue →</button>
+            <a routerLink="/" class="pub-btn pub-btn--ghost">Back home</a>
+          </div>
+        </div>
+      }
+      @case ('otp') {
+        <div class="pub-card">
+          <p class="book-step-lead">Booking confirm karne ke liye mobile verify karein.</p>
+          <div class="pub-row">
+            <label for="phone">Mobile (10 digit)</label>
+            <input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="9876543210"
+                   [ngModel]="phone()" (ngModelChange)="phone.set($event)">
+          </div>
+          <div class="pub-actions pub-actions--tight">
+            <button type="button" class="pub-btn pub-btn--ghost" (click)="sendOtp()">
+              {{ otpSent() ? 'Resend OTP' : 'Send OTP' }}
+            </button>
+          </div>
+          @if (otpSent()) {
+            <div class="pub-row">
+              <label for="otp">Enter OTP</label>
+              <input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit OTP"
+                     [ngModel]="otp()" (ngModelChange)="otp.set($event)">
+              <p class="book-hint">Demo OTP: <strong>123456</strong></p>
+            </div>
+          }
+          <div class="pub-actions">
+            <button type="button" class="pub-btn" [disabled]="otpVerifying()" (click)="verifyOtpAndContinue()">
+              {{ otpVerifying() ? 'Verifying…' : 'Verify & continue' }}
+            </button>
+            <button type="button" class="pub-btn pub-btn--ghost" (click)="goToDetails()">← Back</button>
+          </div>
+        </div>
+      }
+      @case ('payment') {
+        <div class="pub-card">
+          <p class="book-step-lead">Slot lock karne ke liye payment complete karein.</p>
+          <div class="book-summary">
+            <div><span>Service</span><strong>{{ service() }}</strong></div>
+            <div><span>When</span><strong>{{ when() }} · {{ slot() }}</strong></div>
+            <div><span>Address</span><strong>{{ address() }}</strong></div>
+            <div class="book-summary-total"><span>Total</span><strong>₹{{ price() }}</strong></div>
+          </div>
+          <div class="book-pay-methods" role="radiogroup" aria-label="Payment method">
+            <label class="book-pay-opt" [class.book-pay-opt--sel]="paymentMethod()==='upi'">
+              <input type="radio" name="pay" value="upi" [checked]="paymentMethod()==='upi'" (change)="paymentMethod.set('upi')">
+              <span>UPI</span>
+            </label>
+            <label class="book-pay-opt" [class.book-pay-opt--sel]="paymentMethod()==='card'">
+              <input type="radio" name="pay" value="card" [checked]="paymentMethod()==='card'" (change)="paymentMethod.set('card')">
+              <span>Card</span>
+            </label>
+            <label class="book-pay-opt" [class.book-pay-opt--sel]="paymentMethod()==='cod'">
+              <input type="radio" name="pay" value="cod" [checked]="paymentMethod()==='cod'" (change)="paymentMethod.set('cod')">
+              <span>Pay after visit</span>
+            </label>
+          </div>
+          @if (paymentMethod() === 'upi') {
+            <div class="book-upi-box">
+              <span class="book-upi-id">quickmaid&#64;upi</span>
+              <span class="book-hint">Demo — Pay button se confirm hoga</span>
+            </div>
+          }
+          <div class="pub-actions">
+            <button type="button" class="pub-btn" [disabled]="paying()" (click)="payAndConfirm()">
+              {{ paying() ? 'Processing…' : 'Pay ₹' + price() }}
+            </button>
+            <button type="button" class="pub-btn pub-btn--ghost" (click)="step.set('otp')">← Back</button>
+          </div>
+        </div>
+      }
+      @case ('done') {
+        <div class="pub-card book-done-card">
+          <div class="book-done-icon" aria-hidden="true">✅</div>
+          <h2 class="book-done-title">Booking confirmed!</h2>
+          <p class="book-step-lead">Aapka slot reserve ho gaya. Maid assign hone par SMS aayega.</p>
+          <div class="book-summary">
+            <div><span>Booking ID</span><strong>{{ bookingId() }}</strong></div>
+            <div><span>Service</span><strong>{{ service() }}</strong></div>
+            <div><span>When</span><strong>{{ when() }} · {{ slot() }}</strong></div>
+            <div><span>Phone</span><strong>+91 {{ phone() }}</strong></div>
+          </div>
+          <div class="pub-actions">
+            <button type="button" class="pub-btn" (click)="bookAnother()">Book another</button>
+            <a routerLink="/" class="pub-btn pub-btn--ghost">Back home</a>
+          </div>
+        </div>
+      }
+    }
   </main>
 </div>

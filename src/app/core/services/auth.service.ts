@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 
-const STORAGE_KEY = 'qm_session_v1';
+const SESSION_KEY = 'qm_session_v1';
+const REMEMBER_KEY = 'qm_session_remember_v1';
 
 export interface QmSession {
   readonly loginId: string;
@@ -22,7 +23,10 @@ export class AuthService {
     this.restore();
   }
 
-  login(payload: { loginId: string; displayName: string; role: string }): void {
+  login(
+    payload: { loginId: string; displayName: string; role: string },
+    options?: { remember?: boolean },
+  ): void {
     const next: QmSession = {
       loginId: payload.loginId.trim(),
       displayName: payload.displayName.trim() || 'User',
@@ -30,7 +34,13 @@ export class AuthService {
       at: Date.now(),
     };
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(REMEMBER_KEY);
+      if (options?.remember) {
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify(next));
+      } else {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(next));
+      }
     } catch {
       /* ignore quota */
     }
@@ -38,7 +48,8 @@ export class AuthService {
   }
 
   logout(): void {
-    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(REMEMBER_KEY);
     this.session.set(null);
   }
 
@@ -50,9 +61,10 @@ export class AuthService {
   }
 
   private restore(): void {
+    const raw =
+      localStorage.getItem(REMEMBER_KEY) ?? sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return;
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
       const parsed = JSON.parse(raw) as Partial<QmSession>;
       if (
         typeof parsed.loginId === 'string' &&
@@ -66,10 +78,12 @@ export class AuthService {
           at: typeof parsed.at === 'number' ? parsed.at : Date.now(),
         });
       } else {
-        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(REMEMBER_KEY);
       }
     } catch {
-      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(REMEMBER_KEY);
     }
   }
 }

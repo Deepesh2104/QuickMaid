@@ -6,9 +6,9 @@
       <p class="adm-sub">Pipeline, assignments, SLA handoffs — demo list; filters search instantly.</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Live view · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Board refreshed','✨')">Refresh</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Export started!','📥')">Export CSV</button>
+      <span class="adm-sync-pill" role="status">Live view · {{ lastSync() }}</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openRefresh()">Refresh</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openExport()">Export CSV</button>
     </div>
   </header>
 
@@ -51,7 +51,7 @@
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">All bookings</div>
-        <p class="table-hint">{{ filteredCount() }} of {{ totalRows }} shown · status + search</p>
+        <p class="table-hint">{{ filteredCount() }} of {{ totalRows() }} shown · status + search</p>
       </div>
       <div class="adm-toolbar">
         <div class="adm-seg" role="group" aria-label="Filter by status">
@@ -124,14 +124,14 @@
                 <td>
                   <div class="act-btns">
                     @if (b.status === 'ongoing') {
-                      <div class="act-btn" (click)="toast.show('Live tracking','📍')" title="Track">📍</div>
-                      <div class="act-btn danger" (click)="toast.show('Cancelled','❌')" title="Cancel">✕</div>
+                      <div class="act-btn" (click)="openAction('track', b)" title="Track">📍</div>
+                      <div class="act-btn danger" (click)="openAction('cancel', b)" title="Cancel">✕</div>
                     } @else if (b.status === 'no-show') {
-                      <div class="act-btn" (click)="toast.show('Backup assigned!','🔄')" title="Reassign">🔄</div>
-                      <div class="act-btn" (click)="toast.show('Refund initiated','💸')" title="Refund">💸</div>
+                      <div class="act-btn" (click)="openAction('reassign', b)" title="Reassign">🔄</div>
+                      <div class="act-btn" (click)="openAction('refund', b)" title="Refund">💸</div>
                     } @else {
-                      <div class="act-btn" (click)="toast.show('Details opened','👁')" title="View">👁</div>
-                      <div class="act-btn" (click)="toast.show('Reassigned!','🔄')" title="Reassign">🔄</div>
+                      <div class="act-btn" (click)="openAction('view', b)" title="View">👁</div>
+                      <div class="act-btn" (click)="openAction('reassign', b)" title="Reassign">🔄</div>
                     }
                   </div>
                 </td>
@@ -181,7 +181,221 @@
           </div>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('Bulk assign (demo)','👥')">Open bulk assign</button>
+      <button type="button" class="adm-aside-btn" (click)="openBulk()">Open bulk assign</button>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="refreshOpen()" (click)="closeRefresh()" role="presentation">
+  <div class="adm-modal" [class.open]="refreshOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="bk-refresh-title">
+    <header class="adm-modal-hdr">
+      <h2 id="bk-refresh-title" class="adm-modal-title">↻ Refresh board</h2>
+      <button type="button" class="adm-modal-close" (click)="closeRefresh()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Pull latest booking statuses, maid assignments, and SLA timers.</p>
+      <p class="adm-modal-meta">Last sync: <strong>{{ lastSync() }}</strong> · {{ ongoingCount() }} ongoing</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="refreshRunning()" (click)="confirmRefresh()">
+        {{ refreshRunning() ? 'Refreshing…' : 'Refresh now' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="bk-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="bk-export-title" class="adm-modal-title">📥 Export bookings</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Scope</span>
+        <select class="assign-select" [ngModel]="exportScope()" (ngModelChange)="exportScope.set($event)">
+          <option value="filtered">Current filters ({{ filteredCount() }} rows)</option>
+          <option value="all">All bookings ({{ totalRows() }} rows)</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Preparing…' : 'Download CSV' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="bulkOpen()" (click)="closeBulk()" role="presentation">
+  <div class="adm-modal" [class.open]="bulkOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="bk-bulk-title">
+    <header class="adm-modal-hdr">
+      <h2 id="bk-bulk-title" class="adm-modal-title">👥 Bulk assign</h2>
+      <button type="button" class="adm-modal-close" (click)="closeBulk()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Auto-match unassigned ongoing jobs to nearest rated maid.</p>
+      <label class="adm-modal-field">
+        <span>Zone</span>
+        <select class="assign-select" [ngModel]="bulkZone()" (ngModelChange)="bulkZone.set($event)">
+          <option value="all">All zones</option>
+          @for (z of zones(); track z) {
+            <option [value]="z">{{ z }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="bulkRunning()" (click)="confirmBulk()">
+        {{ bulkRunning() ? 'Assigning…' : 'Run bulk assign' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="detailOpen()" (click)="closeDetail()" role="presentation">
+  <div class="adm-modal adm-modal--profile" [class.open]="detailOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="bk-detail-title">
+    @if (detailRow(); as b) {
+      @if (detailInfo(); as d) {
+        <header class="prf-hero">
+          <div class="prf-hero-left">
+            <div>
+              <h2 id="bk-detail-title" class="prf-name">{{ b.id }} · {{ b.service }}</h2>
+              <p class="prf-sub">{{ b.when }} · {{ b.amount }}</p>
+              <div class="prf-badges">
+                <span [class]="statusBadgeClass(b.status)">{{ statusLabel(b.status) }}</span>
+                <span class="adm-service-pill">{{ b.customerZone }}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="adm-modal-close" (click)="closeDetail()">×</button>
+        </header>
+        <div class="adm-modal-body prf-body">
+          <div class="prf-stat-grid">
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.duration }}</span><span class="prf-stat-lbl">Duration</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.paymentStatus }}</span><span class="prf-stat-lbl">Payment</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.csat ?? '—' }}</span><span class="prf-stat-lbl">CSAT</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.maidRating ?? '—' }}</span><span class="prf-stat-lbl">Maid rating</span></div>
+          </div>
+
+          <section class="prf-section">
+            <h3 class="prf-section-title">Customer</h3>
+            <dl class="prf-dl">
+              <div><dt>Name</dt><dd>{{ b.customerName }}</dd></div>
+              <div><dt>Phone</dt><dd>{{ d.customerPhone }}</dd></div>
+              <div><dt>Address</dt><dd>{{ d.customerAddress }}</dd></div>
+              <div><dt>Instructions</dt><dd>{{ d.instructions }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="prf-section">
+            <h3 class="prf-section-title">Maid &amp; payment</h3>
+            <dl class="prf-dl">
+              <div><dt>Maid</dt><dd>{{ b.maidName ?? 'Unassigned' }}</dd></div>
+              <div><dt>Maid phone</dt><dd>{{ d.maidPhone ?? '—' }}</dd></div>
+              <div><dt>Payment</dt><dd>{{ d.paymentMethod }}</dd></div>
+              <div><dt>Status</dt><dd>{{ d.paymentStatus }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="prf-section">
+            <h3 class="prf-section-title">Timeline</h3>
+            <ol class="bk-timeline">
+              @for (ev of d.timeline; track ev.label) {
+                <li class="bk-tl-item" [class.bk-tl-item--done]="ev.done" [class.bk-tl-item--current]="ev.current">
+                  <span class="bk-tl-dot"></span>
+                  <div>
+                    <span class="bk-tl-label">{{ ev.label }}</span>
+                    <span class="bk-tl-time">{{ ev.time }}</span>
+                  </div>
+                </li>
+              }
+            </ol>
+          </section>
+
+          <section class="prf-section">
+            <h3 class="prf-section-title">Internal notes</h3>
+            <p class="prf-notes">{{ d.notes }}</p>
+          </section>
+
+          <div class="prf-actions">
+            @if (b.status === 'ongoing') {
+              <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('track', b); closeDetail()">📍 Live track</button>
+              <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('cancel', b); closeDetail()">✕ Cancel</button>
+            } @else if (b.status === 'no-show') {
+              <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('reassign', b); closeDetail()">🔄 Reassign</button>
+              <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('refund', b); closeDetail()">💸 Refund</button>
+            }
+            <button type="button" class="adm-btn adm-btn--primary" (click)="closeDetail()">Close</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="actionOpen()" (click)="closeAction()" role="presentation">
+  <div class="adm-modal adm-modal--bk-action" [class.open]="actionOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="book-action-title">
+    @if (actionRow(); as b) {
+      <header class="adm-modal-hdr">
+        <h2 id="book-action-title" class="adm-modal-title">{{ actionTitle() }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeAction()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-meta">{{ b.id }} · {{ b.customerName }} · {{ b.service }} · {{ b.when }}</p>
+
+        @switch (actionKind()) {
+          @case ('cancel') {
+            <label class="adm-modal-field">
+              <span>Reason</span>
+              <select class="assign-select" [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)">
+                <option value="customer_request">Customer requested</option>
+                <option value="maid_unavailable">Maid unavailable</option>
+                <option value="weather">Weather / safety</option>
+                <option value="duplicate">Duplicate booking</option>
+              </select>
+            </label>
+            <label class="adm-modal-check">
+              <input type="checkbox" [ngModel]="cancelNotify()" (ngModelChange)="cancelNotify.set($event)">
+              <span>Notify customer via WhatsApp + SMS</span>
+            </label>
+            <p class="adm-modal-hint">Cancellation fee waived for first cancel this month (demo policy).</p>
+          }
+          @case ('refund') {
+            <label class="adm-modal-field">
+              <span>Refund amount</span>
+              <input class="adm-search-inp" type="text" [ngModel]="refundAmount()" (ngModelChange)="refundAmount.set($event)">
+            </label>
+            <label class="adm-modal-field">
+              <span>Reason</span>
+              <select class="assign-select" [ngModel]="refundReason()" (ngModelChange)="refundReason.set($event)">
+                <option value="no_show">No-show · full refund</option>
+                <option value="partial">Partial service</option>
+                <option value="quality">Quality issue</option>
+                <option value="duplicate">Duplicate charge</option>
+              </select>
+            </label>
+            <p class="adm-modal-hint">UPI refund 24–48h · customer SMS alert on initiation.</p>
+          }
+          @case ('reassign') {
+            <label class="adm-modal-field">
+              <span>Backup maid · {{ b.customerZone }}</span>
+              <select class="assign-select" [ngModel]="reassignMaidId()" (ngModelChange)="reassignMaidId.set($event)">
+                @for (m of reassignOptions(); track m.id) {
+                  <option [value]="m.id">{{ m.name }} · {{ m.zone }} · {{ m.jobs.length }} jobs</option>
+                }
+              </select>
+            </label>
+            <p class="adm-modal-hint">Auto-assign engine picks nearest rated maid · WhatsApp sent to customer.</p>
+          }
+          @case ('track') {
+            <div class="bk-track-card">
+              <span class="bk-track-eta">ETA {{ trackEta() }}</span>
+              <p class="bk-track-sub">{{ b.maidName ?? 'Maid' }} en route · {{ b.customerZone }}</p>
+              <div class="bk-track-bar"><div class="bk-track-fill"></div></div>
+            </div>
+            <p class="adm-modal-hint">Live GPS demo · refreshes every 3 min in production.</p>
+          }
+        }
+
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="actionRunning()" (click)="confirmAction()">
+          {{ actionRunning() ? 'Processing…' : 'Confirm' }}
+        </button>
+      </div>
+    }
   </div>
 </div>

@@ -3,11 +3,12 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Finance & BI</p>
       <h1 class="adm-title">Reports hub</h1>
-      <p class="adm-sub">Scheduled exports, ad-hoc queries, and email digests — connect BI tool in Phase 3.</p>
+      <p class="adm-sub">Schedule exports, run ad-hoc jobs — demo UI (no real cron).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Jobs · scaffold</span>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="runNow()">Run report now</button>
+      <span class="adm-sync-pill" role="status">{{ rows().length }} jobs</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openRunNow()">Run now</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openSchedule()">+ Schedule report</button>
     </div>
   </header>
 
@@ -15,7 +16,7 @@
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Scheduled reports</div>
-        <p class="table-hint">Cron + S3 / email delivery</p>
+        <p class="table-hint">Row action → run immediately</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -24,21 +25,91 @@
           <tr>
             <th>Report</th>
             <th>Cadence</th>
+            <th>Format</th>
             <th>Owner</th>
             <th>Next run</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (r of rows; track r.name) {
+          @for (r of rows(); track r.id) {
             <tr>
               <td>{{ r.name }}</td>
               <td>{{ r.cadence }}</td>
+              <td><span class="rp-fmt">{{ r.format }}</span></td>
               <td>{{ r.owner }}</td>
               <td>{{ r.next }}</td>
+              <td>
+                <button type="button" class="rp-run-btn" (click)="openRunNow(r)">Run</button>
+              </td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="scheduleOpen()" (click)="closeSchedule()" role="presentation">
+  <div class="adm-modal" [class.open]="scheduleOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rp-schedule-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rp-schedule-title" class="adm-modal-title">📅 Schedule report</h2>
+      <button type="button" class="adm-modal-close" (click)="closeSchedule()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Report name</span>
+        <input class="adm-search-inp" type="text" placeholder="e.g. Zone SLA weekly" [ngModel]="formName()" (ngModelChange)="formName.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Cadence</span>
+        <select class="assign-select" [ngModel]="formCadence()" (ngModelChange)="formCadence.set($event)">
+          @for (c of CADENCE_OPTIONS; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+      </label>
+      <div class="rp-form-row">
+        <label class="adm-modal-field">
+          <span>Owner team</span>
+          <select class="assign-select" [ngModel]="formOwner()" (ngModelChange)="formOwner.set($event)">
+            <option>Ops</option>
+            <option>Finance</option>
+            <option>CX</option>
+            <option>Engineering</option>
+          </select>
+        </label>
+        <label class="adm-modal-field">
+          <span>Format</span>
+          <select class="assign-select" [ngModel]="formFormat()" (ngModelChange)="formFormat.set($event)">
+            <option value="csv">CSV</option>
+            <option value="xlsx">Excel</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </label>
+      </div>
+      <label class="adm-modal-field">
+        <span>Email delivery</span>
+        <input class="adm-search-inp" type="email" [ngModel]="formEmail()" (ngModelChange)="formEmail.set($event)">
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="saving()" (click)="saveSchedule()">
+        {{ saving() ? 'Saving…' : 'Create schedule' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="runOpen()" (click)="closeRun()" role="presentation">
+  <div class="adm-modal rp-run-modal" [class.open]="runOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rp-run-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rp-run-title" class="adm-modal-title">📊 Run report</h2>
+      <button type="button" class="adm-modal-close" (click)="closeRun()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint"><strong>{{ runTargetName() }}</strong> abhi generate hoga. Output email / S3 par jayega (demo).</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="running()" (click)="confirmRun()">
+        {{ running() ? 'Queuing…' : 'Queue job' }}
+      </button>
     </div>
   </div>
 </div>

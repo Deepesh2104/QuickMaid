@@ -7,8 +7,8 @@
     </div>
     <div class="adm-hero-aside">
       <span class="adm-sync-pill" role="status">Plans v2 · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Prices preview (demo)','🏷️')">Price rules</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('New plan draft saved','📦')">New plan</button>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openPriceRules()">Price rules</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openNewPlan()">New plan</button>
     </div>
   </header>
 
@@ -121,8 +121,8 @@
                 </td>
                 <td>
                   <div class="act-btns">
-                    <div class="act-btn" (click)="toast.show('Subscription opened','👁')" title="View">👁</div>
-                    <div class="act-btn" (click)="toast.show('Pause / resume (demo)','⏸️')" title="Lifecycle">⏸️</div>
+                    <div class="act-btn" (click)="openAction('view', s)" title="View">👁</div>
+                    <div class="act-btn" (click)="openAction('lifecycle', s)" title="Lifecycle">⏸️</div>
                   </div>
                 </td>
               </tr>
@@ -152,5 +152,151 @@
       </div>
       <div class="chart-canvas-wrap chart-canvas-wrap--adm-bar"><canvas #planChart></canvas></div>
     </section>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="priceRulesOpen()" (click)="closePriceRules()" role="presentation">
+  <div class="adm-modal adm-modal--wide" [class.open]="priceRulesOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="pl-rules-title">
+    <header class="adm-modal-hdr">
+      <h2 id="pl-rules-title" class="adm-modal-title">🏷️ Price rules</h2>
+      <button type="button" class="adm-modal-close" (click)="closePriceRules()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <table class="pl-rules-table">
+        <thead><tr><th>Plan</th><th>Base</th><th>Surge / notes</th></tr></thead>
+        <tbody>
+          @for (r of priceRules; track r.plan) {
+            <tr><td>{{ r.plan }}</td><td>{{ r.base }}</td><td>{{ r.surge }}</td></tr>
+          }
+        </tbody>
+      </table>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closePriceRules()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="newPlanOpen()" (click)="closeNewPlan()" role="presentation">
+  <div class="adm-modal" [class.open]="newPlanOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="pl-new-title">
+    <header class="adm-modal-hdr">
+      <h2 id="pl-new-title" class="adm-modal-title">📦 New plan draft</h2>
+      <button type="button" class="adm-modal-close" (click)="closeNewPlan()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Plan name</span>
+        <input class="adm-search-inp" type="text" placeholder="e.g. Weekend saver" [ngModel]="formPlanName()" (ngModelChange)="formPlanName.set($event)">
+      </label>
+      <label class="adm-modal-field">
+        <span>Type</span>
+        <select class="assign-select" [ngModel]="formPlanKind()" (ngModelChange)="formPlanKind.set($event)">
+          <option value="monthly">Monthly</option>
+          <option value="annual">Annual</option>
+          <option value="b2b">B2B</option>
+          <option value="instant">Instant</option>
+        </select>
+      </label>
+      <label class="adm-modal-field">
+        <span>Price (INR)</span>
+        <input class="adm-search-inp" type="text" [ngModel]="formPlanPrice()" (ngModelChange)="formPlanPrice.set($event)">
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="planSaving()" (click)="confirmNewPlan()">
+        {{ planSaving() ? 'Saving…' : 'Save draft' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="detailOpen()" (click)="closeDetail()" role="presentation">
+  <div class="adm-modal adm-modal--profile" [class.open]="detailOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="pl-detail-title">
+    @if (detailRow(); as s) {
+      @if (detailInfo(); as d) {
+        <header class="prf-hero">
+          <div class="prf-hero-left">
+            <div class="tbl-av prf-av" [class.or]="s.av === 'or'" [class.gr]="s.av === 'gr'" [class.bl]="s.av === 'bl'" [class.pu]="s.av === 'pu'">{{ s.init }}</div>
+            <div>
+              <h2 id="pl-detail-title" class="prf-name">{{ s.customer }}</h2>
+              <p class="prf-sub">{{ s.id }} · {{ s.planLabel }} · {{ s.mrr }}</p>
+              <div class="prf-badges">
+                <span [class]="statusBadgeClass(s.status)">{{ statusLabel(s.status) }}</span>
+                <span class="adm-service-pill">Renews {{ s.renews }}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="adm-modal-close" (click)="closeDetail()">×</button>
+        </header>
+        <div class="adm-modal-body prf-body">
+          <div class="prf-stat-grid">
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.started }}</span><span class="prf-stat-lbl">Member since</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.visitsIncluded }}</span><span class="prf-stat-lbl">Visits</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.totalSpent }}</span><span class="prf-stat-lbl">Lifetime</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.autoRenew ? 'On' : 'Off' }}</span><span class="prf-stat-lbl">Auto-renew</span></div>
+          </div>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Billing</h3>
+            <dl class="prf-dl">
+              <div><dt>Payment</dt><dd>{{ d.paymentMethod }}</dd></div>
+              <div><dt>Next invoice</dt><dd>{{ d.nextInvoice }}</dd></div>
+              <div><dt>Zone</dt><dd>{{ d.zone }}</dd></div>
+              <div><dt>MRR / fee</dt><dd>{{ s.mrr }}</dd></div>
+            </dl>
+          </section>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Perks</h3>
+            <div class="prf-tags">
+              @for (p of d.perks; track p) {
+                <span class="prf-tag">{{ p }}</span>
+              }
+            </div>
+          </section>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Billing history</h3>
+            <div class="prf-table-wrap">
+              <table class="prf-table">
+                <thead><tr><th>Date</th><th>Event</th><th>Amount</th></tr></thead>
+                <tbody>
+                  @for (b of d.billingHistory; track b.date) {
+                    <tr><td>{{ b.date }}</td><td>{{ b.event }}</td><td>{{ b.amount }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <div class="prf-actions">
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openLifecycle(s); closeDetail()">⏸️ Lifecycle</button>
+            <button type="button" class="adm-btn adm-btn--primary" (click)="closeDetail()">Close</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="lifecycleOpen()" (click)="closeLifecycle()" role="presentation">
+  <div class="adm-modal" [class.open]="lifecycleOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="pl-life-title">
+    @if (lifecycleRow(); as s) {
+      <header class="adm-modal-hdr">
+        <h2 id="pl-life-title" class="adm-modal-title">{{ s.status === 'paused' ? '▶️ Resume plan' : '⏸️ Pause plan' }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeLifecycle()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-meta">{{ s.customer }} · {{ s.planLabel }} · {{ s.mrr }}</p>
+        <label class="adm-modal-field">
+          <span>Reason</span>
+          <select class="assign-select" [ngModel]="lifecycleReason()" (ngModelChange)="lifecycleReason.set($event)">
+            <option value="customer_request">Customer requested</option>
+            <option value="payment_failed">Payment failed</option>
+            <option value="travel">Travel / relocation</option>
+            <option value="churn_risk">Churn prevention</option>
+          </select>
+        </label>
+        <label class="adm-modal-check">
+          <input type="checkbox" [ngModel]="lifecycleNotify()" (ngModelChange)="lifecycleNotify.set($event)">
+          <span>Notify customer via WhatsApp</span>
+        </label>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="lifecycleRunning()" (click)="confirmLifecycle()">
+          {{ lifecycleRunning() ? 'Updating…' : (s.status === 'paused' ? 'Resume subscription' : 'Pause subscription') }}
+        </button>
+      </div>
+    }
   </div>
 </div>

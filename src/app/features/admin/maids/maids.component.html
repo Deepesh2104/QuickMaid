@@ -7,7 +7,7 @@
     </div>
     <div class="adm-hero-aside">
       <span class="adm-sync-pill" role="status">Roster snapshot · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Roster CSV queued','📥')">Export roster</button>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openExport()">Export roster</button>
       <button type="button" class="adm-btn adm-btn--primary" (click)="router.navigateByUrl('/admin/add-maid')">+ Add maid</button>
     </div>
   </header>
@@ -47,11 +47,22 @@
     </article>
   </section>
 
+  @if (partnerApps().length > 0) {
+    <div class="md-partner-banner" role="status">
+      <span class="md-partner-banner-ico" aria-hidden="true">📥</span>
+      <div class="md-partner-banner-body">
+        <strong>{{ partnerApps().length }} partner application{{ partnerApps().length === 1 ? '' : 's' }}</strong>
+        <span>from /partner onboarding — review &amp; approve KYC</span>
+      </div>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openPartnerQueue()">Review queue</button>
+    </div>
+  }
+
   <div class="table-card table-card--adm">
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
         <div class="table-title">Maid directory</div>
-        <p class="table-hint">{{ filteredCount() }} of {{ totalRows }} · status + zone + search</p>
+        <p class="table-hint">{{ filteredCount() }} of {{ totalRows() }} · status + zone + search</p>
       </div>
       <div class="adm-toolbar adm-toolbar--stack">
         <div class="adm-toolbar-row">
@@ -132,17 +143,17 @@
                 </td>
                 <td>
                   <div class="act-btns">
-                    <div class="act-btn" (click)="toast.show('Profile · ' + r.name,'👁')" title="Profile">👁</div>
-                    <div class="act-btn" (click)="toast.show('Edit worker · ' + r.id,'✏️')" title="Edit">✏️</div>
+                    <div class="act-btn" (click)="openAction('profile', r)" title="Profile">👁</div>
+                    <div class="act-btn" (click)="openAction('edit', r)" title="Edit">✏️</div>
                     @if (r.status === 'pending') {
-                      <div class="act-btn" (click)="toast.show('KYC approved · ' + r.name,'✅')" title="Approve">✅</div>
-                      <div class="act-btn danger" (click)="toast.show('Application rejected','❌')" title="Reject">✕</div>
+                      <div class="act-btn" (click)="openAction('approve', r)" title="Approve">✅</div>
+                      <div class="act-btn danger" (click)="openAction('reject', r)" title="Reject">✕</div>
                     } @else if (r.status === 'suspended') {
-                      <div class="act-btn" (click)="toast.show('Reinstated · ' + r.name,'♻️')" title="Reinstate">♻️</div>
-                      <div class="act-btn danger" (click)="toast.show('Removed from roster','🗑️')" title="Remove">🗑️</div>
+                      <div class="act-btn" (click)="openAction('reinstate', r)" title="Reinstate">♻️</div>
+                      <div class="act-btn danger" (click)="openAction('remove', r)" title="Remove">🗑️</div>
                     } @else {
-                      <div class="act-btn" (click)="toast.show('Payout rail · ' + r.upi,'💸')" title="Payout">💸</div>
-                      <div class="act-btn danger" (click)="toast.show('Suspended · ' + r.name,'⛔')" title="Suspend">⛔</div>
+                      <div class="act-btn" (click)="openAction('payout', r)" title="Payout">💸</div>
+                      <div class="act-btn danger" (click)="openAction('suspend', r)" title="Suspend">⛔</div>
                     }
                   </div>
                 </td>
@@ -234,7 +245,372 @@
           </div>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('Bulk invite SMS (demo)','📣')">Send bulk doc reminder</button>
+      <button type="button" class="adm-aside-btn" (click)="openBulk()">Send bulk doc reminder</button>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="maid-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="maid-export-title" class="adm-modal-title">📥 Export roster</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Download maid roster as CSV — demo file, no server.</p>
+      <label class="adm-modal-field">
+        <span>Scope</span>
+        <select class="assign-select" [ngModel]="exportScope()" (ngModelChange)="exportScope.set($event)">
+          <option value="filtered">Current filters ({{ filteredCount() }} rows)</option>
+          <option value="all">Full roster ({{ totalRows() }} rows)</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Preparing…' : 'Download CSV' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="bulkOpen()" (click)="closeBulk()" role="presentation">
+  <div class="adm-modal" [class.open]="bulkOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="maid-bulk-title">
+    <header class="adm-modal-hdr">
+      <h2 id="maid-bulk-title" class="adm-modal-title">📣 Bulk doc reminder</h2>
+      <button type="button" class="adm-modal-close" (click)="closeBulk()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">SMS pending KYC maids to upload Aadhaar + police certificate.</p>
+      <label class="adm-modal-field">
+        <span>Recipients</span>
+        <select class="assign-select" [ngModel]="bulkTarget()" (ngModelChange)="bulkTarget.set($event)">
+          <option value="pending">Pending KYC only ({{ pendingCount() }})</option>
+          <option value="all">Entire roster ({{ totalRows() }})</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="bulkRunning()" (click)="confirmBulk()">
+        {{ bulkRunning() ? 'Queuing…' : 'Send SMS batch' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="profileOpen()" (click)="closeProfile()" role="presentation">
+  <div class="adm-modal adm-modal--profile prf-shell" [class.open]="profileOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="maid-profile-title">
+    @if (profileRow(); as m) {
+      @if (profileDetail(); as p) {
+        <header class="prf-head">
+          <div class="prf-head-inner">
+            <div class="prf-avatar-wrap">
+              <div class="tbl-av prf-av" [class.or]="m.av === 'or'" [class.gr]="m.av === 'gr'" [class.bl]="m.av === 'bl'" [class.pu]="m.av === 'pu'" [class.re]="m.av === 're'">{{ m.init }}</div>
+              <span class="prf-status-dot"
+                [class.prf-status-dot--active]="m.status === 'active'"
+                [class.prf-status-dot--pending]="m.status === 'pending'"
+                [class.prf-status-dot--risk]="m.status === 'suspended'"></span>
+            </div>
+            <div class="prf-identity-main">
+              <h2 id="maid-profile-title" class="prf-name">{{ m.name }}</h2>
+              <p class="prf-sub">{{ m.id }} · {{ m.phone }}</p>
+              <div class="prf-badges">
+                <span [class]="statusBadgeClass(m.status)">{{ statusLabel(m.status) }}</span>
+                <span class="adm-service-pill">{{ m.zone }}</span>
+                <span class="adm-service-pill">{{ m.skills }}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="prf-close" (click)="closeProfile()" aria-label="Close">×</button>
+        </header>
+
+        <div class="prf-metrics">
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ m.rating ?? '—' }}</span>
+            <span class="prf-metric-lbl">Rating</span>
+          </article>
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ m.bookings ?? 0 }}</span>
+            <span class="prf-metric-lbl">Jobs done</span>
+          </article>
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ m.earnings }}</span>
+            <span class="prf-metric-lbl">This month</span>
+          </article>
+          <article class="prf-metric">
+            <span class="prf-metric-val">{{ p.onTimePct }}%</span>
+            <span class="prf-metric-lbl">On-time</span>
+          </article>
+        </div>
+
+        <div class="prf-scroll">
+          <div class="prf-cards prf-cards--maid">
+            <article class="prf-card">
+              <header class="prf-card-hdr">
+                <h3>Contact &amp; KYC</h3>
+              </header>
+              <ul class="prf-kv-list prf-kv-list--grid">
+                <li><span class="prf-k">Phone</span><span class="prf-v">{{ m.phone }}</span></li>
+                <li><span class="prf-k">UPI / payout</span><span class="prf-v adm-mono">{{ m.upi }}</span></li>
+                <li><span class="prf-k">Aadhaar</span><span class="prf-v">{{ p.aadhaarMasked }}</span></li>
+                <li><span class="prf-k">Age</span><span class="prf-v">{{ p.age }} yrs</span></li>
+                <li><span class="prf-k">Address</span><span class="prf-v">{{ p.address }}</span></li>
+                <li><span class="prf-k">Emergency</span><span class="prf-v">{{ p.emergencyContact }}</span></li>
+                <li><span class="prf-k">Joined</span><span class="prf-v">{{ p.joinedDate }}</span></li>
+                <li><span class="prf-k">Last active</span><span class="prf-v">{{ m.lastActive }}</span></li>
+                <li class="prf-kv-full"><span class="prf-k">Languages</span><span class="prf-v">{{ p.languages }}</span></li>
+              </ul>
+            </article>
+
+            <div class="prf-stack">
+              <article class="prf-card">
+                <header class="prf-card-hdr">
+                  <h3>Performance</h3>
+                </header>
+                <ul class="prf-kv-list">
+                  <li><span class="prf-k">On-time</span><span class="prf-v">{{ p.onTimePct }}%</span></li>
+                  <li><span class="prf-k">No-shows (90d)</span><span class="prf-v">{{ p.noShowCount }}</span></li>
+                  <li><span class="prf-k">Police verified</span><span class="prf-v">{{ p.policeVerified ? 'Yes' : 'No' }}</span></li>
+                  <li><span class="prf-k">KYC</span><span class="prf-v">{{ m.kycLine }}</span></li>
+                </ul>
+              </article>
+
+              <article class="prf-card">
+                <header class="prf-card-hdr">
+                  <h3>Documents</h3>
+                </header>
+                <div class="prf-doc-grid">
+                  @for (d of p.documents; track d.name) {
+                    <div class="prf-doc">
+                      <span>{{ d.name }}</span>
+                      <span [class]="docStatusClass(d.status)">{{ d.status }}</span>
+                    </div>
+                  }
+                </div>
+              </article>
+            </div>
+          </div>
+
+          @if (p.recentJobs.length) {
+            <article class="prf-card">
+              <header class="prf-card-hdr">
+                <h3>Recent jobs</h3>
+              </header>
+              <div class="prf-table-wrap">
+                <table class="prf-table">
+                  <thead>
+                    <tr><th>Booking</th><th>Customer</th><th>Date</th><th>Service</th><th>Rating</th><th>Amount</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (j of p.recentJobs; track j.id) {
+                      <tr>
+                        <td><span class="adm-id-chip">{{ j.id }}</span></td>
+                        <td>{{ j.customer }}</td>
+                        <td>{{ j.date }}</td>
+                        <td>{{ j.service }}</td>
+                        <td>{{ j.rating ?? '—' }}</td>
+                        <td><strong>{{ j.amount }}</strong></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          }
+
+          @if (p.payouts.length) {
+            <article class="prf-card">
+              <header class="prf-card-hdr">
+                <h3>Payout history</h3>
+              </header>
+              <div class="prf-table-wrap">
+                <table class="prf-table">
+                  <thead>
+                    <tr><th>Date</th><th>Amount</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (pay of p.payouts; track pay.date) {
+                      <tr>
+                        <td>{{ pay.date }}</td>
+                        <td><strong>{{ pay.amount }}</strong></td>
+                        <td><span class="badge" [class.badge-green]="pay.status === 'Paid'" [class.badge-red]="pay.status !== 'Paid'">{{ pay.status }}</span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          }
+
+          <article class="prf-card">
+            <header class="prf-card-hdr">
+              <h3>Internal notes</h3>
+            </header>
+            <p class="prf-notes">{{ p.notes }}</p>
+          </article>
+        </div>
+
+        <footer class="prf-footer">
+          @if (m.status === 'active') {
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('payout', m); closeProfile()">💸 Payout</button>
+          }
+          @if (m.status === 'pending') {
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openAction('approve', m); closeProfile()">✅ Approve KYC</button>
+          }
+          <button type="button" class="adm-btn adm-btn--primary" (click)="closeProfile()">Close</button>
+        </footer>
+      }
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="actionOpen()" (click)="closeAction()" role="presentation">
+  <div class="adm-modal adm-modal--maid-action" [class.open]="actionOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="maid-action-title">
+    @if (actionRow(); as m) {
+      <header class="adm-modal-hdr">
+        <h2 id="maid-action-title" class="adm-modal-title">{{ actionTitle() }}</h2>
+        <button type="button" class="adm-modal-close" (click)="closeAction()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-meta">{{ m.id }} · {{ m.name }} · {{ m.zone }}</p>
+
+        @switch (actionKind()) {
+          @case ('edit') {
+            <label class="adm-modal-field">
+              <span>Phone</span>
+              <input class="adm-search-inp" type="text" [ngModel]="editPhone()" (ngModelChange)="editPhone.set($event)">
+            </label>
+            <label class="adm-modal-field">
+              <span>Zone</span>
+              <select class="assign-select" [ngModel]="editZone()" (ngModelChange)="editZone.set($event)">
+                @for (z of zones(); track z) {
+                  <option [value]="z">{{ z }}</option>
+                }
+              </select>
+            </label>
+            <label class="adm-modal-field">
+              <span>Skills</span>
+              <input class="adm-search-inp" type="text" placeholder="Cleaning · Cooking" [ngModel]="editSkills()" (ngModelChange)="editSkills.set($event)">
+            </label>
+            <label class="adm-modal-field">
+              <span>UPI ID</span>
+              <input class="adm-search-inp adm-mono" type="text" [ngModel]="editUpi()" (ngModelChange)="editUpi.set($event)">
+            </label>
+          }
+          @case ('approve') {
+            <p class="adm-modal-hint">Verify documents before activating on roster.</p>
+            <label class="adm-modal-check"><input type="checkbox" [ngModel]="approveAadhaar()" (ngModelChange)="approveAadhaar.set($event)"><span>Aadhaar verified</span></label>
+            <label class="adm-modal-check"><input type="checkbox" [ngModel]="approveBank()" (ngModelChange)="approveBank.set($event)"><span>Bank / UPI proof</span></label>
+            <label class="adm-modal-check"><input type="checkbox" [ngModel]="approvePolice()" (ngModelChange)="approvePolice.set($event)"><span>Police verification</span></label>
+            <label class="adm-modal-check"><input type="checkbox" [ngModel]="approveTraining()" (ngModelChange)="approveTraining.set($event)"><span>Training L2 complete</span></label>
+            <label class="adm-modal-field">
+              <span>Onboarding note</span>
+              <textarea class="md-textarea" rows="2" placeholder="Optional internal note…" [ngModel]="approveNote()" (ngModelChange)="approveNote.set($event)"></textarea>
+            </label>
+          }
+          @case ('reject') {
+            <label class="adm-modal-field">
+              <span>Reason</span>
+              <select class="assign-select" [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)">
+                <option value="incomplete_docs">Incomplete documents</option>
+                <option value="failed_kyc">Failed video KYC</option>
+                <option value="duplicate">Duplicate application</option>
+                <option value="policy">Policy mismatch</option>
+              </select>
+            </label>
+            <label class="adm-modal-field">
+              <span>Message to applicant</span>
+              <textarea class="md-textarea" rows="3" [ngModel]="rejectNote()" (ngModelChange)="rejectNote.set($event)" placeholder="SMS / WhatsApp copy…"></textarea>
+            </label>
+          }
+          @case ('payout') {
+            <label class="adm-modal-field">
+              <span>Amount</span>
+              <input class="adm-search-inp" type="text" [ngModel]="payoutAmount()" (ngModelChange)="payoutAmount.set($event)">
+            </label>
+            <label class="adm-modal-field">
+              <span>UPI destination</span>
+              <input class="adm-search-inp adm-mono" type="text" [ngModel]="editUpi()" (ngModelChange)="editUpi.set($event)" [placeholder]="m.upi">
+            </label>
+            <label class="adm-modal-field">
+              <span>Reference</span>
+              <input class="adm-search-inp adm-mono" type="text" [ngModel]="payoutRef()" (ngModelChange)="payoutRef.set($event)">
+            </label>
+            <label class="adm-modal-check"><input type="checkbox" [ngModel]="payoutNotify()" (ngModelChange)="payoutNotify.set($event)"><span>WhatsApp receipt to maid</span></label>
+          }
+          @case ('suspend') {
+            <label class="adm-modal-field">
+              <span>Reason</span>
+              <select class="assign-select" [ngModel]="suspendReason()" (ngModelChange)="suspendReason.set($event)">
+                <option value="quality">Quality / rating drop</option>
+                <option value="no_show">Repeated no-shows</option>
+                <option value="policy">Policy breach</option>
+                <option value="customer">Customer safety report</option>
+              </select>
+            </label>
+            <label class="adm-modal-field">
+              <span>Review after (days)</span>
+              <select class="assign-select" [ngModel]="suspendDays()" (ngModelChange)="suspendDays.set($event)">
+                <option value="3">3 days</option>
+                <option value="7">7 days</option>
+                <option value="14">14 days</option>
+                <option value="30">30 days</option>
+              </select>
+            </label>
+            <p class="adm-modal-hint">Assignments paused · payouts held until reinstate.</p>
+          }
+          @case ('reinstate') {
+            <p class="adm-modal-hint">Restore {{ m.name }} to active roster and unlock payouts.</p>
+            <label class="adm-modal-field">
+              <span>Ops note</span>
+              <textarea class="md-textarea" rows="3" placeholder="Why reinstating…" [ngModel]="reinstateNote()" (ngModelChange)="reinstateNote.set($event)"></textarea>
+            </label>
+          }
+          @case ('remove') {
+            <p class="adm-modal-hint adm-modal-hint--danger">Permanent removal — cannot be undone in demo.</p>
+            <label class="adm-modal-field">
+              <span>Type REMOVE to confirm</span>
+              <input class="adm-search-inp" type="text" placeholder="REMOVE" [ngModel]="removeTyped()" (ngModelChange)="removeTyped.set($event)">
+            </label>
+          }
+        }
+
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="actionRunning()" (click)="confirmAction()">
+          {{ actionRunning() ? 'Saving…' : 'Confirm' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="partnerQueueOpen()" (click)="closePartnerQueue()" role="presentation">
+  <div class="adm-modal adm-modal--wide" [class.open]="partnerQueueOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="md-partner-title">
+    <header class="adm-modal-hdr">
+      <h2 id="md-partner-title" class="adm-modal-title">Partner applications</h2>
+      <button type="button" class="adm-modal-close" (click)="closePartnerQueue()">×</button>
+    </header>
+    <div class="adm-modal-body md-partner-modal">
+      <div class="md-partner-list">
+        @for (p of partnerApps(); track p.id) {
+          <button type="button" class="md-partner-item" [class.md-partner-item--active]="partnerReview()?.id === p.id" (click)="selectPartnerApp(p)">
+            <span class="md-partner-name">{{ p.name }}</span>
+            <span class="md-partner-meta">{{ p.city }} · {{ p.submittedAt }}</span>
+          </button>
+        }
+      </div>
+      @if (partnerReview(); as p) {
+        <div class="md-partner-detail">
+          <dl class="md-partner-dl">
+            <div><dt>ID</dt><dd>{{ p.id }}</dd></div>
+            <div><dt>Phone</dt><dd>{{ p.phone }}</dd></div>
+            <div><dt>City / zone</dt><dd>{{ p.city }}</dd></div>
+            <div><dt>Skills</dt><dd>{{ p.skills }}</dd></div>
+            <div><dt>Bank</dt><dd>{{ p.bankHint }}</dd></div>
+          </dl>
+          <div class="md-partner-actions">
+            <button type="button" class="adm-btn adm-btn--ghost" [disabled]="partnerRunning()" (click)="dismissPartner()">Dismiss</button>
+            <button type="button" class="adm-btn adm-btn--primary" [disabled]="partnerRunning()" (click)="approvePartner()">
+              {{ partnerRunning() ? 'Processing…' : 'Approve → pending KYC' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 </div>

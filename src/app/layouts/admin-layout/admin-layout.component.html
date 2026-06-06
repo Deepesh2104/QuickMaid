@@ -20,7 +20,7 @@
 
   <div class="admin-body">
     <div class="sidebar">
-      @for (section of nav; track section.title) {
+      @for (section of nav(); track section.title) {
         <div class="sb-section">{{ section.title }}</div>
         @for (item of section.items; track item.path) {
           <div class="nav-item" [routerLink]="item.path" routerLinkActive="active">

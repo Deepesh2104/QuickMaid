@@ -7,15 +7,19 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  computed,
   inject,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { MobileService } from '@core/services/mobile.service';
 import { AuthService } from '@core/services/auth.service';
 import { SeoService } from '@core/services/seo.service';
+import { AppStateService } from '@core/services/app-state.service';
+import { ToastService } from '@core/services/toast.service';
 import {
   DEFAULT_OG_IMAGE_PATH,
   SITE_ORIGIN,
@@ -31,15 +35,23 @@ interface Faq {
   open: boolean;
 }
 
+export interface CityCard {
+  name: string;
+  status: 'live' | 'soon';
+  eta?: string;
+  blurb: string;
+}
+
 const LD_LOCAL = 'qm-ld-local-business';
 const LD_FAQ = 'qm-ld-faq-page';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './landing.component.html',
+  styleUrls: ['./landing.component.css'],
 })
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
@@ -48,6 +60,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly seo = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast = inject(ToastService);
+  private readonly appState = inject(AppStateService);
 
   /** Public CTAs — same number site-wide */
   readonly telHref = TEL_HREF;
@@ -92,6 +106,40 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ]);
 
   readonly mobileNavOpen = signal(false);
+
+  readonly cities: readonly CityCard[] = [
+    { name: 'Raipur', status: 'live', blurb: 'HQ · full maid & cleaning coverage' },
+    { name: 'Bhilai', status: 'live', blurb: 'Steel city · monthly plans live' },
+    { name: 'Durg', status: 'live', blurb: 'Twin-city slots · same-day booking' },
+    { name: 'Nagpur', status: 'soon', eta: 'Q3 2026', blurb: 'Maharashtra expansion waitlist' },
+    { name: 'Bilaspur', status: 'soon', eta: 'Q4 2026', blurb: 'CG east corridor pilot' },
+    { name: 'Raigarh', status: 'soon', eta: '2027', blurb: 'Industrial belt onboarding' },
+  ];
+
+  readonly liveCities = computed(() => this.cities.filter((c) => c.status === 'live'));
+  readonly soonCities = computed(() => this.cities.filter((c) => c.status === 'soon'));
+
+  readonly notifyOpen = signal(false);
+  readonly notifyCity = signal('');
+  readonly notifyEmail = signal('');
+
+  openNotify(city: string): void {
+    this.notifyCity.set(city);
+    this.notifyEmail.set('');
+    this.notifyOpen.set(true);
+  }
+
+  closeNotify(): void {
+    this.notifyOpen.set(false);
+  }
+
+  submitNotify(): void {
+    const email = this.notifyEmail().trim();
+    if (!email) return;
+    this.appState.addWaitlist(this.notifyCity(), email);
+    this.closeNotify();
+    this.toast.show(`Waitlist saved for ${this.notifyCity()} — we'll email you first`, '📍');
+  }
 
   ngOnInit(): void {
     this.seo.setPage({

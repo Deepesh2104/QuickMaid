@@ -3,11 +3,14 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Leadership</p>
       <h1 class="adm-title">Executive overview</h1>
-      <p class="adm-sub">North-star metrics — MRR, churn, NPS, unit economics. Read-only board view.</p>
+      <p class="adm-sub">North-star metrics — MRR, churn, NPS, unit economics. Board pack preview.</p>
     </div>
     <div class="adm-hero-aside">
       <span class="adm-sync-pill" role="status">FY26 Q2 · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="exportBoard()">Export board pack</button>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openPreview()">Preview pack</button>
+      <button type="button" class="adm-btn adm-btn--primary" [disabled]="exporting()" (click)="exportBoard()">
+        {{ exporting() ? 'Exporting…' : 'Export board pack' }}
+      </button>
     </div>
   </header>
 
@@ -46,8 +49,43 @@
     </article>
   </section>
 
-  <aside class="adm-aside">
-    <h3 class="adm-aside-title">Narrative</h3>
-    <p class="adm-aside-sub">Targets vs actuals, hiring plan, and city expansion — content layer in Phase 3.</p>
-  </aside>
+  <div class="ex-narrative-grid">
+    @for (sec of boardSections; track sec.title) {
+      <article class="ex-narrative-card">
+        <h3 class="ex-narrative-title">{{ sec.title }}</h3>
+        <ul>
+          @for (b of sec.bullets; track b) {
+            <li>{{ b }}</li>
+          }
+        </ul>
+      </article>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop ex-preview-backdrop" [class.open]="previewOpen()" (click)="closePreview()" role="presentation">
+  <div class="adm-modal ex-preview-modal" [class.open]="previewOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="ex-preview-title">
+    <header class="adm-modal-hdr">
+      <h2 id="ex-preview-title" class="adm-modal-title">📑 Board pack preview</h2>
+      <button type="button" class="adm-modal-close" (click)="closePreview()">×</button>
+    </header>
+    <div class="ex-preview-body">
+      <div class="ex-preview-cover">
+        <span class="ex-preview-kicker">Confidential · Board</span>
+        <h3>QuickMaid FY26 Q2</h3>
+        <p>Raipur · Unit economics &amp; expansion</p>
+      </div>
+      @for (sec of boardSections; track sec.title) {
+        <section class="ex-preview-section">
+          <h4>{{ sec.title }}</h4>
+          <ul>
+            @for (b of sec.bullets; track b) {
+              <li>{{ b }}</li>
+            }
+          </ul>
+        </section>
+      }
+      <button type="button" class="adm-btn adm-btn--primary ex-preview-dl" [disabled]="exporting()" (click)="exportBoard()">Download pack</button>
+    </div>
+  </div>
 </div>

@@ -3,19 +3,57 @@
     <div class="adm-hero-text">
       <p class="adm-eyebrow">Operations</p>
       <h1 class="adm-title">Alert center</h1>
-      <p class="adm-sub">Cross-cutting alerts — later wire to push, email, and PagerDuty webhooks.</p>
+      <p class="adm-sub">Inbox + routing rules editor — demo UI.</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">Inbox · scaffold</span>
+      <span class="adm-sync-pill" role="status">{{ activeRuleCount() }} active rules</span>
       <button type="button" class="adm-btn adm-btn--ghost" (click)="markAllRead()">Mark all read</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openNewRule()">+ Routing rule</button>
     </div>
   </header>
 
   <div class="table-card table-card--adm">
     <div class="table-hdr table-hdr--adm">
       <div class="table-hdr-text">
-        <div class="table-title">Notifications</div>
-        <p class="table-hint">Severity, routing rules · Phase 3</p>
+        <div class="table-title">Routing rules</div>
+        <p class="table-hint">Severity → channel mapping</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table data-table--adm">
+        <thead>
+          <tr>
+            <th>On</th>
+            <th>Rule</th>
+            <th>Severity</th>
+            <th>Channel</th>
+            <th>Recipients</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ru of rules(); track ru.id) {
+            <tr [class.nt-row--off]="!ru.enabled">
+              <td>
+                <div class="toggle-switch toggle-switch--sm" [class.on]="ru.enabled" (click)="toggleRule(ru.id)" role="switch" [attr.aria-checked]="ru.enabled"><div class="toggle-knob"></div></div>
+              </td>
+              <td><button type="button" class="nt-rule-link" (click)="openEditRule(ru)">{{ ru.name }}</button></td>
+              <td><span class="badge" [class.badge-red]="ru.severity==='crit'" [class.badge-amber]="ru.severity==='warn'" [class.badge-green]="ru.severity==='info'">{{ ru.severity }}</span></td>
+              <td>{{ ru.channel }}</td>
+              <td><code class="nt-recipients">{{ ru.recipients }}</code></td>
+              <td><button type="button" class="nt-del-btn" (click)="deleteRule(ru.id)" aria-label="Delete">×</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">Notifications inbox</div>
+        <p class="table-hint">Recent alerts</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -30,7 +68,7 @@
         </thead>
         <tbody>
           @for (r of rows(); track r.id) {
-            <tr>
+            <tr [class.nt-unread]="!r.read" class="nt-inbox-row" (click)="openAlert(r)" role="button" tabindex="0" (keydown.enter)="openAlert(r)">
               <td>{{ r.read ? '○' : '●' }}</td>
               <td>
                 @switch (r.severity) {
@@ -46,5 +84,73 @@
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="ruleEditorOpen()" (click)="closeRuleEditor()" role="presentation">
+  <div class="adm-modal" [class.open]="ruleEditorOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="nt-rule-title">
+    <header class="adm-modal-hdr">
+      <h2 id="nt-rule-title" class="adm-modal-title">{{ editingRuleId() ? 'Edit routing rule' : 'New routing rule' }}</h2>
+      <button type="button" class="adm-modal-close" (click)="closeRuleEditor()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Rule name</span>
+        <input class="adm-search-inp" type="text" [ngModel]="ruleName()" (ngModelChange)="ruleName.set($event)">
+      </label>
+      <div class="nt-form-row">
+        <label class="adm-modal-field">
+          <span>Min severity</span>
+          <select class="assign-select" [ngModel]="ruleSeverity()" (ngModelChange)="ruleSeverity.set($event)">
+            @for (s of SEVERITY_OPTIONS; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </label>
+        <label class="adm-modal-field">
+          <span>Channel</span>
+          <select class="assign-select" [ngModel]="ruleChannel()" (ngModelChange)="ruleChannel.set($event)">
+            @for (c of CHANNEL_OPTIONS; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      <label class="adm-modal-field">
+        <span>Recipients</span>
+        <input class="adm-search-inp" type="text" placeholder="email, #slack, or +91…" [ngModel]="ruleRecipients()" (ngModelChange)="ruleRecipients.set($event)">
+      </label>
+      <label class="nt-enable-row">
+        <input type="checkbox" [ngModel]="ruleEnabled()" (ngModelChange)="ruleEnabled.set($event)">
+        <span>Rule enabled</span>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="ruleSaving()" (click)="saveRule()">
+        {{ ruleSaving() ? 'Saving…' : 'Save rule' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="alertOpen()" (click)="closeAlert()" role="presentation">
+  <div class="adm-modal" [class.open]="alertOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="nt-alert-title">
+    @if (alertRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="nt-alert-title" class="adm-modal-title">Alert detail</h2>
+        <button type="button" class="adm-modal-close" (click)="closeAlert()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="nt-alert-sev">
+          @switch (r.severity) {
+            @case ('crit') { <span class="badge badge-red">Critical</span> }
+            @case ('warn') { <span class="badge badge-amber">Warning</span> }
+            @default { <span class="badge badge-green">Info</span> }
+          }
+          <span class="nt-alert-time">{{ r.at }}</span>
+        </p>
+        <p class="nt-alert-body">{{ r.title }}</p>
+        <p class="adm-modal-hint">Runbook: acknowledge → assign owner → link incident ticket (demo).</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeAlert()">Acknowledge</button>
+      </div>
+    }
   </div>
 </div>

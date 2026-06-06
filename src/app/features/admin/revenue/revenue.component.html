@@ -6,9 +6,9 @@
       <p class="adm-sub">GMV stack, mix chart, aur recognition ledger — filters + search Bookings jaisa instant (demo).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">FY snapshot · demo</span>
-      <button type="button" class="adm-btn adm-btn--ghost" (click)="toast.show('Rates refreshed','✨')">Refresh</button>
-      <button type="button" class="adm-btn adm-btn--primary" (click)="toast.show('Finance export queued','📥')">Export</button>
+      <span class="adm-sync-pill" role="status">{{ lastSync() }} · demo</span>
+      <button type="button" class="adm-btn adm-btn--ghost" (click)="openRefresh()">Refresh</button>
+      <button type="button" class="adm-btn adm-btn--primary" (click)="openExport()">Export</button>
     </div>
   </header>
 
@@ -102,8 +102,8 @@
                 <td class="adm-num">{{ r.share }}</td>
                 <td>
                   <div class="act-btns">
-                    <div class="act-btn" (click)="toast.show('Drilldown (demo)','🔎')" title="Drill">🔎</div>
-                    <div class="act-btn" (click)="toast.show('Journal entry export','📤')" title="Export line">📤</div>
+                    <div class="act-btn" (click)="openAction('drill', r)" title="Drill">🔎</div>
+                    <div class="act-btn" (click)="openAction('export', r)" title="Export line">📤</div>
                   </div>
                 </td>
               </tr>
@@ -165,7 +165,147 @@
           </div>
         </li>
       </ul>
-      <button type="button" class="adm-aside-btn" (click)="toast.show('CFO pack PDF (demo)','📑')">Download board pack</button>
+      <button type="button" class="adm-aside-btn" (click)="openBoardPack()">Download board pack</button>
     </aside>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="refreshOpen()" (click)="closeRefresh()" role="presentation">
+  <div class="adm-modal" [class.open]="refreshOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rev-refresh-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rev-refresh-title" class="adm-modal-title">↻ Refresh rates</h2>
+      <button type="button" class="adm-modal-close" (click)="closeRefresh()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Recalculate GMV, commission, and ledger recognition from demo warehouse.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="refreshRunning()" (click)="confirmRefresh()">
+        {{ refreshRunning() ? 'Refreshing…' : 'Refresh now' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportOpen()" (click)="closeExport()" role="presentation">
+  <div class="adm-modal" [class.open]="exportOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rev-export-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rev-export-title" class="adm-modal-title">📥 Export ledger</h2>
+      <button type="button" class="adm-modal-close" (click)="closeExport()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <label class="adm-modal-field">
+        <span>Scope</span>
+        <select class="assign-select" [ngModel]="exportScope()" (ngModelChange)="exportScope.set($event)">
+          <option value="filtered">Current filters ({{ ledgerCount() }} lines)</option>
+          <option value="all">Full ledger ({{ ledgerTotal }} lines)</option>
+        </select>
+      </label>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportRunning()" (click)="confirmExport()">
+        {{ exportRunning() ? 'Preparing…' : 'Download CSV' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="boardPackOpen()" (click)="closeBoardPack()" role="presentation">
+  <div class="adm-modal" [class.open]="boardPackOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rev-board-title">
+    <header class="adm-modal-hdr">
+      <h2 id="rev-board-title" class="adm-modal-title">📑 CFO board pack</h2>
+      <button type="button" class="adm-modal-close" (click)="closeBoardPack()">×</button>
+    </header>
+    <div class="adm-modal-body">
+      <p class="adm-modal-hint">Demo summary text file — GMV, commission, subscription, B2B highlights.</p>
+      <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="boardRunning()" (click)="confirmBoardPack()">
+        {{ boardRunning() ? 'Building…' : 'Download .txt' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="drillOpen()" (click)="closeDrill()" role="presentation">
+  <div class="adm-modal adm-modal--profile" [class.open]="drillOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rev-drill-title">
+    @if (drillRow(); as r) {
+      @if (drillDetail(); as d) {
+        <header class="prf-hero">
+          <div class="prf-hero-left">
+            <div>
+              <h2 id="rev-drill-title" class="prf-name">{{ r.label }}</h2>
+              <p class="prf-sub">{{ r.id }} · {{ r.period }} · {{ sourceLabel(r.source) }}</p>
+              <div class="prf-badges">
+                <span [class]="'badge ' + sourceBadgeClass(r.source)">{{ sourceLabel(r.source) }}</span>
+                <span class="adm-service-pill">{{ r.share }} of mix</span>
+                <span class="badge badge-green">{{ d.momGrowth }} MoM</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="adm-modal-close" (click)="closeDrill()">×</button>
+        </header>
+        <div class="adm-modal-body prf-body">
+          <div class="prf-stat-grid">
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.gross }}</span><span class="prf-stat-lbl">Gross</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.commission }}</span><span class="prf-stat-lbl">Commission</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.net }}</span><span class="prf-stat-lbl">Net</span></div>
+            <div class="prf-stat"><span class="prf-stat-val">{{ d.txnCount }}</span><span class="prf-stat-lbl">Transactions</span></div>
+          </div>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Journal lines</h3>
+            <div class="prf-table-wrap">
+              <table class="prf-table">
+                <thead><tr><th>Line</th><th>Description</th><th>Amount</th></tr></thead>
+                <tbody>
+                  @for (ln of d.lines; track ln.id) {
+                    <tr>
+                      <td><span class="adm-id-chip">{{ ln.id }}</span></td>
+                      <td>{{ ln.desc }}</td>
+                      <td class="adm-amt" style="color:var(--g)">{{ ln.amount }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section class="prf-section">
+            <h3 class="prf-section-title">Zone contribution</h3>
+            <div class="rev-zone-bars">
+              @for (z of d.zones; track z.name) {
+                <div class="rev-zone-row">
+                  <span class="rev-zone-name">{{ z.name }}</span>
+                  <div class="rev-zone-bar"><div class="rev-zone-fill" [style.width.%]="+z.share"></div></div>
+                  <span class="rev-zone-pct">{{ z.share }}</span>
+                </div>
+              }
+            </div>
+          </section>
+          <p class="adm-modal-hint">Avg ticket {{ d.avgTicket }} · demo GL recognition rules.</p>
+          <div class="prf-actions">
+            <button type="button" class="adm-btn adm-btn--ghost" (click)="openExportLine(r); closeDrill()">📤 Export line</button>
+            <button type="button" class="adm-btn adm-btn--primary" (click)="closeDrill()">Close</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="exportLineOpen()" (click)="closeExportLine()" role="presentation">
+  <div class="adm-modal" [class.open]="exportLineOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="rev-exp-line-title">
+    @if (exportLineRow(); as r) {
+      <header class="adm-modal-hdr">
+        <h2 id="rev-exp-line-title" class="adm-modal-title">📤 Export journal line</h2>
+        <button type="button" class="adm-modal-close" (click)="closeExportLine()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-meta">{{ r.id }} · {{ r.label }} · {{ r.amount }}</p>
+        <label class="adm-modal-field">
+          <span>Format</span>
+          <select class="assign-select" [ngModel]="exportFormat()" (ngModelChange)="exportFormat.set($event)">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+          </select>
+        </label>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="exportLineRunning()" (click)="confirmExportLine()">
+          {{ exportLineRunning() ? 'Exporting…' : 'Download' }}
+        </button>
+      </div>
+    }
   </div>
 </div>
