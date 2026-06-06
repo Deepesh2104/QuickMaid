@@ -38,6 +38,10 @@ export class AdminLayoutComponent {
     if (item.path === 'support') {
       return { ...item, badge: this.appState.supportBadge(), badgeTone: 'red' };
     }
+    if (item.path === 'campaigns') {
+      const n = this.appState.waitlistCount();
+      return n > 0 ? { ...item, badge: String(n), badgeTone: 'default' } : { ...item, badge: undefined };
+    }
     return item;
   }
 

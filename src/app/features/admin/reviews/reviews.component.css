@@ -196,3 +196,18 @@
   color: var(--ink2);
   white-space: pre-wrap;
 }
+
+.adm-modal-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.rv-helpful-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  vertical-align: middle;
+}

@@ -6,7 +6,10 @@
       <p class="adm-sub">Coupons, referrals, promos — create &amp; track redemptions (demo).</p>
     </div>
     <div class="adm-hero-aside">
-      <span class="adm-sync-pill" role="status">{{ liveCount() }} live</span>
+      <span class="adm-sync-pill" role="status">{{ liveCount() }} live · {{ waitlistCount() }} waitlist</span>
+      @if (waitlistCount() > 0) {
+        <button type="button" class="adm-btn adm-btn--ghost" (click)="exportWaitlist()">Export waitlist</button>
+      }
       <button type="button" class="adm-btn adm-btn--primary" (click)="openCreate()">+ New campaign</button>
     </div>
   </header>
@@ -60,6 +63,46 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <div class="table-card table-card--adm">
+    <div class="table-hdr table-hdr--adm">
+      <div class="table-hdr-text">
+        <div class="table-title">City waitlist</div>
+        <p class="table-hint">Signups from landing page · notify when you launch</p>
+      </div>
+    </div>
+    @if (waitlistCount() === 0) {
+      <p class="cg-waitlist-empty">No waitlist signups yet — use “Join waitlist” on the homepage.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--adm">
+          <thead>
+            <tr>
+              <th>City</th>
+              <th>Email</th>
+              <th>Subscribed</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (w of waitlist(); track w.email + w.city) {
+              <tr>
+                <td><span class="adm-zone-tag">{{ w.city }}</span></td>
+                <td>{{ w.email }}</td>
+                <td>{{ formatWaitlistAt(w.at) }}</td>
+                <td>
+                  <div class="act-btns">
+                    <div class="act-btn" (click)="openNotify(w.city, w.email)" title="Notify">✉️</div>
+                    <div class="act-btn" (click)="removeWaitlist(w.city, w.email)" title="Remove">🗑️</div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 </div>
 
@@ -130,6 +173,24 @@
           <div><dt>Fraud rules</dt><dd>1 per user · new customers only · zone allowlist</dd></div>
         </dl>
         <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" (click)="closeDetail()">Close</button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="adm-modal-backdrop" [class.open]="notifyOpen()" (click)="closeNotify()" role="presentation">
+  <div class="adm-modal" [class.open]="notifyOpen()" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="cg-notify-title">
+    @if (notifyRow(); as w) {
+      <header class="adm-modal-hdr">
+        <h2 id="cg-notify-title" class="adm-modal-title">Notify waitlist</h2>
+        <button type="button" class="adm-modal-close" (click)="closeNotify()">×</button>
+      </header>
+      <div class="adm-modal-body">
+        <p class="adm-modal-hint"><strong>{{ w.city }}</strong> · {{ w.email }}</p>
+        <p class="adm-modal-hint">Sends “We’re live in your city” email with app link (demo queue).</p>
+        <button type="button" class="adm-btn adm-btn--primary adm-modal-submit" [disabled]="notifyRunning()" (click)="confirmNotify()">
+          {{ notifyRunning() ? 'Queuing…' : 'Send launch email' }}
+        </button>
       </div>
     }
   </div>

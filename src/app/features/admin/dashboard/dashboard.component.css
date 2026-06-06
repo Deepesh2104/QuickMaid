@@ -88,3 +88,43 @@
 .adm-modal-submit {
   width: 100%;
 }
+
+.dash-ops-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  background: var(--white);
+  border: 1px solid rgba(var(--primary-rgb), 0.22);
+  border-left: 4px solid var(--or);
+  border-radius: 12px;
+}
+
+.dash-ops-alert-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.dash-ops-alert-body strong {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--or);
+}
+
+.dash-ops-alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dash-ops-alert-actions .dash-btn {
+  text-decoration: none;
+}

@@ -157,3 +157,10 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+.cg-waitlist-empty {
+  margin: 0;
+  padding: 20px 18px 24px;
+  font-size: 13px;
+  color: var(--muted);
+}

@@ -12,6 +12,38 @@
     </div>
   </header>
 
+  @if (showOpsAlert()) {
+    <aside class="dash-ops-alert" role="status">
+      <div class="dash-ops-alert-body">
+        <strong>Action needed</strong>
+        <span>
+          @if (hasInbound()) {
+            <span>{{ appState.inboundCount() }} web booking{{ appState.inboundCount() === 1 ? '' : 's' }}</span>
+          }
+          @if (hasInbound() && (hasPartnerApps() || hasWaitlist())) { · }
+          @if (hasPartnerApps()) {
+            <span>{{ appState.partnerPendingCount() }} partner app{{ appState.partnerPendingCount() === 1 ? '' : 's' }}</span>
+          }
+          @if (hasPartnerApps() && hasWaitlist()) { · }
+          @if (hasWaitlist()) {
+            <span>{{ appState.waitlistCount() }} waitlist signup{{ appState.waitlistCount() === 1 ? '' : 's' }}</span>
+          }
+        </span>
+      </div>
+      <div class="dash-ops-alert-actions">
+        @if (hasInbound()) {
+          <a class="dash-btn dash-btn--ghost" routerLink="/admin/bookings">Bookings</a>
+        }
+        @if (hasPartnerApps()) {
+          <a class="dash-btn dash-btn--ghost" routerLink="/admin/maids">Maids queue</a>
+        }
+        @if (hasWaitlist()) {
+          <a class="dash-btn dash-btn--ghost" routerLink="/admin/campaigns">Waitlist</a>
+        }
+      </div>
+    </aside>
+  }
+
   <div class="dash-band">
     <section class="dash-insight" aria-label="Quick insight">
       <div class="dash-insight-ico" aria-hidden="true">⚡</div>

@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChil
 import { FormsModule } from '@angular/forms';
 import { ChartService } from '@core/services/chart.service';
 import { CHART_PALETTE, MONTHS } from '@core/tokens/chart-palette.token';
+import { AppStateService } from '@core/services/app-state.service';
 import { ToastService } from '@core/services/toast.service';
 
 export type ReviewBucket = 'all' | 'five' | 'low' | 'flagged';
@@ -34,6 +35,7 @@ export class ReviewsComponent implements AfterViewInit {
   private readonly cs = inject(ChartService);
   private readonly palette = inject(CHART_PALETTE);
   readonly toast = inject(ToastService);
+  private readonly appState = inject(AppStateService);
 
   @ViewChild('revTrendChart') canvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('starChart') canvas2!: ElementRef<HTMLCanvasElement>;
@@ -73,6 +75,9 @@ export class ReviewsComponent implements AfterViewInit {
   readonly actionKind = signal('');
   readonly actionRow = signal<ReviewRow | null>(null);
   readonly escalateNote = signal('');
+  readonly helpfulNote = signal('');
+  readonly helpfulPublic = signal(true);
+  readonly helpfulMarked = signal<ReadonlySet<string>>(new Set());
 
   readonly flaggedCount = computed(() => this.reviewRows.filter((r) => r.flagged).length);
 
@@ -263,6 +268,10 @@ export class ReviewsComponent implements AfterViewInit {
     }, 700);
   }
 
+  isHelpful(id: string): boolean {
+    return this.helpfulMarked().has(id);
+  }
+
   openAction(kind: string, row: ReviewRow): void {
     if (kind === 'reply') {
       this.openReply(row);
@@ -271,6 +280,12 @@ export class ReviewsComponent implements AfterViewInit {
     this.actionKind.set(kind);
     this.actionRow.set(row);
     this.escalateNote.set('');
+    this.helpfulNote.set(
+      kind === 'helpful'
+        ? `Thanks ${row.customer.split(' ')[0]} — glad the service met your expectations.`
+        : '',
+    );
+    this.helpfulPublic.set(row.stars >= 4);
     this.actionOpen.set(true);
   }
 
@@ -282,12 +297,28 @@ export class ReviewsComponent implements AfterViewInit {
     const r = this.actionRow();
     const kind = this.actionKind();
     if (!r) return;
+    if (kind === 'escalate' && !this.escalateNote().trim()) {
+      this.toast.show('Escalation note required', '⚠️');
+      return;
+    }
+    if (kind === 'helpful' && !this.helpfulNote().trim()) {
+      this.toast.show('Thank-you note required', '⚠️');
+      return;
+    }
     this.actionRunning.set(true);
     window.setTimeout(() => {
+      if (kind === 'helpful') {
+        this.helpfulMarked.update((set) => new Set([...set, r.id]));
+        const vis = this.helpfulPublic() ? 'public' : 'internal';
+        this.appState.logAudit('review.helpful', `${r.id} · ${vis}`, 'admin');
+      }
+      if (kind === 'escalate') {
+        this.appState.logAudit('review.escalate', r.id, 'admin');
+      }
       const icons: Record<string, string> = { escalate: '🚨', helpful: '👍' };
       const msgs: Record<string, string> = {
         escalate: 'Escalated to CX lead',
-        helpful: 'Marked helpful',
+        helpful: this.helpfulPublic() ? 'Published helpful reply' : 'Marked helpful (internal)',
       };
       this.actionRunning.set(false);
       this.closeAction();

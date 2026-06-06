@@ -90,8 +90,13 @@
           </thead>
           <tbody>
             @for (b of filteredRows(); track b.id) {
-              <tr>
-                <td><span class="adm-id-chip">{{ b.id }}</span></td>
+              <tr [class.bk-row--web]="b.fromWeb">
+                <td>
+                  <span class="adm-id-chip">{{ b.id }}</span>
+                  @if (b.fromWeb) {
+                    <span class="badge badge-gray bk-web-badge">Web</span>
+                  }
+                </td>
                 <td>
                   <div class="av-cell">
                     <div class="tbl-av" [class.or]="b.customerAv === 'or'" [class.gr]="b.customerAv === 'gr'" [class.bl]="b.customerAv === 'bl'" [class.pu]="b.customerAv === 'pu'">{{ b.customerInit }}</div>

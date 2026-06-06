@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ChartService } from '@core/services/chart.service';
 import { CHART_PALETTE, MONTHS } from '@core/tokens/chart-palette.token';
-import { AppStateService, PartnerApplication } from '@core/services/app-state.service';
+import { AppStateService, PartnerApplication, PersistedMaidRow } from '@core/services/app-state.service';
 import { ToastService } from '@core/services/toast.service';
 
 export type MaidAv = 'or' | 'bl' | 'gr' | 'pu' | 're';
@@ -88,7 +88,6 @@ export class MaidsComponent implements AfterViewInit {
   private readonly appState = inject(AppStateService);
 
   readonly partnerApps = this.appState.partnerApps;
-  readonly rosterExtra = signal<MaidRow[]>([]);
 
   @ViewChild('maidTrendChart') trendCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('ratingChart') ratingCanvas!: ElementRef<HTMLCanvasElement>;
@@ -107,7 +106,10 @@ export class MaidsComponent implements AfterViewInit {
   readonly bulkRunning = signal(false);
   readonly bulkTarget = signal<'pending' | 'all'>('pending');
 
-  readonly allRows = computed(() => [...this.rosterExtra(), ...this.rows]);
+  readonly allRows = computed(() => [
+    ...this.appState.approvedMaids().map((m) => this.toMaidRow(m)),
+    ...this.rows,
+  ]);
 
   readonly pendingCount = computed(() => this.allRows().filter((r) => r.status === 'pending').length);
 
@@ -775,6 +777,26 @@ export class MaidsComponent implements AfterViewInit {
     }, 650);
   }
 
+  private toMaidRow(m: PersistedMaidRow): MaidRow {
+    return {
+      id: m.id,
+      name: m.name,
+      init: m.init,
+      av: m.av as MaidAv,
+      phone: m.phone,
+      zone: m.zone,
+      skills: m.skills,
+      bookings: null,
+      rating: null,
+      earnings: '—',
+      earningsTone: 'muted',
+      status: m.status,
+      kycLine: m.kycLine,
+      lastActive: m.lastActive,
+      upi: m.upi,
+    };
+  }
+
   openPartnerQueue(): void {
     const apps = this.partnerApps();
     if (apps.length === 0) return;
@@ -811,7 +833,7 @@ export class MaidsComponent implements AfterViewInit {
     this.partnerRunning.set(true);
     window.setTimeout(() => {
       const init = app.name.trim().charAt(0).toUpperCase() || '?';
-      const row: MaidRow = {
+      const row: PersistedMaidRow = {
         id: app.id,
         name: app.name,
         init,
@@ -819,16 +841,12 @@ export class MaidsComponent implements AfterViewInit {
         phone: app.phone,
         zone: app.city,
         skills: app.skills,
-        bookings: null,
-        rating: null,
-        earnings: '—',
-        earningsTone: 'muted',
         status: 'pending',
         kycLine: `Bank · ${app.bankHint} · web apply`,
         lastActive: app.submittedAt,
         upi: '—',
       };
-      this.rosterExtra.update((list) => [row, ...list]);
+      this.appState.addApprovedMaid(row);
       this.appState.removePartnerApp(app.id);
       this.appState.logAudit('partner.approve', app.id, 'admin');
       const next = this.partnerApps()[0] ?? null;

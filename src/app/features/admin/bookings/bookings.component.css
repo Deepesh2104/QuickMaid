@@ -327,6 +327,16 @@
   border-radius: 999px;
 }
 
+.bk-row--web td {
+  background: rgba(var(--primary-rgb), 0.03);
+}
+
+.bk-web-badge {
+  margin-left: 6px;
+  font-size: 9px;
+  vertical-align: middle;
+}
+
 @media (max-width: 600px) {
   .prf-stat-grid,
   .prf-dl {

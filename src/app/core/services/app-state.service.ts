@@ -31,6 +31,21 @@ export interface WaitlistEntry {
   at: string;
 }
 
+/** Maids approved from partner queue — persisted for demo roster */
+export interface PersistedMaidRow {
+  id: string;
+  name: string;
+  init: string;
+  av: string;
+  phone: string;
+  zone: string;
+  skills: string;
+  status: 'pending';
+  kycLine: string;
+  lastActive: string;
+  upi: string;
+}
+
 export interface AuditEntry {
   at: string;
   actor: string;
@@ -42,6 +57,7 @@ interface PersistedState {
   inboundBookings: InboundBooking[];
   partnerApps: PartnerApplication[];
   waitlist: WaitlistEntry[];
+  approvedMaids: PersistedMaidRow[];
   extraAudit: AuditEntry[];
 }
 
@@ -69,10 +85,12 @@ export class AppStateService {
   readonly inboundBookings = signal<InboundBooking[]>([]);
   readonly partnerApps = signal<PartnerApplication[]>([]);
   readonly waitlist = signal<WaitlistEntry[]>([]);
+  readonly approvedMaids = signal<PersistedMaidRow[]>([]);
   readonly extraAudit = signal<AuditEntry[]>([]);
 
   readonly inboundCount = computed(() => this.inboundBookings().length);
   readonly partnerPendingCount = computed(() => this.partnerApps().length);
+  readonly waitlistCount = computed(() => this.waitlist().length);
   readonly unreadAlerts = computed(() => 2 + this.inboundCount() + (this.partnerPendingCount() > 0 ? 1 : 0));
 
   readonly auditLog = computed(() => [...this.extraAudit(), ...SEED_AUDIT]);
@@ -105,6 +123,7 @@ export class AppStateService {
       this.inboundBookings.set(s.inboundBookings ?? []);
       this.partnerApps.set(s.partnerApps ?? []);
       this.waitlist.set(s.waitlist ?? []);
+      this.approvedMaids.set(s.approvedMaids ?? []);
       this.extraAudit.set(s.extraAudit ?? []);
     } catch {
       /* ignore */
@@ -117,6 +136,7 @@ export class AppStateService {
       inboundBookings: this.inboundBookings(),
       partnerApps: this.partnerApps(),
       waitlist: this.waitlist(),
+      approvedMaids: this.approvedMaids(),
       extraAudit: this.extraAudit(),
     };
     localStorage.setItem(QM_APP_STATE_KEY, JSON.stringify(snap));
@@ -181,6 +201,23 @@ export class AppStateService {
     this.persist();
   }
 
+  addApprovedMaid(row: PersistedMaidRow): void {
+    this.approvedMaids.update((list) => [row, ...list.filter((m) => m.id !== row.id)]);
+    this.persist();
+  }
+
+  removeWaitlistEntry(email: string, city: string): void {
+    this.waitlist.update((list) =>
+      list.filter((w) => !(w.email === email && w.city === city)),
+    );
+    this.persist();
+  }
+
+  clearWaitlist(): void {
+    this.waitlist.set([]);
+    this.persist();
+  }
+
   logAudit(action: string, target: string, actor = 'system'): void {
     const entry: AuditEntry = { at: nowStamp(), actor, action, target };
     this.extraAudit.update((list) => [entry, ...list].slice(0, 50));
@@ -191,6 +228,7 @@ export class AppStateService {
     this.inboundBookings.set([]);
     this.partnerApps.set([]);
     this.waitlist.set([]);
+    this.approvedMaids.set([]);
     this.extraAudit.set([]);
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(QM_APP_STATE_KEY);

@@ -9,7 +9,9 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Chart } from 'chart.js';
+import { AppStateService } from '@core/services/app-state.service';
 import { ChartService } from '@core/services/chart.service';
 import { ToastService } from '@core/services/toast.service';
 import { CHART_PALETTE, DAYS } from '@core/tokens/chart-palette.token';
@@ -40,7 +42,7 @@ function bizMarginSeries(r: DateRange): { labels: readonly string[]; gmvK: numbe
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
@@ -52,6 +54,14 @@ export class DashboardComponent implements AfterViewInit {
   private readonly cs = inject(ChartService);
   private readonly palette = inject(CHART_PALETTE);
   private readonly toast = inject(ToastService);
+  readonly appState = inject(AppStateService);
+
+  readonly hasInbound = computed(() => this.appState.inboundCount() > 0);
+  readonly hasPartnerApps = computed(() => this.appState.partnerPendingCount() > 0);
+  readonly hasWaitlist = computed(() => this.appState.waitlistCount() > 0);
+  readonly showOpsAlert = computed(
+    () => this.hasInbound() || this.hasPartnerApps() || this.hasWaitlist(),
+  );
 
   @ViewChild('mainChart') mainCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('donutChart') donutCanvas!: ElementRef<HTMLCanvasElement>;

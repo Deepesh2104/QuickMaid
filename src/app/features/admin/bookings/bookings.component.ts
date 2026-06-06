@@ -33,6 +33,7 @@ export interface BookingRow {
   amount: string;
   amountTone: 'success' | 'warn' | 'muted';
   status: BookingStatus;
+  fromWeb?: boolean;
 }
 
 export interface BookingTimelineEvent {
@@ -233,6 +234,7 @@ export class BookingsComponent implements AfterViewInit {
         amount: b.amount,
         amountTone: 'warn',
         status: 'ongoing',
+        fromWeb: true,
       }),
     );
     return [...inbound, ...this.seedRows];

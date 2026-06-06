@@ -94,7 +94,12 @@
             <tbody>
               @for (r of filteredReviews(); track r.id) {
                 <tr [class.adm-row-flagged]="r.flagged">
-                  <td><span class="adm-id-chip">{{ r.id }}</span></td>
+                  <td>
+                    <span class="adm-id-chip">{{ r.id }}</span>
+                    @if (isHelpful(r.id)) {
+                      <span class="badge badge-green rv-helpful-badge">Helpful</span>
+                    }
+                  </td>
                   <td class="adm-last">{{ r.customer }}</td>
                   <td>{{ r.maid }}</td>
                   <td><span class="adm-star-lbl" [class.adm-star-warn]="r.stars <= 3">{{ starStr(r.stars) }}</span></td>
@@ -292,6 +297,16 @@
           <label class="adm-modal-field">
             <span>Escalation note</span>
             <textarea class="msg-textarea" rows="3" placeholder="Ops context for CX lead…" [ngModel]="escalateNote()" (ngModelChange)="escalateNote.set($event)"></textarea>
+          </label>
+        }
+        @if (actionKind() === 'helpful') {
+          <label class="adm-modal-field">
+            <span>Thank-you note</span>
+            <textarea class="msg-textarea" rows="3" placeholder="Public reply to customer…" [ngModel]="helpfulNote()" (ngModelChange)="helpfulNote.set($event)"></textarea>
+          </label>
+          <label class="adm-modal-check">
+            <input type="checkbox" [ngModel]="helpfulPublic()" (ngModelChange)="helpfulPublic.set($event)">
+            <span>Publish on customer profile (5★ reviews)</span>
           </label>
         }
       }
