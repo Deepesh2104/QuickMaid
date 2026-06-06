@@ -41,11 +41,10 @@ export class AboutPageComponent implements OnInit, OnDestroy, AfterViewInit {
     'Hi QuickMaid — aapke baare mein aur jaanna hai. Raipur service & verification ke baare mein batayein.',
   );
 
-  readonly trustPills = [
-    'Aadhaar verified',
-    'OTP start & end',
-    '₹0 agent fee',
-    'WhatsApp-first',
+  readonly heroFacts = [
+    { label: 'Families', value: '500+', note: 'Happy homes in Raipur' },
+    { label: 'Rating', value: '4.8 ★', note: 'Avg customer score' },
+    { label: 'Agent fee', value: '₹0', note: 'No middleman cut' },
   ] as const;
 
   readonly compareRows = [

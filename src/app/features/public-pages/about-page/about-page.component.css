@@ -21,51 +21,100 @@
   }
 }
 
-/* Hero trust pills */
-.qm-ab-trust-pills {
-  list-style: none;
-  margin: 0 0 18px;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+/* Hero — tighter rhythm */
+.qm-about-page .qm-band--about {
+  padding: clamp(36px, 5vw, 64px) 0 clamp(40px, 5vw, 56px);
+  background:
+    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(var(--primary-rgb), 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #fffefb 0%, #fdf8f3 100%);
 }
 
-.qm-ab-trust-pills li {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 7px 12px;
-  border-radius: 999px;
-  color: var(--ink2);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--border2);
-  box-shadow: 0 4px 14px rgba(19, 17, 14, 0.05);
+.qm-about-page .qm-about-copy .qm-dek {
+  margin-bottom: 22px;
 }
 
-.qm-ab-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 9px;
+.qm-about-page .qm-about-hero-cta {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.qm-ab-quick-facts {
   display: grid;
-  place-items: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: var(--white);
+  border: 1px solid var(--border2);
+  box-shadow: 0 8px 28px rgba(19, 17, 14, 0.05);
+  overflow: hidden;
+}
+
+.qm-ab-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border-right: 1px solid rgba(19, 17, 14, 0.08);
+}
+
+.qm-ab-fact--last {
+  border-right: none;
+}
+
+.qm-ab-fact-label {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  flex-shrink: 0;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--or);
 }
 
-.qm-ab-badge--ok {
-  background: rgba(28, 140, 82, 0.12);
-  color: #15803d;
-  border: 1px solid rgba(28, 140, 82, 0.2);
+.qm-ab-fact-val {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
 }
 
-.qm-ab-badge--spd {
-  background: rgba(var(--primary-rgb), 0.12);
-  color: var(--primary);
-  border: 1px solid rgba(var(--primary-rgb), 0.22);
+.qm-ab-fact-note {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.qm-ab-hero-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.qm-ab-hero-meta a {
+  color: var(--or);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.qm-ab-hero-meta a:hover {
+  text-decoration: underline;
+}
+
+.qm-about-page .qm-ab-art--compact {
+  min-height: auto;
+  max-width: 280px;
+  padding: 8px 0;
+}
+
+.qm-about-page .qm-ab-art--compact .qm-ab-phone {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  margin: 0 auto;
+  box-shadow: 0 20px 56px rgba(19, 17, 14, 0.18);
 }
 
 .qm-about-page .qm-ab-icon {
@@ -403,6 +452,19 @@
 }
 
 /* Responsive */
+@media (max-width: 900px) {
+  .qm-ab-quick-facts {
+    grid-template-columns: 1fr;
+  }
+  .qm-ab-fact {
+    border-right: none;
+    border-bottom: 1px solid rgba(19, 17, 14, 0.08);
+  }
+  .qm-ab-fact--last {
+    border-bottom: none;
+  }
+}
+
 @media (max-width: 1000px) {
   .qm-ab-principles {
     grid-template-columns: repeat(2, minmax(0, 1fr));

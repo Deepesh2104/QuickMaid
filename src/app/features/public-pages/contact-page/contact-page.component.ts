@@ -9,6 +9,7 @@ import {
   ViewEncapsulation,
   inject,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SeoService } from '@core/services/seo.service';
 import {
@@ -29,10 +30,24 @@ export interface QmWaTemplate {
   message: string;
 }
 
+export interface QmContactTopic {
+  value: string;
+  label: string;
+}
+
+export interface QmContactForm {
+  name: string;
+  phone: string;
+  email: string;
+  topic: string;
+  area: string;
+  message: string;
+}
+
 @Component({
   selector: 'app-contact-page',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './contact-page.component.html',
@@ -54,13 +69,6 @@ export class ContactPageComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly waPartner = buildWhatsAppHref(
     'Hi QuickMaid — partner / didi onboarding ya payout ke baare mein puchna hai.',
   );
-
-  readonly trustPills = [
-    'Official channels only',
-    'No OTP / PIN asks',
-    'WhatsApp-first',
-    'Raipur · IST hours',
-  ] as const;
 
   readonly hours = [
     { day: 'Mon – Sun', time: '8:00 AM – 8:00 PM IST', note: 'WhatsApp + phone desk' },
@@ -154,6 +162,37 @@ export class ContactPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
   copiedLabel: string | null = null;
 
+  readonly contactTopics: readonly QmContactTopic[] = [
+    { value: 'booking', label: 'New booking' },
+    { value: 'reschedule', label: 'Reschedule / change slot' },
+    { value: 'support', label: 'Support / complaint' },
+    { value: 'partner', label: 'Partner onboarding' },
+    { value: 'legal', label: 'Legal / privacy' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  readonly raipurAreas = [
+    'Tatibandh',
+    'Civil Lines',
+    'Shankar Nagar',
+    'Pandri',
+    'Mowa',
+    'Khamtarai',
+    'Other / nearby',
+  ] as const;
+
+  contactForm: QmContactForm = {
+    name: '',
+    phone: '',
+    email: '',
+    topic: 'booking',
+    area: '',
+    message: '',
+  };
+
+  formSubmitted = false;
+  formError = '';
+
   ngOnInit(): void {
     this.seo.setPage({
       title: 'Contact QuickMaid | Official WhatsApp, email & phone — Raipur',
@@ -194,6 +233,75 @@ export class ContactPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
   waHrefFor(message: string): string {
     return buildWhatsAppHref(message);
+  }
+
+  submitContactForm(): void {
+    const name = this.contactForm.name.trim();
+    const phone = this.contactForm.phone.trim();
+    const message = this.contactForm.message.trim();
+
+    if (!name || !phone || !message) {
+      this.formError = 'Name, phone aur message zaroori hain.';
+      this.formSubmitted = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const topicLabel =
+      this.contactTopics.find((t) => t.value === this.contactForm.topic)?.label ?? this.contactForm.topic;
+    const lines = [
+      'Hi QuickMaid — contact form se message bheja hai.',
+      '',
+      `Name: ${name}`,
+      `Phone: ${phone}`,
+      this.contactForm.email.trim() ? `Email: ${this.contactForm.email.trim()}` : null,
+      `Topic: ${topicLabel}`,
+      this.contactForm.area ? `Area: ${this.contactForm.area}` : null,
+      '',
+      'Message:',
+      message,
+    ].filter((line): line is string => line !== null);
+
+    const waMessage = lines.join('\n');
+    window.open(buildWhatsAppHref(waMessage), '_blank', 'noopener,noreferrer');
+
+    this.formError = '';
+    this.formSubmitted = true;
+    this.cdr.markForCheck();
+  }
+
+  sendViaEmail(): void {
+    const name = this.contactForm.name.trim();
+    const phone = this.contactForm.phone.trim();
+    const message = this.contactForm.message.trim();
+
+    if (!name || !phone || !message) {
+      this.formError = 'Pehle form bharo, phir email bhejo.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const topicLabel =
+      this.contactTopics.find((t) => t.value === this.contactForm.topic)?.label ?? this.contactForm.topic;
+    const subject = encodeURIComponent(`QuickMaid contact — ${topicLabel}`);
+    const body = encodeURIComponent(
+      `Name: ${name}\nPhone: ${phone}\nEmail: ${this.contactForm.email || '—'}\nTopic: ${topicLabel}\nArea: ${this.contactForm.area || '—'}\n\n${message}`,
+    );
+    window.location.href = `mailto:${this.email}?subject=${subject}&body=${body}`;
+  }
+
+  resetContactForm(): void {
+    this.contactForm = {
+      name: '',
+      phone: '',
+      email: '',
+      topic: 'booking',
+      area: '',
+      message: '',
+    };
+    this.formSubmitted = false;
+    this.formError = '';
+    this.cdr.markForCheck();
   }
 
   async copyTemplate(t: QmWaTemplate): Promise<void> {

@@ -1,4 +1,8 @@
 <div class="qm-root qm-terms-page">
+  <div class="qm-legal-progress" aria-hidden="true">
+    <span class="qm-legal-progress-bar" [style.width.%]="readingProgress"></span>
+  </div>
+
   <nav class="qm-site-nav" aria-label="QuickMaid public">
     <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
     <div class="qm-site-links">
@@ -16,27 +20,58 @@
   <main class="qm-site-main">
     <!-- Hero -->
     <section class="qm-band qm-band--legal-hero" aria-labelledby="qm-terms-h1">
-      <div class="qm-band-inner qm-legal-hero-inner qm-reveal">
-        <p class="qm-kicker">Legal</p>
-        <h1 id="qm-terms-h1" class="qm-display">
-          Terms <span class="qm-display-accent">&amp; Conditions</span>
-        </h1>
-        <p class="qm-dek qm-legal-hero-dek">
-          Platform rules for customers, service partners, aur QuickMaid — bookings, payments, conduct, liability
-          (India). Plain-language summary neeche; full text document mein.
-        </p>
-        <ul class="qm-tr-hero-pills" aria-label="Document scope">
-          @for (pill of heroPills; track pill) {
-            <li>{{ pill }}</li>
-          }
-        </ul>
-        <div class="qm-legal-meta">
-          <span class="qm-legal-pill">
-            <span class="qm-legal-dot" aria-hidden="true"></span>
-            Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
-          </span>
-          <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
-          <button type="button" class="qm-tr-print-btn" (click)="printPage()">Print / PDF</button>
+      <div class="qm-band-inner qm-legal-hero-inner">
+        <div class="qm-legal-hero-grid">
+          <div class="qm-legal-hero-copy qm-reveal">
+            <p class="qm-kicker">Legal</p>
+            <h1 id="qm-terms-h1" class="qm-display">
+              Terms <span class="qm-display-accent">&amp; Conditions</span>
+            </h1>
+            <p class="qm-dek qm-legal-hero-dek">
+              Bookings, payments, conduct aur liability — customers aur partners dono ke liye clear rules.
+              Summary neeche; full legal text document section mein.
+            </p>
+
+            <div class="qm-legal-quick-facts" aria-label="Document scope">
+              @for (f of quickFacts; track f.label; let last = $last) {
+                <div class="qm-legal-fact" [class.qm-legal-fact--last]="last">
+                  <span class="qm-legal-fact-label">{{ f.label }}</span>
+                  <span class="qm-legal-fact-val">{{ f.value }}</span>
+                  <span class="qm-legal-fact-note">{{ f.note }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="qm-legal-hero-actions">
+              <button type="button" class="qm-tr-print-btn" (click)="printPage()">Print / PDF</button>
+              <a routerLink="/privacy" class="qm-tr-hero-link">Privacy Policy →</a>
+            </div>
+
+            <div class="qm-legal-meta">
+              <span class="qm-legal-pill">
+                <span class="qm-legal-dot" aria-hidden="true"></span>
+                Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
+              </span>
+              <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
+            </div>
+          </div>
+
+          <div class="qm-legal-hero-visual qm-reveal" aria-hidden="true">
+            <div class="qm-legal-doc-card">
+              <div class="qm-legal-doc-card-top">
+                <span>Terms document</span>
+                <span class="qm-legal-doc-badge">v{{ docVersion }}</span>
+              </div>
+              <div class="qm-legal-doc-lines">
+                @for (item of toc.slice(1, 5); track item.id) {
+                  <div class="qm-legal-doc-line">
+                    <span class="qm-legal-doc-line-num">{{ item.num }}</span>
+                    <span>{{ item.label }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -69,7 +104,11 @@
             <div class="qm-legal-toc-h">On this page</div>
             <nav class="qm-legal-toc-nav">
               @for (item of toc; track item.id) {
-                <a [href]="'#' + item.id">
+                <a
+                  [href]="'#' + item.id"
+                  [class.qm-legal-toc-active]="activeTocId === item.id"
+                  (click)="setActiveToc(item.id)"
+                >
                   <span class="qm-legal-toc-num" aria-hidden="true">{{ item.num }}</span>
                   {{ item.label }}
                 </a>

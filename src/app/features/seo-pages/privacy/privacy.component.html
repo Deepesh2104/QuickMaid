@@ -1,4 +1,8 @@
 <div class="qm-root qm-root--privacy-doc qm-privacy-page">
+  <div class="qm-legal-progress" aria-hidden="true">
+    <span class="qm-legal-progress-bar" [style.width.%]="readingProgress"></span>
+  </div>
+
   <nav class="qm-site-nav" aria-label="QuickMaid public">
     <a routerLink="/" class="qm-site-brand">🏠 QuickMaid</a>
     <div class="qm-site-links">
@@ -15,27 +19,54 @@
 
   <main class="qm-site-main">
     <section class="qm-band qm-band--legal-hero qm-band--privacy-hero" aria-labelledby="qm-privacy-h1">
-      <div class="qm-band-inner qm-legal-hero-inner qm-reveal">
-        <p class="qm-kicker">Trust &amp; data</p>
-        <h1 id="qm-privacy-h1" class="qm-display">
-          Privacy <span class="qm-display-accent qm-display-accent--teal">Policy</span>
-        </h1>
-        <p class="qm-dek qm-legal-hero-dek">
-          Kaunsa data kyon collect hota hai, kaise use / share hota hai, aur aapke rights — India privacy regime ke
-          saath align karne ki disha.
-        </p>
-        <ul class="qm-pr-hero-pills" aria-label="Privacy scope">
-          @for (pill of heroPills; track pill) {
-            <li>{{ pill }}</li>
-          }
-        </ul>
-        <div class="qm-legal-meta">
-          <span class="qm-legal-pill qm-legal-pill--teal">
-            <span class="qm-legal-dot qm-legal-dot--teal" aria-hidden="true"></span>
-            Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
-          </span>
-          <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
-          <button type="button" class="qm-pr-print-btn" (click)="printPage()">Print / PDF</button>
+      <div class="qm-band-inner qm-legal-hero-inner">
+        <div class="qm-legal-hero-grid">
+          <div class="qm-legal-hero-copy qm-reveal">
+            <p class="qm-kicker">Trust &amp; data</p>
+            <h1 id="qm-privacy-h1" class="qm-display">
+              Privacy <span class="qm-display-accent qm-display-accent--teal">Policy</span>
+            </h1>
+            <p class="qm-dek qm-legal-hero-dek">
+              Kaunsa data kyon collect hota hai, kaise use / share hota hai, aur aapke rights —
+              India privacy framework ke saath align rehne ki disha.
+            </p>
+
+            <div class="qm-legal-quick-facts" aria-label="Privacy scope">
+              @for (f of quickFacts; track f.label; let last = $last) {
+                <div class="qm-legal-fact" [class.qm-legal-fact--last]="last">
+                  <span class="qm-legal-fact-label">{{ f.label }}</span>
+                  <span class="qm-legal-fact-val">{{ f.value }}</span>
+                  <span class="qm-legal-fact-note">{{ f.note }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="qm-legal-hero-actions">
+              <button type="button" class="qm-pr-print-btn" (click)="printPage()">Print / PDF</button>
+              <a routerLink="/terms" class="qm-pr-hero-link">Terms &amp; Conditions →</a>
+            </div>
+
+            <div class="qm-legal-meta">
+              <span class="qm-legal-pill qm-legal-pill--teal">
+                <span class="qm-legal-dot qm-legal-dot--teal" aria-hidden="true"></span>
+                Last updated <time [attr.datetime]="lastUpdated">{{ lastUpdated }}</time>
+              </span>
+              <span class="qm-legal-hint">Raipur, Chhattisgarh · India</span>
+            </div>
+          </div>
+
+          <div class="qm-legal-hero-visual qm-reveal" aria-hidden="true">
+            <div class="qm-legal-doc-card qm-legal-doc-card--shield">
+              <div class="qm-legal-shield" aria-hidden="true">🛡</div>
+              <h2 class="qm-legal-shield-title">Your data, protected</h2>
+              <p class="qm-legal-shield-sub">No mass selling · processors under contract · rights respected</p>
+              <ul class="qm-legal-shield-list">
+                @for (point of trustPoints; track point) {
+                  <li><span class="qm-legal-shield-check" aria-hidden="true">✓</span> {{ point }}</li>
+                }
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -66,7 +97,14 @@
             <div class="qm-legal-toc-h">On this page</div>
             <nav class="qm-legal-toc-nav">
               @for (item of toc; track item.id) {
-                <a [href]="'#' + item.id"><span class="qm-legal-toc-num" aria-hidden="true">{{ item.num }}</span> {{ item.label }}</a>
+                <a
+                  [href]="'#' + item.id"
+                  [class.qm-legal-toc-active]="activeTocId === item.id"
+                  (click)="setActiveToc(item.id)"
+                >
+                  <span class="qm-legal-toc-num" aria-hidden="true">{{ item.num }}</span>
+                  {{ item.label }}
+                </a>
               }
             </nav>
             <div class="qm-pr-toc-foot">
@@ -94,6 +132,11 @@
 
             <h2 id="p-collect">1. Data jo hum collect kar sakte hain</h2>
             <div class="qm-pr-data-map" aria-label="Data categories map">
+              <div class="qm-pr-data-head" aria-hidden="true">
+                <span>Category</span>
+                <span>Examples</span>
+                <span>Retention</span>
+              </div>
               @for (row of dataMap; track row.type) {
                 <div class="qm-pr-data-row">
                   <span class="qm-pr-data-type">{{ row.type }}</span>

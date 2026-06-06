@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
@@ -29,6 +30,12 @@ export interface QmTermsFaq {
   a: string;
 }
 
+export interface QmLegalQuickFact {
+  label: string;
+  value: string;
+  note: string;
+}
+
 @Component({
   selector: 'app-terms',
   standalone: true,
@@ -45,10 +52,22 @@ export interface QmTermsFaq {
 export class TermsComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly seo = inject(SeoService);
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  private scrollSpyIo: IntersectionObserver | null = null;
+  private onScroll: (() => void) | null = null;
 
   readonly lastUpdated = '2026-05-14';
+  readonly docVersion = '1.2';
 
-  readonly heroPills = ['Customers & partners', 'Raipur · India', 'English + Hindi summary'] as const;
+  activeTocId = 't-intro';
+  readingProgress = 0;
+
+  readonly quickFacts: readonly QmLegalQuickFact[] = [
+    { label: 'Applies to', value: 'Customers & partners', note: 'Platform use + bookings' },
+    { label: 'Jurisdiction', value: 'Raipur, India', note: 'Courts / consumer forums' },
+    { label: 'Format', value: 'EN + HI summary', note: 'Plain-language clarity' },
+  ];
 
   readonly highlights: readonly QmTermsHighlight[] = [
     {
@@ -121,27 +140,80 @@ export class TermsComponent implements OnInit, OnDestroy, AfterViewInit {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) {
       root.querySelectorAll('.qm-reveal').forEach((el: Element) => el.classList.add('qm-reveal--in'));
-      return;
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add('qm-reveal--in');
+              io.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -32px 0px' },
+      );
+      root.querySelectorAll('.qm-reveal').forEach((el: Element) => io.observe(el));
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('qm-reveal--in');
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -32px 0px' },
-    );
-    root.querySelectorAll('.qm-reveal').forEach((el: Element) => io.observe(el));
+
+    this.setupScrollSpy();
+    this.setupReadingProgress();
   }
 
   ngOnDestroy(): void {
+    this.scrollSpyIo?.disconnect();
+    if (this.onScroll) {
+      window.removeEventListener('scroll', this.onScroll);
+    }
     this.seo.resetToDefaults();
+  }
+
+  setActiveToc(id: string): void {
+    this.activeTocId = id;
+    this.cdr.markForCheck();
   }
 
   printPage(): void {
     window.print();
+  }
+
+  private setupScrollSpy(): void {
+    const root = this.host.nativeElement;
+    const headings = root.querySelectorAll('.qm-legal-prose h2[id]');
+    if (!headings.length) return;
+
+    this.scrollSpyIo = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]?.target.id) {
+          this.activeTocId = visible[0].target.id;
+          this.cdr.markForCheck();
+        }
+      },
+      { rootMargin: '-42% 0px -48% 0px', threshold: [0, 0.25, 0.5, 1] },
+    );
+    headings.forEach((h: Element) => this.scrollSpyIo?.observe(h));
+  }
+
+  private setupReadingProgress(): void {
+    const root = this.host.nativeElement;
+    const prose = root.querySelector('.qm-legal-prose') as HTMLElement | null;
+    if (!prose) return;
+
+    this.onScroll = () => {
+      const rect = prose.getBoundingClientRect();
+      const start = window.scrollY + rect.top;
+      const end = start + prose.offsetHeight - window.innerHeight * 0.4;
+      const pct = end <= start ? 100 : ((window.scrollY - start) / (end - start)) * 100;
+      const next = Math.min(100, Math.max(0, Math.round(pct)));
+      if (next !== this.readingProgress) {
+        this.readingProgress = next;
+        this.cdr.markForCheck();
+      }
+    };
+
+    this.onScroll();
+    window.addEventListener('scroll', this.onScroll, { passive: true });
   }
 }

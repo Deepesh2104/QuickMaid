@@ -89,8 +89,8 @@
 }
 .qm-about-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 1fr);
-  gap: clamp(24px, 4vw, 48px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.75fr);
+  gap: clamp(28px, 4vw, 44px);
   align-items: center;
 }
 .qm-kicker {
@@ -292,20 +292,17 @@ a.qm-contact-card .qm-cc-link {
 
 /* —— Contact page: hero + routing + safety —— */
 .qm-band--contact-hero {
-  padding: clamp(40px, 5vw, 72px) 0 clamp(32px, 4vw, 48px);
+  padding: clamp(36px, 5vw, 64px) 0 clamp(40px, 5vw, 56px);
   background:
-    radial-gradient(ellipse 85% 65% at 100% 0%, rgba(var(--primary-rgb), 0.12) 0%, transparent 52%),
-    linear-gradient(180deg, #fffefb 0%, #fdf8f3 50%, #f8efe6 100%);
+    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(var(--primary-rgb), 0.09) 0%, transparent 50%),
+    linear-gradient(180deg, #fffefb 0%, #fdf8f3 100%);
   border-bottom: 1px solid rgba(19, 17, 14, 0.06);
 }
 .qm-contact-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
-  gap: clamp(24px, 4vw, 48px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.75fr);
+  gap: clamp(28px, 4vw, 44px);
   align-items: center;
-}
-.qm-metric-row--contact .qm-metric-val {
-  font-size: clamp(20px, 2.6vw, 26px);
 }
 .qm-contact-hero-visual {
   display: flex;

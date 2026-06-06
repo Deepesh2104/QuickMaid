@@ -25,41 +25,31 @@
               <span class="qm-display-accent">ek hi trusted line</span>
             </h1>
             <p class="qm-dek">
-              Booking, reschedule, ya complaint — <strong>sabse tez WhatsApp</strong>. Legal / invoice ke liye email,
-              urgent voice ke liye phone. <strong>Random “agent” numbers</strong> par trust mat kariye.
+              Booking ya support — <strong>WhatsApp sabse tez</strong>. Legal / invoice email se, urgent call se.
+              Sirf <strong>official number</strong> par reply expect karein.
             </p>
-            <ul class="qm-ct-trust-pills" aria-label="Safety highlights">
-              @for (pill of trustPills; track pill) {
-                <li>{{ pill }}</li>
+
+            <div class="qm-ct-quick-facts qm-reveal" aria-label="Support hours">
+              @for (h of hours; track h.day; let last = $last) {
+                <div class="qm-ct-fact" [class.qm-ct-fact--last]="last">
+                  <span class="qm-ct-fact-label">{{ h.day }}</span>
+                  <span class="qm-ct-fact-val">{{ h.time }}</span>
+                  <span class="qm-ct-fact-note">{{ h.note }}</span>
+                </div>
               }
-            </ul>
-            <div class="qm-metric-row qm-metric-row--contact">
-              <div class="qm-metric">
-                <span class="qm-metric-val">~15m</span><span class="qm-metric-lbl">Typical WA reply</span>
-              </div>
-              <div class="qm-metric">
-                <span class="qm-metric-val">8–8</span><span class="qm-metric-lbl">IST · 7 days</span>
-              </div>
-              <div class="qm-metric">
-                <span class="qm-metric-val">3</span><span class="qm-metric-lbl">Official channels</span>
-              </div>
             </div>
+
             <div class="qm-about-hero-cta">
               <a class="qm-btn-primary" [href]="waBook" rel="noopener noreferrer" target="_blank">WhatsApp — book →</a>
               <a class="qm-btn-ghost" [href]="waSupport" rel="noopener noreferrer" target="_blank">Support message</a>
-              <a class="qm-btn-ghost" [href]="telHref">Call desk</a>
             </div>
+            <p class="qm-ct-hero-meta">
+              Official only · No OTP / PIN asks ·
+              <a [href]="telHref">Call {{ phoneDisplay }}</a>
+            </p>
           </div>
           <div class="qm-contact-hero-visual qm-reveal" aria-hidden="true">
-            <div class="qm-contact-hero-art">
-              <div class="qm-cf-float qm-cf-float--a">
-                <span class="qm-cf-dot" aria-hidden="true"></span>
-                <span>Team online</span>
-              </div>
-              <div class="qm-cf-float qm-cf-float--b">
-                <span class="qm-ct-lock" aria-hidden="true">🔒</span>
-                <span>Official only</span>
-              </div>
+            <div class="qm-contact-hero-art qm-ct-art--compact">
               <div class="qm-cf-phone">
                 <div class="qm-cf-phone-bar">
                   <span>QuickMaid</span>
@@ -68,7 +58,6 @@
                 <div class="qm-cf-bubble qm-cf-bubble--them">Namaste! Aaj ka slot?</div>
                 <div class="qm-cf-bubble qm-cf-bubble--us">Haan — 4–6 PM confirm</div>
                 <div class="qm-cf-bubble qm-cf-bubble--them">Address bhej diya</div>
-                <div class="qm-cf-typing"><span></span><span></span><span></span></div>
               </div>
             </div>
           </div>
@@ -76,17 +65,114 @@
       </div>
     </section>
 
-    <!-- Hours strip -->
-    <section class="qm-band qm-band--ct-hours" aria-label="Support hours">
+    <!-- Contact form -->
+    <section class="qm-band qm-band--ct-form" aria-labelledby="qm-contact-form-title">
       <div class="qm-band-inner">
-        <div class="qm-ct-hours-grid">
-          @for (h of hours; track h.day) {
-            <article class="qm-ct-hours-card qm-reveal">
-              <span class="qm-ct-hours-day">{{ h.day }}</span>
-              <span class="qm-ct-hours-time">{{ h.time }}</span>
-              <span class="qm-ct-hours-note">{{ h.note }}</span>
-            </article>
-          }
+        <div class="qm-ct-form-layout">
+          <div class="qm-ct-form-intro qm-reveal">
+            <p class="qm-kicker">Write to us</p>
+            <h2 id="qm-contact-form-title" class="qm-h2-section">Contact form</h2>
+            <p class="qm-section-dek">
+              Form bharo — submit par WhatsApp open hoga prefilled message ke saath. Urgent ho to seedha call ya WhatsApp bhi kar sakte ho.
+            </p>
+            <ul class="qm-ct-form-notes">
+              <li>Response: working hours mein typically ~15 min (WhatsApp)</li>
+              <li>Sirf official number par hi reply expect karein</li>
+              <li>OTP / UPI PIN kabhi share mat karo</li>
+            </ul>
+            @if (formSubmitted) {
+              <div class="qm-ct-form-success" role="status">
+                <strong>Message ready!</strong> WhatsApp open ho gaya hoga — send dabao. Team jaldi reply karegi.
+                <button type="button" class="qm-ct-form-reset" (click)="resetContactForm()">Naya message</button>
+              </div>
+            }
+          </div>
+
+          <form class="qm-ct-form qm-reveal" (ngSubmit)="submitContactForm()" novalidate>
+            @if (formError) {
+              <p class="qm-ct-form-error" role="alert">{{ formError }}</p>
+            }
+
+            <div class="qm-ct-form-grid">
+              <label class="qm-ct-field">
+                <span class="qm-ct-label">Full name <span class="qm-ct-req">*</span></span>
+                <input
+                  type="text"
+                  name="name"
+                  class="qm-ct-input"
+                  placeholder="Aapka naam"
+                  autocomplete="name"
+                  required
+                  [(ngModel)]="contactForm.name"
+                />
+              </label>
+
+              <label class="qm-ct-field">
+                <span class="qm-ct-label">Mobile <span class="qm-ct-req">*</span></span>
+                <input
+                  type="tel"
+                  name="phone"
+                  class="qm-ct-input"
+                  placeholder="10-digit number"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  required
+                  [(ngModel)]="contactForm.phone"
+                />
+              </label>
+
+              <label class="qm-ct-field">
+                <span class="qm-ct-label">Email <span class="qm-ct-optional">optional</span></span>
+                <input
+                  type="email"
+                  name="email"
+                  class="qm-ct-input"
+                  placeholder="you@email.com"
+                  autocomplete="email"
+                  [(ngModel)]="contactForm.email"
+                />
+              </label>
+
+              <label class="qm-ct-field">
+                <span class="qm-ct-label">Topic <span class="qm-ct-req">*</span></span>
+                <select name="topic" class="qm-ct-input qm-ct-select" required [(ngModel)]="contactForm.topic">
+                  @for (t of contactTopics; track t.value) {
+                    <option [value]="t.value">{{ t.label }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="qm-ct-field qm-ct-field--full">
+                <span class="qm-ct-label">Area / zone</span>
+                <select name="area" class="qm-ct-input qm-ct-select" [(ngModel)]="contactForm.area">
+                  <option value="">Select area (optional)</option>
+                  @for (a of raipurAreas; track a) {
+                    <option [value]="a">{{ a }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="qm-ct-field qm-ct-field--full">
+                <span class="qm-ct-label">Message <span class="qm-ct-req">*</span></span>
+                <textarea
+                  name="message"
+                  class="qm-ct-input qm-ct-textarea"
+                  rows="5"
+                  placeholder="Service, date/slot, address landmark, ya issue detail likho..."
+                  required
+                  [(ngModel)]="contactForm.message"
+                ></textarea>
+              </label>
+            </div>
+
+            <div class="qm-ct-form-actions">
+              <button type="submit" class="qm-btn-primary qm-ct-form-submit">Send via WhatsApp</button>
+              <button type="button" class="qm-ct-btn-email" (click)="sendViaEmail()">Email instead</button>
+            </div>
+            <p class="qm-ct-form-foot">
+              Submit = WhatsApp open (official line). Email non-urgent queries ke liye.
+            </p>
+          </form>
         </div>
       </div>
     </section>

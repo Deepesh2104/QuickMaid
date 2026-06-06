@@ -25,41 +25,31 @@
               <span class="qm-display-accent">bharosemand safai</span>
             </h1>
             <p class="qm-dek">
-              Hum ek <strong>Raipur-first</strong> platform hain jo verified home-help ko seedha families se jodta hai —
-              <strong>clear pricing</strong>, <strong>WhatsApp-first booking</strong>, aur <strong>₹0 agent commission</strong>.
+              Hum ek <strong>Raipur-first</strong> platform hain — verified home-help ko seedha families se jodte hain.
+              <strong>Clear pricing</strong>, WhatsApp booking, aur <strong>₹0 agent commission</strong>.
             </p>
-            <ul class="qm-ab-trust-pills" aria-label="Trust highlights">
-              @for (pill of trustPills; track pill) {
-                <li>{{ pill }}</li>
+
+            <div class="qm-ab-quick-facts" aria-label="QuickMaid highlights">
+              @for (f of heroFacts; track f.label; let last = $last) {
+                <div class="qm-ab-fact" [class.qm-ab-fact--last]="last">
+                  <span class="qm-ab-fact-label">{{ f.label }}</span>
+                  <span class="qm-ab-fact-val">{{ f.value }}</span>
+                  <span class="qm-ab-fact-note">{{ f.note }}</span>
+                </div>
               }
-            </ul>
-            <div class="qm-metric-row">
-              <div class="qm-metric">
-                <span class="qm-metric-val">500+</span><span class="qm-metric-lbl">Happy families</span>
-              </div>
-              <div class="qm-metric">
-                <span class="qm-metric-val">4.8 ★</span><span class="qm-metric-lbl">Avg rating</span>
-              </div>
-              <div class="qm-metric">
-                <span class="qm-metric-val">₹0</span><span class="qm-metric-lbl">Agent fee</span>
-              </div>
             </div>
+
             <div class="qm-about-hero-cta">
               <a class="qm-btn-primary" [href]="waBook" rel="noopener noreferrer" target="_blank">WhatsApp pe book →</a>
               <a class="qm-btn-ghost" href="/#plans">Plans dekho</a>
-              <a class="qm-btn-ghost" routerLink="/contact">Contact</a>
             </div>
+            <p class="qm-ab-hero-meta">
+              Aadhaar verified · OTP start &amp; end ·
+              <a routerLink="/contact">Contact</a>
+            </p>
           </div>
           <div class="qm-about-visual qm-reveal" aria-hidden="true">
-            <div class="qm-about-hero-art">
-              <div class="qm-ab-float qm-ab-float--a">
-                <span class="qm-ab-badge qm-ab-badge--ok" aria-hidden="true">ID</span>
-                <span>Aadhaar verified</span>
-              </div>
-              <div class="qm-ab-float qm-ab-float--b">
-                <span class="qm-ab-badge qm-ab-badge--spd" aria-hidden="true">30</span>
-                <span>Min zone ETA</span>
-              </div>
+            <div class="qm-about-hero-art qm-ab-art--compact">
               <div class="qm-ab-phone">
                 <div class="qm-ab-phone-notch"></div>
                 <div class="qm-ab-phone-screen">
