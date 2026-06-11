@@ -1,6 +1,8 @@
 # Architecture
 
-How QuickMaid is structured — routing, services, state, and UI patterns.
+How **this repository** (QuickMaid web + admin) is structured — routing, services, state, and UI patterns.
+
+> **Scope:** This document describes **this repository only** (Angular web + admin). Mobile apps → **QuickMaid-App** (separate repo, separate docs). Platform overview → [PLATFORM.md](./PLATFORM.md).
 
 ## High-level diagram
 
@@ -239,6 +241,8 @@ See [Development Guide](./DEVELOPMENT.md#css-conventions) for class reference.
 
 ## Related docs
 
+- [Public Guide](./PUBLIC_GUIDE.md) — landing, book, partner web pages
 - [Development Guide](./DEVELOPMENT.md) — how to add screens and services
 - [Admin Guide](./ADMIN_GUIDE.md) — screen-by-screen reference
+- [Platform Overview](./PLATFORM.md) — web vs mobile repos
 - [Phase 3 Backend](./PHASE3_BACKEND.md) — planned API replacement for demo state

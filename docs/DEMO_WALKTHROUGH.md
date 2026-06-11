@@ -1,6 +1,8 @@
 # Demo Walkthrough
 
-A **15-minute live demo script** for stakeholders. Best on desktop (≥1024px width).
+A **15-minute live demo script** for the **QuickMaid web prototype** (this repo). Best on desktop (≥1024px width).
+
+> Covers public web flows + admin console. Mobile app demos → **QuickMaid-App** repo (when built).
 
 ## Before you start
 
@@ -235,6 +237,7 @@ Click **theme picker** in admin topbar → switch to Indigo or Violet.
 
 ## Related docs
 
+- [Public Guide](./PUBLIC_GUIDE.md) — landing, book, partner pages
 - [Admin Guide](./ADMIN_GUIDE.md) — full screen reference
 - [Architecture](./ARCHITECTURE.md) — how live state works
-- [Phase 3 Backend](./PHASE3_BACKEND.md) — production roadmap
+- [Platform Overview](./PLATFORM.md) — web vs mobile split

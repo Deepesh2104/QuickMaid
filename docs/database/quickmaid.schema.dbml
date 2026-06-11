@@ -1,0 +1,1655 @@
+// =============================================================================
+// QuickMaid — Production Database Schema (PostgreSQL)
+// =============================================================================
+// HOW TO OPEN (read this — wrong import causes SQL parse errors):
+//   1. Go to https://dbdiagram.io/d
+//   2. Click "New Diagram" → choose language: DBML (NOT MySQL / NOT PostgreSQL SQL)
+//   3. Paste ALL of this file into the LEFT code editor panel
+//   4. Diagram renders on the right automatically
+//
+// DO NOT use "Import from MySQL" modal — that expects mysqldump SQL, not DBML.
+// The error "mismatched input '/'" means you pasted DBML into the SQL importer.
+// =============================================================================
+// Clients : Customer App (RN) | Maid/Partner App (RN) | Admin (Angular)
+// Version : 1.2 FINAL — see SCHEMA_FINAL.md for full specification
+// =============================================================================
+
+Project QuickMaid {
+  database_type: 'PostgreSQL'
+  Note: '''
+    **Design principles**
+    • Single source of truth — one DB for web admin, customer & maid apps
+    • Auth substrate (`users`) + role-specific profile tables (customers, maids, admin_users)
+    • Financial immutability — payments, refunds, wallet ledger are append-only
+    • Booking snapshots — address/payment/price frozen at order time (JSONB + FKs)
+    • Soft-delete PII — `deleted_at` on profiles; hard-delete via DSAR workflow
+    • RBAC enforced server-side — never trust Angular role labels alone
+    • Real-time dispatch — hot state in Redis; DB stores assignments & history
+    • Multi-city ready — `cities` → `zones`; Raipur seeded first
+    • Transactional outbox — `domain_events` for reliable FCM/SMS/webhooks
+    • High-volume partition — `maid_location_pings`, `audit_logs`, `notifications` (monthly)
+    • Denormalized counters — `total_visits`, `avg_rating` synced via jobs; ledger is truth for money
+  '''
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+Enum user_role {
+  customer
+  maid
+  admin
+}
+
+Enum assignment_response {
+  pending
+  accepted
+  declined
+  expired
+}
+
+Enum user_status {
+  active
+  suspended
+  pending_verification
+  deleted
+}
+
+Enum gender {
+  female
+  male
+  other
+  prefer_not_to_say
+}
+
+Enum home_type {
+  bhk_1
+  bhk_2
+  bhk_3
+  villa
+  other
+}
+
+Enum address_label {
+  home
+  office
+  other
+}
+
+Enum payment_method_type {
+  upi
+  card
+  netbanking
+  wallet
+  cash
+  pay_later
+  emi
+}
+
+Enum booking_status {
+  draft
+  pending_payment
+  confirmed
+  assigned
+  en_route
+  in_progress
+  completed
+  cancelled
+  no_show
+}
+
+Enum payment_status {
+  created
+  authorized
+  captured
+  failed
+  refunded
+  partially_refunded
+}
+
+Enum refund_status {
+  requested
+  processing
+  completed
+  failed
+}
+
+Enum wallet_entry_type {
+  credit
+  debit
+  refund
+  bonus
+  adjustment
+}
+
+Enum wallet_entry_source {
+  topup
+  booking
+  plus_subscription
+  referral
+  promo
+  cancel_refund
+  admin_adjustment
+  adjustment
+}
+
+Enum domain_event_status {
+  pending
+  published
+  failed
+}
+
+Enum corporate_user_role {
+  admin
+  approver
+  employee
+}
+
+Enum integration_provider {
+  razorpay
+  fcm
+  msg91
+  twilio
+  digilocker
+  google_places
+  sentry
+}
+
+Enum maid_status {
+  pending_kyc
+  active
+  suspended
+  rejected
+  offboarded
+}
+
+Enum kyc_doc_type {
+  aadhaar
+  pan
+  police_verification
+  bank_proof
+  training_certificate
+  profile_photo
+  selfie
+}
+
+Enum marital_status {
+  single
+  married
+  widowed
+  other
+}
+
+Enum travel_mode {
+  walk
+  cycle
+  bus
+  auto
+  bike
+}
+
+Enum kyc_doc_status {
+  missing
+  pending
+  verified
+  rejected
+}
+
+Enum application_status {
+  submitted
+  under_review
+  approved
+  rejected
+}
+
+Enum subscription_plan_type {
+  instant
+  monthly
+  annual
+  plus
+  flex
+  onetime
+}
+
+Enum subscription_status {
+  active
+  paused
+  cancelled
+  expired
+}
+
+Enum coupon_discount_type {
+  percent
+  flat
+}
+
+Enum coupon_category {
+  booking
+  plus
+  all
+}
+
+Enum coupon_status {
+  draft
+  live
+  ended
+}
+
+Enum customer_coupon_status {
+  active
+  used
+  expired
+}
+
+Enum referral_status {
+  pending
+  credited
+  expired
+}
+
+Enum ticket_topic {
+  booking
+  payment
+  plus
+  partner
+  dispute
+  other
+}
+
+Enum ticket_status {
+  open
+  in_review
+  resolved
+  snoozed
+}
+
+Enum dispute_reason {
+  quality
+  incomplete
+  damage
+  behavior
+  billing
+  other
+}
+
+Enum dispute_status {
+  submitted
+  in_review
+  resolved
+  rejected
+}
+
+Enum message_sender {
+  customer
+  maid
+  agent
+  system
+}
+
+Enum notification_channel {
+  push
+  sms
+  whatsapp
+  email
+  in_app
+}
+
+Enum notification_category {
+  booking
+  pro
+  payment
+  offer
+  system
+}
+
+Enum payout_batch_status {
+  draft
+  processing
+  paid
+  failed
+  held
+}
+
+Enum payout_line_status {
+  pending
+  ready
+  held
+  paid
+  failed
+}
+
+Enum admin_role_key {
+  super_admin
+  ops_manager
+  support_l1
+  support_l2
+  analyst
+  finance
+}
+
+Enum cancel_reason {
+  schedule
+  alternative
+  maid
+  price
+  no_show
+  admin
+  other
+}
+
+Enum preferred_channel {
+  whatsapp
+  sms
+  call
+}
+
+Enum customer_health {
+  vip
+  active
+  at_risk
+  churned
+}
+
+Enum zone_health {
+  optimal
+  good
+  needs_supply
+  under_served
+  critical
+}
+
+// =============================================================================
+// GEOGRAPHY & SERVICE CATALOG
+// =============================================================================
+
+Table cities {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(32) [unique, not null, note: 'raipur']
+  name varchar(100) [not null]
+  state varchar(100) [not null]
+  country_code char(2) [not null, default: 'IN']
+  is_live boolean [not null, default: false]
+  timezone varchar(64) [not null, default: 'Asia/Kolkata']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Expansion cities from waitlist drive `is_live` flips'
+}
+
+Table zones {
+  id uuid [pk, default: `gen_random_uuid()`]
+  city_id uuid [not null, ref: > cities.id]
+  slug varchar(64) [not null, note: 'shankar-nagar']
+  name varchar(100) [not null]
+  pincode varchar(10)
+  center_lat decimal(10,7)
+  center_lng decimal(10,7)
+  radius_km decimal(6,2) [default: 5]
+  demand_score int [default: 0]
+  supply_score int [default: 0]
+  coverage_pct decimal(5,2) [default: 0]
+  avg_eta_minutes int
+  health zone_health [default: 'good']
+  surge_active boolean [not null, default: false]
+  surge_pct decimal(5,2) [default: 0]
+  peak_hours varchar(100)
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (city_id, slug) [unique]
+    city_id
+  }
+}
+
+Table service_categories {
+  id uuid [pk, default: `gen_random_uuid()`]
+  slug varchar(64) [unique, not null, note: 'deep, kitchen, packages']
+  name varchar(100) [not null]
+  sort_order int [not null, default: 0]
+  is_active boolean [not null, default: true]
+}
+
+Table services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  slug varchar(64) [unique, not null, note: 'deep, regular, bhk2deep']
+  category_id uuid [not null, ref: > service_categories.id]
+  name varchar(150) [not null]
+  description text
+  base_price_paise int [not null, note: 'INR × 100']
+  duration_minutes int
+  badge varchar(32) [note: 'Popular, Best value']
+  perks jsonb [note: 'string[]']
+  icon_key varchar(64)
+  tint_hex char(7)
+  avg_rating decimal(3,2) [default: 0]
+  review_count int [default: 0]
+  is_active boolean [not null, default: true]
+  sort_order int [default: 0]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    category_id
+    is_active
+  }
+}
+
+Table zone_services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  zone_id uuid [not null, ref: > zones.id]
+  service_id uuid [not null, ref: > services.id]
+  is_top_service boolean [default: false]
+  price_override_paise int [note: 'null = use services.base_price_paise']
+
+  indexes {
+    (zone_id, service_id) [unique]
+  }
+}
+
+Table skills {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(64) [unique, not null, note: 'cleaning, cooking, deep_clean']
+  label varchar(100) [not null]
+  is_active boolean [default: true]
+}
+
+Table time_slots {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(32) [unique, not null, note: 'morning, afternoon, weekend_am']
+  label varchar(100) [not null, note: 'Mon–Sat · 8–11 AM']
+  day_mask varchar(20) [note: 'weekday|weekend|all']
+  start_time time
+  end_time time
+  sort_order int [default: 0]
+  is_active boolean [default: true]
+}
+
+Table subscription_plans {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(32) [unique, not null, note: 'plus, flex, onetime']
+  plan_type subscription_plan_type [not null]
+  name varchar(100) [not null]
+  price_paise int [not null]
+  visit_credits int [note: 'null = pay per visit']
+  validity_days int
+  discount_pct decimal(5,2) [default: 0, note: 'Plus 10% on bookings']
+  is_active boolean [default: true]
+  created_at timestamp [not null, default: `now()`]
+}
+
+// =============================================================================
+// AUTH & IDENTITY (all apps)
+// =============================================================================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  phone varchar(15) [unique, not null, note: 'E.164 +91… — one identity per person']
+  email varchar(255)
+  phone_verified_at timestamp
+  email_verified_at timestamp
+  status user_status [not null, default: 'pending_verification']
+  last_login_at timestamp
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    phone
+    status
+  }
+
+  Note: 'No single user_type — use user_roles. Same person can be maid AND customer.'
+}
+
+Table user_roles {
+  user_id uuid [not null, ref: > users.id]
+  role user_role [not null]
+  granted_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (user_id, role) [pk]
+  }
+
+  Note: 'Bidirectional: customer can become maid, maid can book as customer — same user_id, both roles'
+}
+
+Table otp_verifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  phone varchar(15) [not null]
+  otp_hash varchar(128) [not null]
+  purpose varchar(32) [not null, note: 'login, signup, payout_verify']
+  attempts int [not null, default: 0]
+  expires_at timestamp [not null]
+  verified_at timestamp
+  ip_address varchar(45)
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (phone, purpose, created_at)
+  }
+}
+
+Table auth_sessions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  refresh_token_hash varchar(128) [not null]
+  device_id varchar(128)
+  device_name varchar(100)
+  app_client varchar(32) [not null, note: 'customer|maid|admin_web']
+  ip_address varchar(45)
+  user_agent text
+  expires_at timestamp [not null]
+  revoked_at timestamp
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    user_id
+    expires_at
+  }
+}
+
+// =============================================================================
+// CUSTOMERS (Customer App)
+// =============================================================================
+
+Table customers {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: - users.id]
+  public_id varchar(20) [unique, not null, note: 'CU-7492101 — customer-facing ID']
+  city_id uuid [ref: > cities.id]
+  name varchar(150) [not null]
+  email varchar(255) [note: 'Denormalized from signup; users.email is canonical']
+  gender gender
+  home_type home_type
+  locality varchar(150)
+  default_zone_id uuid [ref: > zones.id]
+  avatar_url text
+  language char(2) [not null, default: 'en', note: 'en|hi']
+  referral_code varchar(20) [unique, not null]
+  referred_by_customer_id uuid [ref: > customers.id]
+  member_since date [not null, default: `CURRENT_DATE`]
+  health_segment customer_health [default: 'active']
+  total_visits int [not null, default: 0]
+  total_spent_paise bigint [not null, default: 0, note: 'Denormalized — synced from bookings via job']
+  avg_csat decimal(3,2) [note: 'Denormalized — synced from booking_reviews']
+  counters_synced_at timestamp [note: 'Last aggregate refresh job run']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    public_id
+    referral_code
+    city_id
+    health_segment
+  }
+
+  Note: 'Existing customer can apply to become maid via maid_applications — same user_id kept'
+}
+
+Table customer_addresses {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [not null, ref: > customers.id]
+  label address_label [not null]
+  label_note varchar(100) [note: 'Required when label is other e.g. Moms home']
+  flat_no varchar(50)
+  building varchar(150)
+  street varchar(255) [not null]
+  landmark varchar(150)
+  zone_id uuid [not null, ref: > zones.id]
+  pincode varchar(10) [not null]
+  city_id uuid [not null, ref: > cities.id]
+  gate_code varchar(50)
+  contact_phone varchar(15)
+  latitude decimal(10,7)
+  longitude decimal(10,7)
+  formatted_line text [not null]
+  is_default boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    customer_id
+    (customer_id, is_default)
+  }
+}
+
+Table customer_preferences {
+  customer_id uuid [pk, ref: - customers.id]
+  preferred_slot_id uuid [ref: > time_slots.id]
+  favorite_maid_id uuid [ref: > maids.id]
+  notify_booking boolean [default: true]
+  notify_offers boolean [default: true]
+  notify_pro boolean [default: true]
+  notify_sms boolean [default: true]
+  whatsapp_opt_in boolean [default: true]
+  preferred_channel preferred_channel [default: 'whatsapp']
+  gate_code varchar(50)
+  has_pets boolean [default: false]
+  pet_notes text
+  parking_notes text
+  visit_instructions text
+  emergency_name varchar(100)
+  emergency_phone varchar(15)
+  emergency_relation varchar(50)
+  location_permission boolean [default: false]
+  push_permission boolean [default: false]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table customer_payment_methods {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [not null, ref: > customers.id]
+  method_type payment_method_type [not null]
+  label varchar(100) [not null]
+  masked_detail varchar(100) [not null, note: 'UPI VPA / card last4']
+  gateway_token varchar(255) [note: 'Razorpay customer/payment method id']
+  is_default boolean [default: false]
+  created_at timestamp [not null, default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    customer_id
+  }
+}
+
+Table customer_saved_services {
+  customer_id uuid [not null, ref: > customers.id]
+  service_id uuid [not null, ref: > services.id]
+  saved_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (customer_id, service_id) [pk]
+  }
+}
+
+// =============================================================================
+// MAIDS / PARTNERS (Maid App + Admin)
+// =============================================================================
+
+Table maid_applications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  public_id varchar(20) [unique, not null, note: 'MD-1104']
+  user_id uuid [ref: > users.id, note: 'Set when applicant is already a customer — same phone account']
+  existing_customer_id uuid [ref: > customers.id, note: 'Pre-filled from customer profile on upgrade path']
+  full_name varchar(150) [not null]
+  phone varchar(15) [not null]
+  city_id uuid [ref: > cities.id]
+  zone_id uuid [ref: > zones.id]
+  skills_text varchar(255)
+  age int
+  aadhaar_number_encrypted text [note: 'AES encrypted at rest - bytea in PostgreSQL']
+  bank_name varchar(100)
+  bank_account_encrypted text [note: 'bytea in PostgreSQL']
+  ifsc varchar(20)
+  upi_id varchar(100)
+  emergency_contact varchar(100)
+  notes text
+  status application_status [not null, default: 'submitted']
+  submitted_at timestamp [not null, default: `now()`]
+  reviewed_by uuid [ref: > admin_users.id]
+  reviewed_at timestamp
+  reject_reason text
+  approved_maid_id uuid [ref: > maids.id, note: 'Set on approve']
+
+  indexes {
+    (phone, status)
+    user_id
+    status
+  }
+
+  Note: 'Customer App Become a Partner CTA creates row with user_id + existing_customer_id'
+}
+
+Table maids {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: - users.id]
+  linked_customer_id uuid [unique, ref: - customers.id, note: 'Personal customer profile when maid books for own home']
+  public_id varchar(20) [unique, not null, note: 'MD-1042']
+  application_id uuid [ref: > maid_applications.id]
+  display_name varchar(150) [not null]
+  first_name varchar(80) [note: 'KYC + apply form']
+  last_name varchar(80)
+  date_of_birth date
+  bio text
+  age int [note: 'Deprecated — prefer date_of_birth; kept for migration']
+  gender gender
+  marital_status marital_status
+  travel_mode travel_mode
+  work_radius_km smallint [default: 5, note: 'Dispatch auto-assign radius']
+  alternate_phone varchar(15)
+  photo_url text
+  referred_by_code varchar(20)
+  city_id uuid [not null, ref: > cities.id]
+  primary_zone_id uuid [ref: > zones.id]
+  address_line text
+  emergency_contact varchar(100)
+  upi_id varchar(100)
+  bank_name varchar(100)
+  bank_account_masked varchar(30)
+  ifsc varchar(20)
+  status maid_status [not null, default: 'pending_kyc']
+  police_verified boolean [default: false]
+  training_verified boolean [default: false]
+  experience_years int [default: 0]
+  languages varchar(255) [note: 'comma-separated']
+  avg_rating decimal(3,2) [default: 0, note: 'Denormalized — synced from booking_reviews']
+  rating_synced_at timestamp
+  total_jobs int [default: 0, note: 'Denormalized — synced from completed bookings']
+  on_time_pct decimal(5,2) [default: 0]
+  repeat_rate_pct decimal(5,2) [default: 0]
+  no_show_count int [default: 0]
+  total_earnings_paise bigint [default: 0]
+  is_online boolean [not null, default: false, note: 'Partner app go-online toggle']
+  last_active_at timestamp
+  joined_at date [not null, default: `CURRENT_DATE`]
+  suspended_at timestamp
+  suspend_reason text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    public_id
+    (city_id, status)
+    primary_zone_id
+    status
+  }
+}
+
+Table maid_skills_map {
+  maid_id uuid [not null, ref: > maids.id]
+  skill_id uuid [not null, ref: > skills.id]
+
+  indexes {
+    (maid_id, skill_id) [pk]
+  }
+}
+
+Table maid_zones_map {
+  maid_id uuid [not null, ref: > maids.id]
+  zone_id uuid [not null, ref: > zones.id]
+
+  indexes {
+    (maid_id, zone_id) [pk]
+  }
+}
+
+Table maid_documents {
+  id uuid [pk, default: `gen_random_uuid()`]
+  maid_id uuid [not null, ref: > maids.id]
+  doc_type kyc_doc_type [not null]
+  status kyc_doc_status [not null, default: 'missing']
+  file_url text [note: 'S3 pre-signed upload URL stored']
+  file_hash varchar(64)
+  verified_by uuid [ref: > admin_users.id]
+  verified_at timestamp
+  reject_reason text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (maid_id, doc_type) [unique]
+  }
+}
+
+Table maid_availability {
+  id uuid [pk, default: `gen_random_uuid()`]
+  maid_id uuid [not null, ref: > maids.id]
+  slot_id uuid [not null, ref: > time_slots.id]
+  day_of_week smallint [not null, note: '0=Sun … 6=Sat']
+  is_available boolean [not null, default: true]
+
+  indexes {
+    (maid_id, day_of_week, slot_id) [unique]
+  }
+}
+
+Table maid_location_pings {
+  id uuid [pk, default: `gen_random_uuid()`]
+  maid_id uuid [not null, ref: > maids.id]
+  booking_id uuid [ref: > bookings.id]
+  latitude decimal(10,7) [not null]
+  longitude decimal(10,7) [not null]
+  accuracy_meters decimal(8,2)
+  recorded_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (maid_id, recorded_at)
+    (booking_id, recorded_at)
+  }
+
+  Note: 'PARTITION BY RANGE (recorded_at) monthly in production. Hot ETA in Redis; DB is archive.'
+}
+
+Table maid_dispatch_preferences {
+  maid_id uuid [pk, ref: - maids.id]
+  auto_assign_enabled boolean [not null, default: true]
+  alert_new_jobs boolean [not null, default: true]
+  alert_sound_enabled boolean [not null, default: true]
+  max_concurrent_jobs smallint [not null, default: 1]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Partner app settings — replaces AsyncStorage partner_preferences on API cutover'
+}
+
+// =============================================================================
+// BOOKINGS (all apps)
+// =============================================================================
+
+Table bookings {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_ref varchar(32) [unique, not null, note: 'QM-8JUN-499']
+  customer_id uuid [not null, ref: > customers.id]
+  city_id uuid [not null, ref: > cities.id]
+  zone_id uuid [not null, ref: > zones.id]
+  address_id uuid [ref: > customer_addresses.id, note: 'Source address FK']
+  address_snapshot jsonb [not null, note: 'Frozen address at booking time']
+  status booking_status [not null, default: 'draft']
+  slot_id uuid [ref: > time_slots.id]
+  slot_label varchar(100)
+  visit_date date [not null]
+  visit_start_at timestamp
+  visit_end_at timestamp
+  instructions text
+  subtotal_paise int [not null, default: 0]
+  plus_discount_paise int [not null, default: 0]
+  coupon_discount_paise int [not null, default: 0]
+  wallet_used_paise int [not null, default: 0]
+  platform_fee_paise int [not null, default: 0]
+  total_paise int [not null, default: 0]
+  payable_paise int [not null, default: 0]
+  coupon_code varchar(32)
+  subscription_id uuid [ref: > customer_subscriptions.id]
+  payment_mode payment_method_type
+  payment_status payment_status
+  assigned_maid_id uuid [ref: > maids.id]
+  maid_assigned_at timestamp
+  completion_otp_hash varchar(128) [note: 'Hashed 6-digit OTP for visit complete']
+  otp_verified_at timestamp
+  completed_at timestamp
+  cancelled_at timestamp
+  cancel_reason cancel_reason
+  cancel_note text
+  refund_amount_paise int [default: 0]
+  refund_status refund_status
+  corporate_account_id uuid [ref: > corporate_accounts.id, note: 'B2B corporate booking']
+  source varchar(20) [not null, default: 'app', note: 'app|web|admin|b2b']
+  row_version int [not null, default: 0, note: 'Optimistic lock on status transitions']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    booking_ref
+    customer_id
+    (status, visit_date)
+    assigned_maid_id
+    (zone_id, status, visit_date)
+    corporate_account_id
+    created_at
+  }
+
+  Note: 'Rule: assigned_maid_id must not equal customers linked via maids.linked_customer_id (no self-job). Enforced in API dispatch.'
+}
+
+Table booking_line_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [not null, ref: > bookings.id]
+  service_id uuid [not null, ref: > services.id]
+  service_name varchar(150) [not null, note: 'Snapshot']
+  unit_price_paise int [not null]
+  quantity int [not null, default: 1]
+  duration_minutes int
+  line_total_paise int [not null]
+
+  indexes {
+    booking_id
+  }
+}
+
+Table booking_status_events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [not null, ref: > bookings.id]
+  from_status booking_status
+  to_status booking_status [not null]
+  actor_user_id uuid [ref: > users.id]
+  actor_type varchar(20) [note: 'customer|maid|admin|system']
+  note text
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (booking_id, created_at)
+  }
+
+  Note: 'Append-only state machine audit'
+}
+
+Table booking_assignments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [not null, ref: > bookings.id]
+  maid_id uuid [not null, ref: > maids.id]
+  assigned_by uuid [ref: > users.id, note: 'admin or dispatch engine']
+  assignment_type varchar(20) [not null, note: 'auto|manual|favorite|reassign']
+  response assignment_response [not null, default: 'pending', note: 'Partner accept or decline job']
+  responded_at timestamp
+  decline_reason varchar(100)
+  expires_at timestamp [note: 'Offer TTL — auto-expire to next maid in pool']
+  offer_round smallint [not null, default: 1, note: 'Reassignment attempt number']
+  is_active boolean [not null, default: true]
+  assigned_at timestamp [not null, default: `now()`]
+  unassigned_at timestamp
+
+  indexes {
+    booking_id
+    (maid_id, is_active)
+    (maid_id, response)
+    (maid_id, expires_at)
+  }
+
+  Note: 'Partner app job inbox — pending until accepted or expired'
+}
+
+Table booking_reviews {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [unique, not null, ref: - bookings.id]
+  customer_id uuid [not null, ref: > customers.id]
+  maid_id uuid [not null, ref: > maids.id]
+  rating smallint [not null, note: '1-5 CHECK constraint in SQL']
+  review_text text
+  tags varchar(255) [note: 'comma-separated tags']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    maid_id
+    customer_id
+    created_at
+  }
+}
+
+// =============================================================================
+// PAYMENTS & WALLET
+// =============================================================================
+
+Table payment_orders {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [ref: > bookings.id]
+  subscription_id uuid [ref: > customer_subscriptions.id]
+  customer_id uuid [not null, ref: > customers.id]
+  gateway varchar(32) [not null, default: 'razorpay']
+  gateway_order_id varchar(100) [unique]
+  amount_paise int [not null]
+  currency char(3) [not null, default: 'INR']
+  status payment_status [not null, default: 'created']
+  idempotency_key varchar(64) [unique]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    customer_id
+    booking_id
+  }
+}
+
+Table payment_transactions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  payment_order_id uuid [not null, ref: > payment_orders.id]
+  gateway_payment_id varchar(100) [unique]
+  method payment_method_type [not null]
+  method_label varchar(100)
+  amount_paise int [not null]
+  wallet_used_paise int [not null, default: 0]
+  status payment_status [not null]
+  captured_at timestamp
+  raw_gateway_payload jsonb
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Immutable after capture — never UPDATE amount/status; use refunds'
+}
+
+Table refunds {
+  id uuid [pk, default: `gen_random_uuid()`]
+  payment_transaction_id uuid [not null, ref: > payment_transactions.id]
+  booking_id uuid [ref: > bookings.id]
+  refund_ref varchar(32) [unique, note: 'RFND-…']
+  amount_paise int [not null]
+  reason cancel_reason
+  reason_note text
+  status refund_status [not null, default: 'requested']
+  gateway_refund_id varchar(100)
+  initiated_by uuid [ref: > users.id]
+  completed_at timestamp
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table wallet_accounts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [unique, not null, ref: - customers.id]
+  balance_paise bigint [not null, default: 0, note: 'Cached — source of truth is ledger']
+  version int [not null, default: 0, note: 'Optimistic locking']
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table wallet_ledger_entries {
+  id uuid [pk, default: `gen_random_uuid()`]
+  wallet_account_id uuid [not null, ref: > wallet_accounts.id]
+  entry_type wallet_entry_type [not null]
+  source wallet_entry_source [not null]
+  amount_paise int [not null, note: 'Always positive; type determines sign']
+  balance_after_paise bigint [not null]
+  title varchar(150) [not null]
+  subtitle varchar(255)
+  reference_type varchar(32) [note: 'booking|subscription|referral|topup']
+  reference_id uuid
+  idempotency_key varchar(64) [unique]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (wallet_account_id, created_at)
+    reference_id
+  }
+
+  Note: 'Append-only financial ledger — never delete rows'
+}
+
+// =============================================================================
+// SUBSCRIPTIONS / PLUS
+// =============================================================================
+
+Table customer_subscriptions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [not null, ref: > customers.id]
+  plan_id uuid [not null, ref: > subscription_plans.id]
+  status subscription_status [not null, default: 'active']
+  visits_total int
+  visits_remaining int
+  amount_paid_paise int [not null]
+  wallet_used_paise int [default: 0]
+  payment_transaction_id uuid [ref: > payment_transactions.id]
+  started_at timestamp [not null, default: `now()`]
+  renews_at timestamp
+  paused_at timestamp
+  paused_until timestamp
+  cancelled_at timestamp
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (customer_id, status)
+  }
+}
+
+// =============================================================================
+// COUPONS, REFERRALS, GROWTH
+// =============================================================================
+
+Table coupon_campaigns {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(32) [unique, not null]
+  title varchar(150) [not null]
+  description text
+  discount_type coupon_discount_type [not null]
+  discount_value decimal(10,2) [not null]
+  min_order_paise int
+  max_discount_paise int
+  category coupon_category [not null, default: 'all']
+  channel varchar(50) [note: 'WhatsApp, App, Sales']
+  max_redemptions int
+  used_count int [not null, default: 0]
+  status coupon_status [not null, default: 'draft']
+  valid_from timestamp
+  valid_until timestamp
+  created_by uuid [ref: > admin_users.id]
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table customer_coupons {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [not null, ref: > customers.id]
+  campaign_id uuid [not null, ref: > coupon_campaigns.id]
+  status customer_coupon_status [not null, default: 'active']
+  saved_at timestamp [not null, default: `now()`]
+  expires_at timestamp
+  used_at timestamp
+  used_on_booking_id uuid [ref: > bookings.id]
+
+  indexes {
+    (customer_id, status)
+    (customer_id, campaign_id) [unique]
+  }
+}
+
+Table coupon_redemptions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  campaign_id uuid [not null, ref: > coupon_campaigns.id]
+  customer_id uuid [not null, ref: > customers.id]
+  booking_id uuid [ref: > bookings.id]
+  discount_paise int [not null]
+  redeemed_at timestamp [not null, default: `now()`]
+}
+
+Table referrals {
+  id uuid [pk, default: `gen_random_uuid()`]
+  referrer_customer_id uuid [not null, ref: > customers.id]
+  referee_customer_id uuid [ref: > customers.id]
+  referee_phone varchar(15)
+  referee_name varchar(150)
+  status referral_status [not null, default: 'pending']
+  reward_paise int [not null, default: 10000, note: '₹100']
+  credited_ledger_id uuid [ref: > wallet_ledger_entries.id]
+  created_at timestamp [not null, default: `now()`]
+  credited_at timestamp
+
+  indexes {
+    referrer_customer_id
+  }
+}
+
+Table waitlist_entries {
+  id uuid [pk, default: `gen_random_uuid()`]
+  city_name varchar(100) [not null]
+  email varchar(255) [not null]
+  source varchar(32) [default: 'landing']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (email, city_name) [unique]
+  }
+}
+
+Table corporate_accounts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_name varchar(200) [not null]
+  contact_name varchar(150)
+  contact_email varchar(255)
+  contact_phone varchar(15)
+  city_id uuid [ref: > cities.id]
+  billing_gstin varchar(20)
+  contract_value_paise bigint
+  seats int [note: 'Admin CRM — licensed seats']
+  mrr_paise bigint [note: 'Monthly recurring revenue']
+  erp_external_id varchar(50) [note: 'Admin erpId field']
+  trial_ends_at date
+  status varchar(20) [default: 'active']
+  notes text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    status
+    city_id
+  }
+}
+
+Table corporate_account_users {
+  corporate_account_id uuid [not null, ref: > corporate_accounts.id]
+  customer_id uuid [not null, ref: > customers.id]
+  role corporate_user_role [not null, default: 'employee']
+  department varchar(100)
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (corporate_account_id, customer_id) [pk]
+    customer_id
+  }
+
+  Note: 'Links corporate B2B account to customer users who book on behalf of company'
+}
+
+Table corporate_booking_policies {
+  corporate_account_id uuid [pk, ref: - corporate_accounts.id]
+  approval_required boolean [not null, default: false]
+  spend_limit_paise bigint [note: 'Per-booking cap']
+  auto_approve_under_paise int [default: 0]
+  allowed_zones uuid[] [note: 'Optional zone allow-list']
+  updated_at timestamp [not null, default: `now()`]
+}
+
+// =============================================================================
+// MAID PAYOUTS (Admin Finance)
+// =============================================================================
+
+Table payout_batches {
+  id uuid [pk, default: `gen_random_uuid()`]
+  batch_ref varchar(32) [unique, not null, note: 'PW-2025-W24']
+  period_start date [not null]
+  period_end date [not null]
+  total_amount_paise bigint [not null, default: 0]
+  maid_count int [not null, default: 0]
+  status payout_batch_status [not null, default: 'draft']
+  processed_by uuid [ref: > admin_users.id]
+  processed_at timestamp
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table maid_payout_lines {
+  id uuid [pk, default: `gen_random_uuid()`]
+  batch_id uuid [not null, ref: > payout_batches.id]
+  maid_id uuid [not null, ref: > maids.id]
+  bookings_count int [not null, default: 0]
+  gross_paise int [not null]
+  deductions_paise int [not null, default: 0]
+  net_paise int [not null]
+  upi_id varchar(100)
+  status payout_line_status [not null, default: 'pending']
+  risk_note text
+  gateway_transfer_id varchar(100)
+  paid_at timestamp
+
+  indexes {
+    (batch_id, maid_id) [unique]
+    maid_id
+  }
+}
+
+Table maid_earnings_ledger {
+  id uuid [pk, default: `gen_random_uuid()`]
+  maid_id uuid [not null, ref: > maids.id]
+  booking_id uuid [ref: > bookings.id]
+  gross_paise int [not null]
+  platform_fee_paise int [not null, default: 0]
+  net_paise int [not null]
+  payout_line_id uuid [ref: > maid_payout_lines.id]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (maid_id, created_at)
+    booking_id
+  }
+}
+
+// =============================================================================
+// SUPPORT & DISPUTES
+// =============================================================================
+
+Table support_tickets {
+  id uuid [pk, default: `gen_random_uuid()`]
+  public_id varchar(20) [unique, not null, note: 'TKT-089']
+  customer_id uuid [ref: > customers.id]
+  maid_id uuid [ref: > maids.id]
+  topic ticket_topic [not null]
+  status ticket_status [not null, default: 'open']
+  priority varchar(10) [default: 'med', note: 'high|med|low']
+  subject varchar(255) [not null]
+  booking_id uuid [ref: > bookings.id]
+  booking_ref varchar(32)
+  payment_transaction_id uuid [ref: > payment_transactions.id]
+  assigned_agent_id uuid [ref: > admin_users.id]
+  sla_due_at timestamp
+  resolved_at timestamp
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (status, priority)
+    customer_id
+    booking_id
+  }
+}
+
+Table support_messages {
+  id uuid [pk, default: `gen_random_uuid()`]
+  ticket_id uuid [not null, ref: > support_tickets.id]
+  sender_type message_sender [not null]
+  sender_user_id uuid [ref: > users.id]
+  body text [not null]
+  is_internal boolean [default: false, note: 'Agent-only notes']
+  read_at timestamp
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (ticket_id, created_at)
+  }
+}
+
+Table support_attachments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  message_id uuid [not null, ref: > support_messages.id]
+  file_name varchar(255) [not null]
+  file_url text [not null]
+  mime_type varchar(100)
+  size_bytes bigint
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table booking_disputes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  public_id varchar(20) [unique, not null, note: 'DSP-…']
+  ticket_id uuid [not null, ref: > support_tickets.id]
+  booking_id uuid [not null, ref: > bookings.id]
+  customer_id uuid [not null, ref: > customers.id]
+  reason dispute_reason [not null]
+  reason_label varchar(100) [not null]
+  description text [not null]
+  refund_requested boolean [default: false]
+  status dispute_status [not null, default: 'submitted']
+  resolution_note text
+  resolved_by uuid [ref: > admin_users.id]
+  created_at timestamp [not null, default: `now()`]
+  resolved_at timestamp
+
+  indexes {
+    booking_id [unique]
+  }
+
+  Note: 'One open dispute per booking — enforce in app layer or partial unique index'
+}
+
+// =============================================================================
+// NOTIFICATIONS
+// =============================================================================
+
+Table device_push_tokens {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  token text [not null]
+  platform varchar(20) [not null, note: 'ios|android|web']
+  app_client varchar(20) [not null]
+  is_active boolean [default: true]
+  created_at timestamp [not null, default: `now()`]
+  last_used_at timestamp
+
+  indexes {
+    (user_id, platform)
+    token
+  }
+}
+
+Table notifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  app_client varchar(20) [not null, note: 'customer|maid — separate inbox per app']
+  category notification_category [not null]
+  title varchar(200) [not null]
+  body text [not null]
+  detail text
+  action_type varchar(32) [note: 'booking|pro|profile|none']
+  action_target_id uuid
+  channel notification_channel [not null, default: 'in_app']
+  is_read boolean [not null, default: false]
+  read_at timestamp
+  sent_at timestamp
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (user_id, app_client, is_read, created_at)
+  }
+
+  Note: 'PARTITION BY RANGE (created_at) monthly in production. TTL purge job for read > 90 days.'
+}
+
+Table api_idempotency_keys {
+  key varchar(64) [pk, note: 'Idempotency-Key header value']
+  user_id uuid [not null, ref: > users.id]
+  endpoint varchar(120) [not null]
+  response_status smallint [not null]
+  response_body jsonb
+  created_at timestamp [not null, default: `now()`]
+  expires_at timestamp [not null]
+
+  indexes {
+    (user_id, created_at)
+    expires_at
+  }
+
+  Note: 'TTL 24h — safe POST retries for bookings and payments'
+}
+
+Table domain_events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  aggregate_type varchar(50) [not null, note: 'booking|payment|maid|customer|assignment']
+  aggregate_id uuid [not null]
+  event_type varchar(100) [not null, note: 'booking.created|job.offered|payment.captured']
+  payload jsonb [not null]
+  status domain_event_status [not null, default: 'pending']
+  published_at timestamp
+  retry_count int [not null, default: 0]
+  last_error text
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (status, created_at)
+    (aggregate_type, aggregate_id)
+    event_type
+  }
+
+  Note: 'Transactional outbox — worker publishes to FCM/SMS/webhooks; never delete pending rows'
+}
+
+Table status_display_mappings {
+  domain varchar(32) [not null, note: 'booking_customer|booking_partner|ticket_admin']
+  canonical_status varchar(32) [not null, note: 'DB enum value']
+  display_status varchar(32) [not null, note: 'App-specific label']
+  sort_order smallint [not null, default: 0]
+
+  indexes {
+    (domain, canonical_status) [pk]
+  }
+
+  Note: 'Reference data — seed on deploy; API uses for status mapping'
+}
+
+Table admin_alert_rules {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [not null]
+  severity varchar(10) [not null, note: 'info|warn|crit|any']
+  channel notification_channel [not null]
+  recipients text [not null, note: 'emails or slack channel']
+  is_enabled boolean [default: true]
+  created_at timestamp [not null, default: `now()`]
+}
+
+// =============================================================================
+// TRAINING & QUALITY (Admin quality module)
+// =============================================================================
+
+Table training_courses {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(32) [unique, not null]
+  title varchar(200) [not null]
+  description text
+  duration_minutes int [not null, default: 15]
+  is_mandatory boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  sort_order int [not null, default: 0]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table maid_training_completions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  maid_id uuid [not null, ref: > maids.id]
+  course_id uuid [not null, ref: > training_courses.id]
+  score smallint [note: '0-100 quiz score']
+  completed_at timestamp [not null, default: `now()`]
+  expires_at timestamp [note: 'Recertification due']
+
+  indexes {
+    (maid_id, course_id) [unique]
+    maid_id
+  }
+}
+
+// =============================================================================
+// PLATFORM OPS (feature flags, integrations, analytics)
+// =============================================================================
+
+Table feature_flags {
+  key varchar(64) [not null]
+  environment varchar(20) [not null, note: 'dev|test|beta|prod']
+  value jsonb [not null, default: 'true']
+  description varchar(255)
+  is_enabled boolean [not null, default: true]
+  updated_by uuid [ref: > admin_users.id]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (key, environment) [pk]
+  }
+
+  Note: 'Runtime toggles — dispatch auto-assign, maintenance mode, new payment methods'
+}
+
+Table integration_configs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  provider integration_provider [not null]
+  environment varchar(20) [not null, default: 'prod']
+  display_name varchar(100) [not null]
+  config_encrypted text [not null, note: 'AES-256 encrypted JSON blob']
+  is_active boolean [not null, default: true]
+  last_verified_at timestamp
+  updated_by uuid [ref: > admin_users.id]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (provider, environment) [unique]
+  }
+
+  Note: 'Admin integrations screen — Razorpay, FCM, MSG91 keys; never store plaintext in DB'
+}
+
+Table analytics_daily_snapshots {
+  snapshot_date date [not null]
+  city_id uuid [not null, ref: > cities.id]
+  bookings_created int [not null, default: 0]
+  bookings_completed int [not null, default: 0]
+  bookings_cancelled int [not null, default: 0]
+  gmv_paise bigint [not null, default: 0]
+  accept_rate_pct decimal(5,2)
+  cancel_rate_pct decimal(5,2)
+  active_maids int [not null, default: 0]
+  active_customers int [not null, default: 0]
+  refreshed_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (snapshot_date, city_id) [pk]
+    snapshot_date
+  }
+
+  Note: 'Populated by nightly job — powers admin dashboard without live aggregation'
+}
+
+Table schema_migrations {
+  version varchar(20) [pk, note: 'v1.0, v1.1, v1.2']
+  applied_at timestamp [not null, default: `now()`]
+  applied_by varchar(100) [note: 'migration tool or operator']
+  checksum varchar(64)
+}
+
+// =============================================================================
+// ADMIN, RBAC, PLATFORM
+// =============================================================================
+
+Table permissions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(64) [unique, not null, note: 'bookings.cancel, payouts.approve']
+  description varchar(255)
+}
+
+Table admin_roles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  role_key admin_role_key [unique, not null]
+  name varchar(100) [not null]
+  description text
+}
+
+Table admin_role_permissions {
+  role_id uuid [not null, ref: > admin_roles.id]
+  permission_id uuid [not null, ref: > permissions.id]
+
+  indexes {
+    (role_id, permission_id) [pk]
+  }
+}
+
+Table admin_users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: - users.id]
+  role_id uuid [not null, ref: > admin_roles.id]
+  display_name varchar(150) [not null]
+  login_id varchar(100) [unique, not null]
+  status varchar(20) [not null, default: 'active', note: 'active|invited|suspended']
+  last_active_at timestamp
+  invited_by uuid [ref: > admin_users.id]
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table audit_logs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  actor_user_id uuid [ref: > users.id]
+  actor_type varchar(20) [not null]
+  action varchar(100) [not null, note: 'booking.cancel, maid.suspend']
+  target_type varchar(50) [not null]
+  target_id uuid
+  metadata jsonb
+  ip_address varchar(45)
+  user_agent text
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    created_at
+    (target_type, target_id)
+    actor_user_id
+  }
+
+  Note: 'Append-only — partition by month in production'
+}
+
+Table platform_settings {
+  key varchar(100) [pk]
+  value jsonb [not null]
+  updated_by uuid [ref: > admin_users.id]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'email_bookings, sms_otp, push_dispatch, maintenance_mode, two_factor_enforce'
+}
+
+Table dsar_requests {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [ref: > customers.id]
+  request_type varchar(20) [not null, note: 'export|delete']
+  status varchar(20) [not null, default: 'pending']
+  requested_at timestamp [not null, default: `now()`]
+  completed_at timestamp
+  handled_by uuid [ref: > admin_users.id]
+}
+
+Table knowledge_base_articles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  slug varchar(100) [unique, not null]
+  title varchar(200) [not null]
+  body text [not null]
+  category varchar(50)
+  is_published boolean [default: false]
+  updated_by uuid [ref: > admin_users.id]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table report_schedules {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(150) [not null]
+  cadence varchar(50) [not null]
+  owner_role admin_role_key
+  format varchar(10) [not null, note: 'csv|xlsx|pdf']
+  recipient_email varchar(255)
+  query_key varchar(100) [not null]
+  next_run_at timestamp
+  is_active boolean [default: true]
+  created_at timestamp [not null, default: `now()`]
+}
+
+// =============================================================================
+// CIRCULAR FK NOTES (define order for migrations)
+// =============================================================================
+// maid_applications.approved_maid_id → maids (nullable until approve)
+// customer_preferences.favorite_maid_id → maids (nullable)
+// bookings.subscription_id → customer_subscriptions (nullable)
+// bookings.corporate_account_id → corporate_accounts (nullable, B2B)
+//
+// TABLE COUNT: 72 tables (v1.2 FINAL)
+// MIGRATION PATH: v1.0 → v1.1.migration.sql → v1.2.migration.sql
+// DOCUMENTATION: SCHEMA_FINAL.md

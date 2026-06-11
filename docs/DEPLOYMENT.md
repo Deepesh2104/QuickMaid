@@ -1,6 +1,8 @@
 # Deployment Guide
 
-Deploy QuickMaid as a **static SPA** to any CDN or static host.
+Deploy **this repository** (QuickMaid web + admin) as a **static SPA** to any CDN or static host.
+
+> Mobile apps deploy via App Store / Play Store from **QuickMaid-App** repo (separate process).
 
 ## Build
 
@@ -146,5 +148,6 @@ See [Phase 3 Backend](./PHASE3_BACKEND.md).
 
 ## Related docs
 
+- [Platform Overview](./PLATFORM.md)
 - [Architecture](./ARCHITECTURE.md)
 - [Development Guide](./DEVELOPMENT.md)

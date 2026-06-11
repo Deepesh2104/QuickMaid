@@ -13,32 +13,41 @@ This document outlines how to replace demo/local state with a production backend
 | Charts/KPIs | Seeded + derived demo data |
 | Integrations | UI vault only |
 
-## Target architecture
+## Target architecture (multi-repo, one database)
 
 ```mermaid
-flowchart LR
-  subgraph Client["Angular SPA"]
-    UI[Admin + Public UI]
-    API[HttpClient + interceptors]
+flowchart TB
+  subgraph Repos
+    WEB[QuickMaid — Angular web + admin]
+    MOB[QuickMaid-App — Customer + Partner mobile]
   end
-  subgraph Backend["Phase 3 API"]
+  subgraph Backend["QuickMaid-API"]
     GW[API Gateway]
     AUTH[Auth service]
     OPS[Operations service]
     PAY[Payments service]
-    NOTIFY[Notifications service]
+    NOTIFY[Notifications + FCM]
   end
   subgraph Data
-    DB[(PostgreSQL)]
+    DB[(PostgreSQL — single database)]
     REDIS[(Redis)]
-    S3[(Object storage)]
+    S3[(Object storage — KYC photos)]
   end
-  UI --> API --> GW
+  WEB --> GW
+  MOB --> GW
   GW --> AUTH & OPS & PAY & NOTIFY
   AUTH & OPS & PAY --> DB
   OPS --> REDIS
   OPS --> S3
 ```
+
+| Client | Repository | Connects via |
+|--------|------------|--------------|
+| Admin web + marketing | `QuickMaid` | Angular `HttpClient` |
+| Customer app (42 screens) | `QuickMaid-App` | REST + JWT (React Native) |
+| Partner app (32 screens) | `QuickMaid-App` | REST + JWT (React Native) |
+
+Mobile apps **never** connect to the database directly. Mobile implementation docs → **QuickMaid-App** repository. Platform overview → [PLATFORM.md](./PLATFORM.md).
 
 ## Recommended API domains
 
@@ -207,8 +216,17 @@ No migration needed — demo `localStorage` is throwaway. Seed production DB wit
 
 Define `openapi.yaml` first. Generate TypeScript types for the Angular client to keep UI and API in sync.
 
+## Repository ownership
+
+| Component | Repository | This doc section |
+|-----------|------------|------------------|
+| Angular web + admin client | `QuickMaid` | Angular integration steps below |
+| Mobile clients | `QuickMaid-App` | Consume same OpenAPI spec |
+| API server + DB | `QuickMaid-API` | Endpoint domains below |
+
 ## Related docs
 
-- [Architecture](./ARCHITECTURE.md) — current services
-- [Development Guide](./DEVELOPMENT.md) — adding API services
-- [Deployment](./DEPLOYMENT.md) — front-end hosting
+- [Platform Overview](./PLATFORM.md)
+- [Architecture](./ARCHITECTURE.md) — current web services
+- [Development Guide](./DEVELOPMENT.md) — adding API services to Angular
+- [Deployment](./DEPLOYMENT.md) — web hosting

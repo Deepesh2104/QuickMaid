@@ -1,6 +1,8 @@
 # Admin Console Guide
 
-Screen-by-screen reference for `/admin`. All data is **demo/seeded** unless noted as **live** (from `AppStateService`).
+Screen-by-screen reference for `/admin` in **this web repository**. All data is **demo/seeded** unless noted as **live** (from `AppStateService`).
+
+> Admin is **web-only** (desktop). Not included in mobile apps. Mobile ops may use web admin in tablet/desktop browser.
 
 **Login:** `/auth` → any valid email/phone + any password → `/admin/dashboard`
 
@@ -338,5 +340,7 @@ Uses `SupportFacadeService` + `TicketService`.
 ## Related docs
 
 - [Demo Walkthrough](./DEMO_WALKTHROUGH.md) — live presentation script
+- [Public Guide](./PUBLIC_GUIDE.md) — web flows that feed admin data
 - [Architecture](./ARCHITECTURE.md) — services and state
 - [Development Guide](./DEVELOPMENT.md) — adding new screens
+- [Platform Overview](./PLATFORM.md) — web vs mobile repos

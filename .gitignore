@@ -8,6 +8,7 @@ node_modules/
 
 # Logs
 npm-debug.log*
+docs/database/dbml-error.log
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*

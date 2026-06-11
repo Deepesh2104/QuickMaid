@@ -1,6 +1,8 @@
 # Development Guide
 
-Conventions and workflows for contributing to QuickMaid.
+Conventions and workflows for contributing to **QuickMaid** (Angular web + admin).
+
+> Mobile app development → **QuickMaid-App** repository (separate docs). See [Platform Overview](./PLATFORM.md).
 
 ## Environment setup
 
@@ -203,6 +205,8 @@ npm run purge:css   # Unused CSS helper
 
 ## Related docs
 
+- [Public Guide](./PUBLIC_GUIDE.md)
 - [Architecture](./ARCHITECTURE.md)
 - [Admin Guide](./ADMIN_GUIDE.md)
+- [Platform Overview](./PLATFORM.md)
 - [Phase 3 Backend](./PHASE3_BACKEND.md)

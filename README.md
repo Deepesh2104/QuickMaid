@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Verified maid & home cleaning in Raipur</strong><br>
-  Public marketing site · Web booking · Partner portal · Full admin console
+  Web marketing · Web booking · Partner portal · Admin console
 </p>
 
 <p align="center">
@@ -13,11 +13,9 @@
 
 ---
 
-QuickMaid is an Angular 18 **UI prototype** for a home-cleaning marketplace. It includes a customer-facing website, partner onboarding, and a 25+ screen admin console — all runnable locally with **no backend required**.
+Angular 18 **web prototype** for QuickMaid — marketing site, web booking, partner onboarding, and a 25-screen admin console. Runs locally with **no backend**; demo data uses `localStorage`.
 
-Data flows between public pages and admin via browser `localStorage`, so live demos feel end-to-end connected.
-
-> **Status:** Phase 1–2 (front-end demo). Production API, payments, and SMS are planned for Phase 3. See [Phase 3 Backend](./docs/PHASE3_BACKEND.md).
+> **This repo** = web + admin only. **Mobile apps** → separate repo `QuickMaid-App` (own docs). **API + DB** → `QuickMaid-API` (Phase 3). See [Platform Overview](./docs/PLATFORM.md).
 
 ---
 
@@ -26,12 +24,14 @@ Data flows between public pages and admin via browser `localStorage`, so live de
 | Guide | Description |
 |-------|-------------|
 | [**Docs index**](./docs/README.md) | Full documentation map |
+| [**Platform**](./docs/PLATFORM.md) | 3 repos, one database, web vs mobile |
 | [**Architecture**](./docs/ARCHITECTURE.md) | Services, state, guards, data flow |
-| [**Development**](./docs/DEVELOPMENT.md) | Conventions, adding features, CSS |
-| [**Admin guide**](./docs/ADMIN_GUIDE.md) | Every admin screen explained |
+| [**Public guide**](./docs/PUBLIC_GUIDE.md) | Landing, book, partner, auth, legal |
+| [**Admin guide**](./docs/ADMIN_GUIDE.md) | All 25 admin screens |
+| [**Development**](./docs/DEVELOPMENT.md) | Conventions, CSS, adding features |
 | [**Demo walkthrough**](./docs/DEMO_WALKTHROUGH.md) | 15-minute live demo script |
 | [**Deployment**](./docs/DEPLOYMENT.md) | Build, hosting, SPA config |
-| [**Phase 3 backend**](./docs/PHASE3_BACKEND.md) | Planned API integration |
+| [**Phase 3 backend**](./docs/PHASE3_BACKEND.md) | Shared API plan |
 
 ---
 
@@ -52,77 +52,44 @@ Open **http://localhost:4200**
 | `npm run build` | Production build → `dist/quickmaid/` |
 | `npm run watch` | Dev build with watch |
 | `npm run audit:css` | CSS bundle size report |
+| `npm run purge:css` | Unused CSS helper |
 
 **Requires:** Node.js 18+ or 20+ LTS
 
 ---
 
-## Demo credentials
+## What's in this repo
 
-### Admin login (`/auth`)
+| Area | Path | Description |
+|------|------|-------------|
+| Landing | `/` | Hero, services, plans, FAQ, waitlist |
+| Book | `/book` | 4-step web booking (OTP demo: `123456`) |
+| Partner | `/partner` | Maid dashboard + onboarding (web preview) |
+| Auth | `/auth` | Staff login → admin |
+| Public | `/about`, `/contact`, `/terms`, `/privacy`, `/status` | Info & legal |
+| Admin | `/admin/*` | 25 ops screens |
 
-| Field | Value |
-|-------|-------|
-| Email or phone | Any valid format (e.g. `ops@quickmaid.in` or `9876543210`) |
-| Password | Anything (not verified server-side) |
-| Role | Admin / Manager / Analyst / Support |
-
-→ Redirects to `/admin/dashboard`
-
-### Web booking OTP (`/book`)
-
-Demo OTP: **`123456`**
-
-### Reset demo data
-
-`/admin/settings` → Reset demo data → type **`RESET`**
+Details: [Public Guide](./docs/PUBLIC_GUIDE.md) · [Admin Guide](./docs/ADMIN_GUIDE.md)
 
 ---
 
-## Features at a glance
+## Demo credentials
 
-### Public site
-
-| Page | Path | Highlights |
-|------|------|------------|
-| Landing | `/` | Hero, services, pricing, testimonials, city waitlist |
-| Book | `/book` | Multi-step flow: details → OTP → payment → confirm |
-| Partner | `/partner` | Maid dashboard + onboarding wizard |
-| Auth | `/auth` | Staff login / signup |
-| About / Contact | `/about`, `/contact` | Company info |
-| Legal | `/terms`, `/privacy` | Terms & privacy |
-| Status | `/status` | Service status |
-
-### Admin console (`/admin`)
-
-| Section | Screens |
-|---------|---------|
-| **Main** | Dashboard, Executive, Bookings, Dispatch, Customers, Maids, Add maid |
-| **Finance** | Revenue, Payouts, Plans, Reports, Campaigns, Corporate |
-| **Operations** | Zones, Reviews, Training & QC |
-| **People** | Team, Support, Knowledge base, Alerts |
-| **Platform** | Audit, Compliance, Integrations, Settings |
-
-**UI patterns:** modals, CSV exports, Chart.js charts, profile drawers, live nav badges, theme picker (6 presets).
+| Flow | How |
+|------|-----|
+| **Admin** | `/auth` → valid email/phone + any password → `/admin/dashboard` |
+| **Booking OTP** | `/book` → OTP **`123456`** |
+| **Reset demo** | `/admin/settings` → type **`RESET`** |
 
 ---
 
 ## Cross-app demo flows
 
-```mermaid
-flowchart LR
-  Book["/book"] -->|inboundBookings| BK["Admin Bookings"]
-  Partner["/partner"] -->|partnerApps| MD["Admin Maids"]
-  Waitlist["Landing waitlist"] -->|waitlist| CP["Admin Campaigns"]
-  Book --> Dash["Dashboard alerts"]
-  Partner --> Dash
-```
-
-| Flow | Steps |
-|------|-------|
-| **Web booking** | `/book` → complete payment → `/admin/bookings` (Web badge) |
-| **Partner apply** | `/partner` onboarding → `/admin/maids` review queue → Approve |
-| **City waitlist** | Landing form → `/admin/campaigns` waitlist table |
+| Public | → Admin |
+|--------|---------|
+| Complete `/book` | `/admin/bookings` (Web badge) |
+| `/partner` submit | `/admin/maids` (review queue) |
+| Landing waitlist | `/admin/campaigns` |
 
 Full script: [Demo Walkthrough](./docs/DEMO_WALKTHROUGH.md)
 
@@ -134,12 +101,11 @@ Full script: [Demo Walkthrough](./docs/DEMO_WALKTHROUGH.md)
 |-------|------------|
 | Framework | Angular 18 (standalone, signals, OnPush) |
 | Language | TypeScript 5.5 strict |
-| Routing | Lazy-loaded routes, path URLs |
 | Charts | Chart.js 4.x |
-| Styling | Plain CSS + design tokens |
+| Styling | CSS tokens in `src/styles.css` |
 | State | Signals + localStorage (demo) |
 
-**Path aliases:** `@core`, `@shared`, `@layouts`, `@features`
+**Aliases:** `@core`, `@shared`, `@layouts`, `@features`
 
 ---
 
@@ -148,16 +114,15 @@ Full script: [Demo Walkthrough](./docs/DEMO_WALKTHROUGH.md)
 ```
 QuickMaid/
 ├── README.md
-├── docs/                    # Full documentation
+├── docs/                         # Web repo documentation
 ├── src/
 │   ├── app/
-│   │   ├── core/            # Services, guards, tokens
-│   │   ├── shared/          # Toast, theme-picker, mobile-block
-│   │   ├── layouts/         # Admin shell
-│   │   └── features/        # landing, auth, book, partner, admin, …
-│   ├── styles.css           # Global tokens + adm-* system
-│   ├── assets/
-│   └── host-config/_redirects
+│   │   ├── core/                 # Services, guards
+│   │   ├── shared/               # Toast, theme, mobile-block
+│   │   ├── layouts/              # Admin shell
+│   │   └── features/             # landing, book, partner, admin, …
+│   ├── styles.css
+│   └── assets/
 ├── angular.json
 └── package.json
 ```
@@ -170,11 +135,8 @@ QuickMaid/
 |-----|---------|
 | `qm_app_state` | Bookings, partners, waitlist, approved maids, audit |
 | `qm_settings` | Platform toggles |
-| `qm_session_v1` | Active auth session |
-| `qm_session_remember_v1` | Remember-me session |
+| `qm_session_v1` / `qm_session_remember_v1` | Staff session |
 | `quickmaid-theme-v2` | Theme preset |
-
-Details: [Architecture → Storage](./docs/ARCHITECTURE.md#storage-reference)
 
 ---
 
@@ -182,46 +144,27 @@ Details: [Architecture → Storage](./docs/ARCHITECTURE.md#storage-reference)
 
 ```bash
 npm run build
-# Deploy dist/quickmaid/ to static host
-# Configure SPA fallback: /* → /index.html (200)
+# Deploy dist/quickmaid/ — SPA fallback required
 ```
 
-See [Deployment Guide](./docs/DEPLOYMENT.md) for Netlify, Vercel, Nginx, and Cloudflare.
-
-Update `SITE_ORIGIN` in `src/app/core/site.constants.ts` for your domain.
+[Deployment Guide](./docs/DEPLOYMENT.md) · Update `SITE_ORIGIN` in `src/app/core/site.constants.ts`
 
 ---
 
-## Mock vs production
+## Platform roadmap
 
-| Area | Demo (now) | Production (Phase 3) |
-|------|------------|----------------------|
-| Auth | localStorage session | JWT + RBAC API |
-| Bookings / maids | `AppStateService` | REST API + database |
-| OTP / SMS | Toast + `123456` | MSG91 / Twilio |
-| Payments | Simulated | Razorpay |
-| Support | In-memory tickets | Ticketing API |
-| Tests | None | Unit + E2E |
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Build fails on fonts | Retry with network, or use `npm start` |
-| Booking not in admin | Same browser profile; check localStorage |
-| Mobile block on admin | Use viewport ≥ 1024px wide |
-| Stale session | Logout or clear `qm_session_*` keys |
-
-More: [Development Guide → Troubleshooting](./docs/DEVELOPMENT.md#build-troubleshooting)
+| Phase | Repo | Status |
+|-------|------|--------|
+| Web + admin demo | **QuickMaid** (this) | ✅ Built |
+| Customer + Partner mobile | **QuickMaid-App** | Planned (separate docs) |
+| API + PostgreSQL | **QuickMaid-API** | Phase 3 |
 
 ---
 
 ## Contributing
 
 1. Branch from `main`
-2. Follow existing patterns (standalone, signals, OnPush, `adm-*` CSS)
+2. Match patterns: standalone, signals, OnPush, `adm-*` CSS
 3. Run `npm run build` before PR
 4. Never commit `.env` or API keys
 
